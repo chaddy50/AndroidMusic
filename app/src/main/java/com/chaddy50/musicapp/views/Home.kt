@@ -1,5 +1,7 @@
 package com.chaddy50.musicapp.views
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,7 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.components.TopBar
 import com.chaddy50.musicapp.navigation.Screen
@@ -29,24 +33,29 @@ fun Home(
         Column(
             modifier = Modifier.padding(it)
         ) {
-            var views = listOf("Genre", "Album","Artist","Track")
-            views.forEach {
-                Card (
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .align(Alignment.CenterHorizontally),
-                    onClick = {
-                        val screenRoute = getScreenRouteFromTitle(it)
-                        navController.navigate(screenRoute)
-                    }
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+            if (ActivityCompat.checkSelfPermission(LocalContext.current, Manifest.permission.READ_MEDIA_AUDIO) == PackageManager.PERMISSION_DENIED) {
+                Text("Go to settings to give this app permission to access your audio files.")
+            }
+            else {
+                var views = listOf("Genre", "Album", "Artist", "Track")
+                views.forEach {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp)
+                            .align(Alignment.CenterHorizontally),
+                        onClick = {
+                            val screenRoute = getScreenRouteFromTitle(it)
+                            navController.navigate(screenRoute)
+                        }
                     ) {
-                        Text(it)
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(it)
+                        }
                     }
                 }
             }
