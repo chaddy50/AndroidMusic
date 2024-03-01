@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.NavigationHost
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
 
@@ -28,6 +29,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val musicDatabase = MusicDatabase(
+            setOf(), setOf(), setOf(), setOf())
         setContent {
             MusicAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -40,11 +43,11 @@ class MainActivity : ComponentActivity() {
                             Manifest.permission.READ_MEDIA_AUDIO
                         ) == PackageManager.PERMISSION_GRANTED
                     ) {
-                        buildMusicDatabase(this.applicationContext)
+                        musicDatabase.initialize(this.applicationContext)
                     } else {
                         permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
                     }
-                    NavigationHost()
+                    NavigationHost(this.applicationContext, musicDatabase)
                 }
             }
         }
@@ -75,25 +78,5 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private fun buildMusicDatabase(context: Context) {
-        val projection = arrayOf(
-            MediaStore.Audio.Media._ID,
-            MediaStore.Audio.Media.DISPLAY_NAME
-        )
 
-        context.contentResolver.query(
-            MediaStore.Files.getContentUri("external"),
-            projection,
-            null,
-            null,
-            null,
-            null
-        )?.use { cursor ->
-            val columnId = cursor.getColumnIndex("_id")
-            val columnName = cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
-            while (cursor.moveToNext()) {
-                Log.d("I", cursor.getString(columnName))
-            }
-        }
-    }
 }

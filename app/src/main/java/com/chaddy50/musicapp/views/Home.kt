@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.components.EntityCard
 import com.chaddy50.musicapp.components.TopBar
 import com.chaddy50.musicapp.navigation.Screen
 
@@ -37,26 +38,10 @@ fun Home(
                 Text("Go to settings to give this app permission to access your audio files.")
             }
             else {
-                var views = listOf("Genre", "Album", "Artist", "Track")
-                views.forEach {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp)
-                            .align(Alignment.CenterHorizontally),
-                        onClick = {
-                            val screenRoute = getScreenRouteFromTitle(it)
-                            navController.navigate(screenRoute)
-                        }
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(it)
-                        }
-                    }
+                val views = listOf("Genre", "Album", "Artist", "Track")
+                views.forEach {title ->
+                    val screenRoute = getScreenRouteFromTitle(title)
+                    EntityCard(title) { navController.navigate(screenRoute) }
                 }
             }
         }
