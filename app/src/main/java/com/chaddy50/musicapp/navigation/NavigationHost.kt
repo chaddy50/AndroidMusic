@@ -25,10 +25,10 @@ fun NavigationHost(
         startDestination = Screen.HomeScreen.route
     ) {
         composable(Screen.HomeScreen.route) {
-            Home(navController)
+            Home(musicDatabase)
         }
         composable(Screen.GenreScreen.route) {
-            Genres(context, musicDatabase, navController)
+            Genres(context, musicDatabase)
         }
         composable(
             Screen.AlbumScreen.route + "?artistID={artistID}",
@@ -37,7 +37,6 @@ fun NavigationHost(
             Albums(
                 context,
                 musicDatabase,
-                navController,
                 it.arguments?.getInt("artistID") ?: 0
             )
         }
@@ -48,7 +47,6 @@ fun NavigationHost(
             Artists(
                 context,
                 musicDatabase,
-                navController,
                 it.arguments?.getInt("genreID") ?: 0)
         }
         composable(

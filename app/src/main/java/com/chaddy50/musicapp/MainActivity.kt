@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.NavigationHost
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
+import com.chaddy50.musicapp.views.Home
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
                     }
-                    NavigationHost(this.applicationContext, musicDatabase)
+                    Home(musicDatabase)
                 }
             }
         }

@@ -23,24 +23,18 @@ import java.sql.Date
 fun Albums(
     context: Context,
     musicDatabase: MusicDatabase,
-    navController: NavController,
-    artistID: Int
+    artistID: Int = 0
 ) {
-    Scaffold(
-        topBar = { TopBar("Albums") }
-    ) {
-        LazyColumn(
-            modifier = Modifier.padding(it)
-        ) {
-            var albumsToShow = musicDatabase.albums.toList()
-            if (artistID != 0) {
-                albumsToShow = musicDatabase.albums.filter { album -> album.artistID == artistID }
-            }
-            items(albumsToShow) { album ->
-                EntityCard(
-                    album.title,
-                    { navController.navigate(Screen.TrackScreen.route + "?albumID=${album.id}") })
-            }
+    LazyColumn {
+        var albumsToShow = musicDatabase.albums.toList()
+        if (artistID != 0) {
+            albumsToShow = musicDatabase.albums.filter { album -> album.artistID == artistID }
+        }
+        items(albumsToShow) { album ->
+            EntityCard(
+                album.title,
+                //{ navController.navigate(Screen.TrackScreen.route + "?albumID=${album.id}") }
+            )
         }
     }
 }

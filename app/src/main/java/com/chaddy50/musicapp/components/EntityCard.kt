@@ -19,7 +19,7 @@ import androidx.navigation.NavController
 import com.chaddy50.musicapp.navigation.Screen
 
 @Composable
-fun EntityCard(title: String, onClick: ()->Unit) {
+fun EntityCard(title: String, onClick: ()->Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
