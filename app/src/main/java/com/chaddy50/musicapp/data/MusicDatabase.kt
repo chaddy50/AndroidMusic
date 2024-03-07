@@ -3,7 +3,6 @@ package com.chaddy50.musicapp.data
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
-import android.util.Log
 import androidx.core.database.getStringOrNull
 
 data class MusicDatabase(

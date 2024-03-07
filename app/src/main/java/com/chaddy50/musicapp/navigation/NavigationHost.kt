@@ -8,10 +8,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.chaddy50.musicapp.data.MusicDatabase
-import com.chaddy50.musicapp.views.Home
 import com.chaddy50.musicapp.views.Albums
 import com.chaddy50.musicapp.views.Artists
 import com.chaddy50.musicapp.views.Genres
+import com.chaddy50.musicapp.views.Home
 import com.chaddy50.musicapp.views.Tracks
 
 @Composable
