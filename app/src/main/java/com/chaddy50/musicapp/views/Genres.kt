@@ -17,12 +17,12 @@ import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.Screen
 
 @Composable
-fun Genres(context: Context, musicDatabase: MusicDatabase) {
+fun Genres(context: Context, musicDatabase: MusicDatabase, navController: NavController) {
     LazyColumn {
         items(musicDatabase.genres.toList()) { genre ->
             EntityCard(
                 genre.title,
-                //{ navController.navigate(Screen.ArtistScreen.route + "?genreID=${genre.id}") }
+                { navController.navigate(Screen.ArtistScreen.route + "?genreID=${genre.id}") }
             )
         }
     }

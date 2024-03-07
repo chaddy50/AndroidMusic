@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
                     } else {
                         permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
                     }
-                    Home(musicDatabase)
+                    NavigationHost(LocalContext.current, musicDatabase)
                 }
             }
         }

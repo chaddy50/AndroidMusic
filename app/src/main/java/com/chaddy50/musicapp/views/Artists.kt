@@ -20,18 +20,23 @@ import com.chaddy50.musicapp.navigation.Screen
 fun Artists(
     context: Context,
     musicDatabase: MusicDatabase,
+    navController: NavController,
     genreID: Int = 0
 ) {
-    LazyColumn {
-        var artistsToShow = musicDatabase.artists.toList()
-        if (genreID != 0) {
-            artistsToShow = musicDatabase.artists.filter { artist -> artist.genreID == genreID }
-        }
-        items(artistsToShow) { artist ->
-            EntityCard(
-                artist.name,
-                //{ navController.navigate(Screen.AlbumScreen.route + "?artistID=${artist.id}") }
-            )
+    Scaffold(
+        topBar = { TopBar(genreID, musicDatabase.genres.find { it.id == genreID }?.title ?: "Artists") }
+    ){
+        LazyColumn(modifier = Modifier.padding(it)) {
+            var artistsToShow = musicDatabase.artists.toList()
+            if (genreID != 0) {
+                artistsToShow = musicDatabase.artists.filter { artist -> artist.genreID == genreID }
+            }
+            items(artistsToShow) { artist ->
+                EntityCard(
+                    artist.name,
+                    { navController.navigate(Screen.AlbumScreen.route + "?artistID=${artist.id}") }
+                )
+            }
         }
     }
 }

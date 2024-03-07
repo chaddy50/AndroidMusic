@@ -12,8 +12,13 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
+    id: Int,
     title: String
 ) {
+    if (id == 0) {
+        return;
+    }
+
     CenterAlignedTopAppBar(
         title = { Text(title) },
         colors = TopAppBarDefaults.topAppBarColors(

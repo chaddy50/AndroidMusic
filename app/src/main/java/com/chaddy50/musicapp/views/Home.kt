@@ -20,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,10 +45,11 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun Home(
+    navController: NavController,
     musicDatabase: MusicDatabase
 ) {
     Scaffold(
-        topBar = { TopBar("Home") }
+        topBar = { TopBar(-1, "Home") }
     ) {
         Column(
             modifier = Modifier.padding(it)
@@ -60,7 +62,7 @@ fun Home(
                 Text("Go to settings to give this app permission to access your audio files.")
             } else {
                 val context = LocalContext.current
-                val views = listOf("Genre", "Album", "Artist")
+                val views = listOf("Genre", "Artist", "Album")
                 val pagerState = rememberPagerState(
                     initialPage = 0,
                     initialPageOffsetFraction = 0f,
@@ -87,7 +89,7 @@ fun Home(
                         )
                     }
                 }
-                TabContent(pagerState, context, musicDatabase)
+                TabContent(pagerState, context, musicDatabase, navController)
             }
         }
     }
@@ -108,13 +110,14 @@ private fun getScreenRouteFromTitle(title: String): String {
 fun TabContent(
     pagerState: PagerState,
     context: Context,
-    musicDatabase: MusicDatabase
+    musicDatabase: MusicDatabase,
+    navController: NavController,
 ) {
     HorizontalPager(pagerState) { index ->
         when (index) {
-            0 -> Genres(context, musicDatabase)
-            1 -> Albums(context, musicDatabase)
-            2 -> Artists(context, musicDatabase)
+            0 -> Genres(context, musicDatabase, navController)
+            1 -> Artists(context, musicDatabase, navController)
+            2 -> Albums(context, musicDatabase, navController)
         }
     }
 }

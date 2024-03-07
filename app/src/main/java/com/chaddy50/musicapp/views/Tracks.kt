@@ -20,7 +20,7 @@ fun Tracks(
     albumID: Int
 ) {
     Scaffold(
-        topBar = { TopBar("Tracks") }
+        topBar = { TopBar(albumID, musicDatabase.albums.find { it.id == albumID }?.title ?: "Tracks") }
     ) {
         LazyColumn(
             modifier = Modifier.padding(it)
