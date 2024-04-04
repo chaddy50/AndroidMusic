@@ -16,7 +16,7 @@ import com.chaddy50.musicapp.navigation.Screen
 @Composable
 fun Genres(context: Context, musicDatabase: MusicDatabase, navController: NavController) {
     Scaffold(
-            topBar = { TopBar(0, "Genres") }
+            topBar = { TopBar(0, "Genres", navController) }
             ) {
         LazyColumn (
             Modifier.padding(it)

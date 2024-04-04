@@ -35,7 +35,7 @@ fun Home(
     musicDatabase: MusicDatabase
 ) {
     Scaffold(
-        topBar = { TopBar(-1, "Home") }
+        topBar = { TopBar(-1, "Home", navController) }
     ) {
         Column(
             modifier = Modifier.padding(it)
