@@ -34,9 +34,12 @@ fun Tracks(
             var tracksToShow = musicDatabase.tracks.toList()
             if (albumID != 0) {
                 tracksToShow = musicDatabase.tracks.filter { track -> track.albumID == albumID }
+                tracksToShow = tracksToShow.sortedBy { it.number }
             }
             items(tracksToShow) { track ->
-                EntityCard(track.title, {})
+                val trackNumber = track.number
+
+                EntityCard("${track.number} - ${track.title}", {})
             }
         }
     }

@@ -35,10 +35,11 @@ fun Albums(
             var albumsToShow = musicDatabase.albums.toList()
             if (artistID != 0) {
                 albumsToShow = musicDatabase.albums.filter { album -> album.artistID == artistID }
+                albumsToShow = albumsToShow.sortedBy { it.year }
             }
             items(albumsToShow) { album ->
                 EntityCard(
-                    album.title,
+                    "${album.year} - ${album.title}",
                     { navController.navigate(Screen.TrackScreen.route + "?albumID=${album.id}") }
                 )
             }

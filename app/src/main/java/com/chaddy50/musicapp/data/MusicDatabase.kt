@@ -3,6 +3,7 @@ package com.chaddy50.musicapp.data
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
+import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 
 data class MusicDatabase(
@@ -22,7 +23,7 @@ data class MusicDatabase(
             MediaStore.Audio.AudioColumns.ALBUM_ARTIST,
             MediaStore.Audio.AudioColumns.YEAR,
             MediaStore.Audio.AudioColumns.TITLE,
-            MediaStore.Audio.AudioColumns.TRACK,
+            MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER,
             MediaStore.Audio.AudioColumns.DURATION,
         )
 
@@ -66,31 +67,31 @@ class MusicIndexer(
     private var columnIndexAlbumArtist =  cursor.getColumnIndex(MediaStore.Audio.AudioColumns.ALBUM_ARTIST)
     private var columnIndexYear = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.YEAR)
     private var columnIndexTrackTitle = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TITLE)
-    private var columnIndexTrackNumber = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.TRACK)
+    private var columnIndexTrackNumber = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER)
     private var columnIndexTrackDuration = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION)
     //endregion
 
     fun getAlbum(): Album {
         return Album(
-            cursor.getInt(columnIndexAlbumID),
-            cursor.getString(columnIndexAlbumTitle) ?: "Unknown Album",
-            cursor.getInt(columnIndexArtistID),
-            cursor.getStringOrNull(columnIndexYear)
+            cursor.getIntOrNull(columnIndexAlbumID) ?: -1,
+            cursor.getStringOrNull(columnIndexAlbumTitle) ?: "Unknown Album",
+            cursor.getIntOrNull(columnIndexArtistID) ?: -1,
+            cursor.getStringOrNull(columnIndexYear) ?: "Unknown Year"
         )
     }
 
     fun getGenre(): Genre {
         return Genre(
-            cursor.getInt(columnIndexGenreID),
+            cursor.getIntOrNull(columnIndexGenreID) ?: -1,
             cursor.getStringOrNull(columnIndexGenreTitle) ?: "Unknown Genre"
         )
     }
 
     fun getArtist(): Artist {
         return Artist(
-            cursor.getInt(columnIndexArtistID),
-            cursor.getString(columnIndexAlbumArtist) ?: "Unknown Artist",
-            cursor.getInt(columnIndexGenreID)
+            cursor.getIntOrNull(columnIndexArtistID) ?: -1,
+            cursor.getStringOrNull(columnIndexAlbumArtist) ?: "Unknown Artist",
+            cursor.getIntOrNull(columnIndexGenreID) ?: -1
         )
     }
 

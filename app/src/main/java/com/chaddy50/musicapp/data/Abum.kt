@@ -1,10 +1,10 @@
 package com.chaddy50.musicapp.data
 
-data class Album (
+data class Album(
     val id: Int,
     val title: String,
     val artistID: Int,
-    val year: String? = "Unknown",
+    val year: String,
     val numberOfTracks: Int? = null,
     val durationInSeconds: Int? = null,
 )
