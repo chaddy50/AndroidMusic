@@ -21,7 +21,7 @@ fun Artists(
     genreID: Int = 0
 ) {
     Scaffold(
-        topBar = { TopBar(genreID, musicDatabase.genres.find { it.id == genreID }?.title ?: "Artists", navController) }
+        topBar = { TopBar( genreID != 0, musicDatabase.genres.find { it.id == genreID }?.title ?: "Artists", navController) }
     ){
         LazyColumn(modifier = Modifier.padding(it)) {
             var artistsToShow = musicDatabase.artists.toList()
