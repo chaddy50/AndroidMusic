@@ -16,11 +16,17 @@ import com.chaddy50.musicapp.navigation.Screen
 @Composable
 fun Genres(context: Context, musicDatabase: MusicDatabase, navController: NavController) {
     Scaffold(
-            topBar = { TopBar( false,"Genres", navController) }
-            ) {
-        LazyColumn (
+        topBar = {
+            TopBar(
+                false,
+                "Genres",
+                navController
+            )
+        }
+    ) {
+        LazyColumn(
             Modifier.padding(it)
-        ){
+        ) {
             items(musicDatabase.genres.toList()) { genre ->
                 EntityCard(
                     genre.title,

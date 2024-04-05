@@ -20,7 +20,13 @@ fun Tracks(
     albumID: Int
 ) {
     Scaffold(
-        topBar = { TopBar(albumID != 0, musicDatabase.albums.find { it.id == albumID }?.title ?: "Tracks", navController) }
+        topBar = {
+            TopBar(
+                albumID != 0,
+                musicDatabase.albums.find { it.id == albumID }?.title ?: "Tracks",
+                navController
+            )
+        }
     ) {
         LazyColumn(
             modifier = Modifier.padding(it)
@@ -29,8 +35,8 @@ fun Tracks(
             if (albumID != 0) {
                 tracksToShow = musicDatabase.tracks.filter { track -> track.albumID == albumID }
             }
-            items(tracksToShow) {track ->
-                EntityCard(track.title , {})
+            items(tracksToShow) { track ->
+                EntityCard(track.title, {})
             }
         }
     }

@@ -35,7 +35,13 @@ fun Home(
     musicDatabase: MusicDatabase
 ) {
     Scaffold(
-        topBar = { TopBar(true,"Home", navController) }
+        topBar = {
+            TopBar(
+                true,
+                "Home",
+                navController
+            )
+        }
     ) {
         Column(
             modifier = Modifier.padding(it)
@@ -78,16 +84,6 @@ fun Home(
                 TabContent(pagerState, context, musicDatabase, navController)
             }
         }
-    }
-}
-
-private fun getScreenRouteFromTitle(title: String): String {
-    return when (title) {
-        "Genre" -> Screen.GenreScreen.route
-        "Album" -> Screen.AlbumScreen.route
-        "Artist" -> Screen.ArtistScreen.route
-        "Track" -> Screen.TrackScreen.route
-        else -> ""
     }
 }
 

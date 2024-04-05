@@ -21,7 +21,13 @@ fun Albums(
     artistID: Int = 0
 ) {
     Scaffold(
-        topBar = { TopBar(artistID != 0, musicDatabase.artists.find { it.id == artistID }?.name ?: "Albums", navController) }
+        topBar = {
+            TopBar(
+                artistID != 0,
+                musicDatabase.artists.find { it.id == artistID }?.name ?: "Albums",
+                navController
+            )
+        }
     ) {
         LazyColumn(
             modifier = Modifier.padding(it)
