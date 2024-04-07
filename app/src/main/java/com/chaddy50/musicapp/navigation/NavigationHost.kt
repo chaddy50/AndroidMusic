@@ -31,14 +31,14 @@ fun NavigationHost(
             Genres(context, musicDatabase, navController)
         }
         composable(
-            Screen.AlbumScreen.route + "?artistID={artistID}",
-            arguments = listOf(navArgument("artistID") { defaultValue = 0})
+            Screen.AlbumScreen.route + "?artistName={artistName}",
+            arguments = listOf(navArgument("artistName") { defaultValue = ""})
         ) {
             Albums(
                 context,
                 musicDatabase,
                 navController,
-                it.arguments?.getInt("artistID") ?: 0
+                it.arguments?.getString("artistName") ?: ""
             )
         }
         composable(

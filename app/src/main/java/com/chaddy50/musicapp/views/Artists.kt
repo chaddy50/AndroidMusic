@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.components.EntityCard
 import com.chaddy50.musicapp.components.TopBar
+import com.chaddy50.musicapp.data.AlbumArtist
+import com.chaddy50.musicapp.data.Artist
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.Screen
 
@@ -30,14 +32,17 @@ fun Artists(
         }
     ) {
         LazyColumn(modifier = Modifier.padding(it)) {
-            var artistsToShow = musicDatabase.artists.toList()
+            var artistsToShow: List<AlbumArtist>
             if (genreID != 0) {
-                artistsToShow = musicDatabase.artists.filter { artist -> artist.genreID == genreID }
+                artistsToShow = musicDatabase.albumArtists.filter { artist -> artist.genreID == genreID }
+            } else {
+                artistsToShow = musicDatabase.albumArtists.toList()
             }
+            artistsToShow = artistsToShow.sortedBy { it.name }
             items(artistsToShow) { artist ->
                 EntityCard(
                     artist.name,
-                    { navController.navigate(Screen.AlbumScreen.route + "?artistID=${artist.id}") }
+                    { navController.navigate(Screen.AlbumScreen.route + "?artistName=${artist.name}") }
                 )
             }
         }

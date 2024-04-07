@@ -27,7 +27,7 @@ fun Genres(context: Context, musicDatabase: MusicDatabase, navController: NavCon
         LazyColumn(
             Modifier.padding(it)
         ) {
-            items(musicDatabase.genres.toList()) { genre ->
+            items(musicDatabase.genres.toList().sortedBy { it.title }) { genre ->
                 EntityCard(
                     genre.title,
                     { navController.navigate(Screen.ArtistScreen.route + "?genreID=${genre.id}") }

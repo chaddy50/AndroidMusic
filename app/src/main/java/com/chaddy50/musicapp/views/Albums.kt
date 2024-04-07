@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.components.EntityCard
 import com.chaddy50.musicapp.components.TopBar
+import com.chaddy50.musicapp.data.Album
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.Screen
 
@@ -18,13 +19,13 @@ fun Albums(
     context: Context,
     musicDatabase: MusicDatabase,
     navController: NavController,
-    artistID: Int = 0
+    artistName: String = "",
 ) {
     Scaffold(
         topBar = {
             TopBar(
-                artistID != 0,
-                musicDatabase.artists.find { it.id == artistID }?.name ?: "Albums",
+                artistName.isNotEmpty(),
+                musicDatabase.albumArtists.find { it.name == artistName }?.name ?: "Albums",
                 navController
             )
         }
@@ -32,11 +33,14 @@ fun Albums(
         LazyColumn(
             modifier = Modifier.padding(it)
         ) {
-            var albumsToShow = musicDatabase.albums.toList()
-            if (artistID != 0) {
-                albumsToShow = musicDatabase.albums.filter { album -> album.artistID == artistID }
-                albumsToShow = albumsToShow.sortedBy { it.year }
+            var albumsToShow: List<Album>
+            if (artistName.isNotEmpty()) {
+                albumsToShow = musicDatabase.albums.filter { album -> album.albumArtist == artistName }
             }
+            else {
+                albumsToShow = musicDatabase.albums.toList()
+            }
+            albumsToShow = albumsToShow.sortedBy { it.year }
             items(albumsToShow) { album ->
                 EntityCard(
                     "${album.year} - ${album.title}",
