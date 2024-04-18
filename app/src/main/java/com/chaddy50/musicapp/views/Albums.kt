@@ -8,11 +8,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.components.EntityCard
+import com.chaddy50.musicapp.components.cards.AlbumCard
 import com.chaddy50.musicapp.components.TopBar
 import com.chaddy50.musicapp.data.Album
 import com.chaddy50.musicapp.data.MusicDatabase
-import com.chaddy50.musicapp.navigation.Screen
 
 @Composable
 fun Albums(
@@ -35,17 +34,13 @@ fun Albums(
         ) {
             var albumsToShow: List<Album>
             if (artistName.isNotEmpty()) {
-                albumsToShow = musicDatabase.albums.filter { album -> album.albumArtist == artistName }
-            }
-            else {
+                albumsToShow = musicDatabase.albums.filter { album -> album.artist == artistName }
+            } else {
                 albumsToShow = musicDatabase.albums.toList()
             }
-            albumsToShow = albumsToShow.sortedBy { it.year }
+            albumsToShow = albumsToShow.sortedBy { it.title }
             items(albumsToShow) { album ->
-                EntityCard(
-                    "${album.year} - ${album.title}",
-                    { navController.navigate(Screen.TrackScreen.route + "?albumID=${album.id}") }
-                )
+                AlbumCard(album, navController, artistName.isBlank())
             }
         }
     }

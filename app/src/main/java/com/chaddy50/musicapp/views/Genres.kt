@@ -8,7 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.components.EntityCard
+import com.chaddy50.musicapp.components.cards.EntityCard
 import com.chaddy50.musicapp.components.TopBar
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.navigation.Screen

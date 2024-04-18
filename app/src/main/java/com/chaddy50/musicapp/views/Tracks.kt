@@ -1,15 +1,18 @@
 package com.chaddy50.musicapp.views
 
 import android.content.Context
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.components.EntityCard
+import com.chaddy50.musicapp.components.AlbumHeader
+import com.chaddy50.musicapp.components.cards.EntityCard
 import com.chaddy50.musicapp.components.TopBar
+import com.chaddy50.musicapp.components.cards.TrackCard
 import com.chaddy50.musicapp.data.MusicDatabase
 
 @Composable
@@ -19,27 +22,34 @@ fun Tracks(
     navController: NavController,
     albumID: Int
 ) {
+    val album = musicDatabase.albums.find {it.id == albumID}
     Scaffold(
         topBar = {
             TopBar(
                 albumID != 0,
-                musicDatabase.albums.find { it.id == albumID }?.title ?: "Tracks",
+                album?.title ?: "Tracks",
                 navController
             )
         }
     ) {
-        LazyColumn(
-            modifier = Modifier.padding(it)
+        Column(
+            modifier = Modifier
+                .padding(it)
+                .verticalScroll(rememberScrollState())
         ) {
+
+            if (albumID != 0) {
+                AlbumHeader(album)
+            }
+
             var tracksToShow = musicDatabase.tracks.toList()
             if (albumID != 0) {
-                tracksToShow = musicDatabase.tracks.filter { track -> track.albumID == albumID }
+                tracksToShow =
+                    musicDatabase.tracks.filter { track -> track.albumID == albumID }
                 tracksToShow = tracksToShow.sortedBy { it.number }
             }
-            items(tracksToShow) { track ->
-                val trackNumber = track.number
-
-                EntityCard("${track.number} - ${track.title}", {})
+            tracksToShow.forEach { track ->
+                TrackCard(track)
             }
         }
     }
