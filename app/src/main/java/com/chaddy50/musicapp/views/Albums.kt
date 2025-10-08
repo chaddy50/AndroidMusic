@@ -38,7 +38,7 @@ fun Albums(
             } else {
                 albumsToShow = musicDatabase.albums.toList()
             }
-            albumsToShow = albumsToShow.sortedBy { it.title }
+            albumsToShow = albumsToShow.sortedBy { it.year }
             items(albumsToShow) { album ->
                 AlbumCard(album, navController, artistName.isBlank())
             }

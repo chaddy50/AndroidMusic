@@ -4,8 +4,12 @@ import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
+import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.util.Size
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import java.io.IOException
@@ -43,8 +47,20 @@ data class MusicDatabase(
             MediaStore.Audio.Media.DEFAULT_SORT_ORDER,
             null
         )?.use { cursor ->
+            val numberOfFilesTotal = cursor.count
+            var numberOfFilesProcessed = 0
             while (cursor.moveToNext()) {
-                val indexer = MusicIndexer(cursor, this)
+                numberOfFilesProcessed++
+
+                val trackID = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.AudioColumns._ID) ?: -1)
+                val contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, trackID)
+                val retriever = MediaMetadataRetriever()
+                val afd = context.contentResolver.openAssetFileDescriptor(contentUri, "r")
+                if (afd != null) {
+                    retriever.setDataSource(afd.fileDescriptor)
+                }
+
+                val indexer = MusicIndexer(cursor, retriever, this)
 
                 val genre = indexer.getGenre()
                 genres = genres.plus(genre)
@@ -66,6 +82,7 @@ data class MusicDatabase(
 
 class MusicIndexer(
     private val cursor: Cursor,
+    private val retriever: MediaMetadataRetriever,
     private val musicDatabase: MusicDatabase,
 ) {
 
@@ -100,11 +117,26 @@ class MusicIndexer(
             return null
         }
 
+        var title = cursor.getStringOrNull(columnIndexAlbumTitle)
+        if (title == null) {
+            title = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+        }
+
+        var artist = cursor.getStringOrNull(columnIndexAlbumArtist)
+        if (artist == null) {
+            artist = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUMARTIST)
+        }
+
+        var year = cursor.getStringOrNull(columnIndexYear)
+        if (year == null) {
+            year = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
+        }
+
         return Album(
             albumID,
-            cursor.getStringOrNull(columnIndexAlbumTitle) ?: "Unknown Album",
-            cursor.getStringOrNull(columnIndexAlbumArtist) ?: "Unknown Artist",
-            cursor.getStringOrNull(columnIndexYear) ?: "Unknown Year"
+            title ?: "Unknown Title",
+            artist ?: "Unknown Artist",
+            year ?: "Unknown Year"
         )
     }
 
@@ -144,9 +176,14 @@ class MusicIndexer(
             album.artwork = albumArtwork
         }
 
+        var trackNumber = cursor.getIntOrNull(columnIndexTrackNumber)
+        if (trackNumber == 0) {
+            trackNumber = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)?.toIntOrNull()
+        }
+
         return Track(
             cursor.getString(columnIndexTrackTitle),
-            cursor.getInt(columnIndexTrackNumber),
+            trackNumber ?: -1,
             albumID,
             cursor.getInt(columnIndexArtistID),
             cursor.getInt(columnIndexGenreID),

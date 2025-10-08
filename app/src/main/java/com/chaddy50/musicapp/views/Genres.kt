@@ -18,7 +18,7 @@ fun Genres(context: Context, musicDatabase: MusicDatabase, navController: NavCon
     Scaffold(
         topBar = {
             TopBar(
-                false,
+                true,
                 "Genres",
                 navController
             )

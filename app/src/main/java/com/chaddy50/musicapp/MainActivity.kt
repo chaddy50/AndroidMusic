@@ -19,11 +19,14 @@ import com.chaddy50.musicapp.navigation.NavigationHost
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
 
 class MainActivity : ComponentActivity() {
+    val musicDatabase = MusicDatabase(
+        setOf(), setOf(), setOf(), setOf(), setOf())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val musicDatabase = MusicDatabase(
-            setOf(), setOf(), setOf(), setOf(), setOf())
+        createNotificationChannels(this)
+
         setContent {
             MusicAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -31,18 +34,23 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (ContextCompat.checkSelfPermission(
-                            this.applicationContext,
-                            Manifest.permission.READ_MEDIA_AUDIO
-                        ) == PackageManager.PERMISSION_GRANTED
-                    ) {
-                        musicDatabase.initialize(this.applicationContext)
-                    } else {
-                        permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
-                    }
                     NavigationHost(LocalContext.current, musicDatabase)
                 }
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (ContextCompat.checkSelfPermission(
+                this.applicationContext,
+                Manifest.permission.READ_MEDIA_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            musicDatabase.initialize(this.applicationContext)
+        } else {
+            permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
         }
     }
 
