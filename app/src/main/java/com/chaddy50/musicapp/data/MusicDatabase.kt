@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.substring
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getStringOrNull
 import java.io.IOException
@@ -130,6 +131,9 @@ class MusicIndexer(
         var year = cursor.getStringOrNull(columnIndexYear)
         if (year == null) {
             year = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
+        }
+        if (year != null) {
+            year = year.substring(0, 4)
         }
 
         return Album(
