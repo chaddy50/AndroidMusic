@@ -7,7 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.chaddy50.musicapp.data.MusicDatabase
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import com.chaddy50.musicapp.views.Albums
 import com.chaddy50.musicapp.views.Artists
 import com.chaddy50.musicapp.views.Genres
@@ -16,7 +16,7 @@ import com.chaddy50.musicapp.views.Tracks
 @Composable
 fun NavigationHost(
     context: Context,
-    musicDatabase: MusicDatabase,
+    viewModel: MusicAppViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
     NavHost(
@@ -24,38 +24,38 @@ fun NavigationHost(
         startDestination = Screen.GenreScreen.route
     ) {
         composable(Screen.GenreScreen.route) {
-            Genres(context, musicDatabase, navController)
-        }
-        composable(
-            Screen.AlbumScreen.route + "?artistName={artistName}",
-            arguments = listOf(navArgument("artistName") { defaultValue = ""})
-        ) {
-            Albums(
-                context,
-                musicDatabase,
-                navController,
-                it.arguments?.getString("artistName") ?: ""
+            Genres(
+                viewModel,
+                navController
             )
         }
         composable(
-            Screen.ArtistScreen.route + "?genreID={genreID}",
-            arguments = listOf(navArgument("genreID") { defaultValue = 0})
+            Screen.AlbumScreen.route + "?artistId={artistId}",
+            arguments = listOf(navArgument("artistId") { defaultValue = ""})
         ) {
-            Artists(
-                context,
-                musicDatabase,
+            Albums(
+                viewModel,
                 navController,
-                it.arguments?.getInt("genreID") ?: 0)
+                it.arguments?.getInt("artistId") ?: -1
+            )
         }
         composable(
-            Screen.TrackScreen.route + "?albumID={albumID}",
-            arguments = listOf(navArgument("albumID") { defaultValue = 0})
+            Screen.ArtistScreen.route + "?genreId={genreId}",
+            arguments = listOf(navArgument("genreId") { defaultValue = 0})
+        ) {
+            Artists(
+                viewModel,
+                navController,
+                it.arguments?.getInt("genreId") ?: 0)
+        }
+        composable(
+            Screen.TrackScreen.route + "?albumId={albumId}",
+            arguments = listOf(navArgument("albumId") { defaultValue = 0})
             ) {
             Tracks(
-                context,
-                musicDatabase,
+                viewModel,
                 navController,
-                it.arguments?.getInt("albumID") ?: 0
+                it.arguments?.getInt("albumId") ?: 0
             )
         }
     }

@@ -7,27 +7,29 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.components.AlbumHeader
-import com.chaddy50.musicapp.components.cards.EntityCard
 import com.chaddy50.musicapp.components.TopBar
 import com.chaddy50.musicapp.components.cards.TrackCard
-import com.chaddy50.musicapp.data.MusicDatabase
+import com.chaddy50.musicapp.data.MusicScanner
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun Tracks(
-    context: Context,
-    musicDatabase: MusicDatabase,
+    viewModel: MusicAppViewModel,
     navController: NavController,
-    albumID: Int
+    albumId: Int
 ) {
-    val album = musicDatabase.albums.find {it.id == albumID}
+    val tracksForAlbum by viewModel.getTracksForAlbum(albumId).collectAsState()
+    val albumName by viewModel.getAlbumName(albumId).collectAsState()
     Scaffold(
         topBar = {
             TopBar(
-                albumID != 0,
-                album?.title ?: "Tracks",
+                albumId != 0,
+                albumName ?: "Tracks",
                 navController
             )
         }
@@ -38,17 +40,11 @@ fun Tracks(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            if (albumID != 0) {
-                AlbumHeader(album)
-            }
+//            if (albumId != 0) {
+//                AlbumHeader(album)
+//            }
 
-            var tracksToShow = musicDatabase.tracks.toList()
-            if (albumID != 0) {
-                tracksToShow =
-                    musicDatabase.tracks.filter { track -> track.albumID == albumID }
-                tracksToShow = tracksToShow.sortedBy { it.number }
-            }
-            tracksToShow.forEach { track ->
+            tracksForAlbum.forEach { track ->
                 TrackCard(track)
             }
         }

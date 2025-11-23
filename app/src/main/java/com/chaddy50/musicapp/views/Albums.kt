@@ -6,25 +6,31 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.components.cards.AlbumCard
 import com.chaddy50.musicapp.components.TopBar
-import com.chaddy50.musicapp.data.Album
-import com.chaddy50.musicapp.data.MusicDatabase
+import com.chaddy50.musicapp.data.entity.Album
+import com.chaddy50.musicapp.data.MusicScanner
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun Albums(
-    context: Context,
-    musicDatabase: MusicDatabase,
+    viewModel: MusicAppViewModel,
     navController: NavController,
-    artistName: String = "",
+    artistId: Int = -1,
 ) {
+    val allAlbums by viewModel.albums.collectAsState()
+    val albumsForArtist by viewModel.getAlbumsForArtist(artistId).collectAsState()
+    val albumArtistName by viewModel.getAlbumArtistName(artistId).collectAsState()
+
     Scaffold(
         topBar = {
             TopBar(
-                artistName.isNotEmpty(),
-                musicDatabase.albumArtists.find { it.name == artistName }?.name ?: "Albums",
+                true,
+                albumArtistName ?: "Albums",
                 navController
             )
         }
@@ -33,14 +39,14 @@ fun Albums(
             modifier = Modifier.padding(it)
         ) {
             var albumsToShow: List<Album>
-            if (artistName.isNotEmpty()) {
-                albumsToShow = musicDatabase.albums.filter { album -> album.artist == artistName }
+            if (artistId != -1) {
+                albumsToShow = albumsForArtist
             } else {
-                albumsToShow = musicDatabase.albums.toList()
+                albumsToShow = allAlbums
             }
             albumsToShow = albumsToShow.sortedBy { it.year }
             items(albumsToShow) { album ->
-                AlbumCard(album, navController, artistName.isBlank())
+                AlbumCard(album, navController, artistId != -1)
             }
         }
     }

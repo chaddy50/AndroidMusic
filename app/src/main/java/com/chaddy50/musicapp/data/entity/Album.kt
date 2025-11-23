@@ -1,0 +1,16 @@
+package com.chaddy50.musicapp.data.entity
+
+import android.graphics.Bitmap
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "albums")
+data class Album(
+    @PrimaryKey val id: Int = 0,
+    val title: String,
+    val artistId: Int,
+    val year: String,
+    //var artwork: Bitmap? = null,
+    val numberOfTracks: Int? = null,
+    val durationInSeconds: Int? = null,
+)

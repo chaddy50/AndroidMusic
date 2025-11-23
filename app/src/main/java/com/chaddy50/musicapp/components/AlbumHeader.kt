@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
@@ -24,8 +23,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chaddy50.musicapp.data.Album
-import com.chaddy50.musicapp.data.MusicDatabase
+import com.chaddy50.musicapp.data.entity.Album
 
 @Composable
 fun AlbumHeader(album: Album?) {
@@ -38,24 +36,24 @@ fun AlbumHeader(album: Album?) {
             .padding(0.dp, 10.dp, 0.dp, 0.dp)
             .fillMaxSize()
     ) {
-        if (album.artwork != null) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    bitmap = Bitmap.createScaledBitmap(album.artwork!!, 1000, 1000, false)
-                        .asImageBitmap(), contentDescription = "Album artwork"
-                )
-            }
-        }
+//        if (album.artwork != null) {
+//            Row(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(20.dp),
+//                horizontalArrangement = Arrangement.Center
+//            ) {
+//                Image(
+//                    bitmap = Bitmap.createScaledBitmap(album.artwork!!, 1000, 1000, false)
+//                        .asImageBitmap(), contentDescription = "Album artwork"
+//                )
+//            }
+//        }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
             Text(album.title, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
         }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
-            Text(album.artist, style = TextStyle(fontSize = 14.sp))
+            Text(album.artistId.toString(), style = TextStyle(fontSize = 14.sp))
         }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
             Text(album.year, style = TextStyle(fontSize = 14.sp))

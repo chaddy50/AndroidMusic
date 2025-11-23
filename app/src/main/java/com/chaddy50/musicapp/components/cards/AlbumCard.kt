@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.data.Album
+import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.navigation.Screen
 
 @Composable
@@ -34,7 +33,7 @@ fun AlbumCard(
             .fillMaxWidth()
             .height(100.dp)
             .padding(4.dp)
-            .clickable { navController.navigate(Screen.TrackScreen.route + "?albumID=${album.id}") }
+            .clickable { navController.navigate(Screen.TrackScreen.route + "?albumId=${album.id}") }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -45,21 +44,21 @@ fun AlbumCard(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column{
-                    album.artwork?.asImageBitmap()
-                        ?.let { Image(
-                            bitmap = it,
-                            contentDescription = "Album artwork",
-                            modifier = Modifier
-                                .aspectRatio(1f)
-                        ) }
-                }
+//                Column{
+//                    album.artwork?.asImageBitmap()
+//                        ?.let { Image(
+//                            bitmap = it,
+//                            contentDescription = "Album artwork",
+//                            modifier = Modifier
+//                                .aspectRatio(1f)
+//                        ) }
+//                }
                 Column(modifier = Modifier.padding(10.dp, 0.dp)) {
                     Text(album.title, style = TextStyle(fontSize = 16.sp))
 
-                    if (shouldShowArtist) {
-                            Text(album.artist, style= TextStyle(fontSize = 14.sp))
-                    }
+//                    if (shouldShowArtist) {
+//                            Text(album.artist, style= TextStyle(fontSize = 14.sp))
+//                    }
 
                     Text(album.year, style = TextStyle(fontSize = 14.sp))
                 }
