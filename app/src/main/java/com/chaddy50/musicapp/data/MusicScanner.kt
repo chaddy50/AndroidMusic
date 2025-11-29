@@ -149,7 +149,7 @@ data class MusicScanner(
                     if (trackNumber == 0) {
                         trackNumber =
                             retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
-                                ?.toInt() ?: -1
+                                ?.toIntOrNull() ?: -1
                     }
                     val trackDuration = cursor.getIntOrNull(trackDurationColumn) ?: 0
                     trackRepository.insert(

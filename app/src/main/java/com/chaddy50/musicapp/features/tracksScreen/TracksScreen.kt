@@ -1,0 +1,34 @@
+package com.chaddy50.musicapp.features.tracksScreen
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.chaddy50.musicapp.navigation.MusicAppScreen
+
+object TracksScreen: MusicAppScreen {
+    override val route = "tracks_screen"
+    const val ARG_ALBUM_ID = "albumId"
+
+    override val arguments = listOf(
+        navArgument(ARG_ALBUM_ID) {
+            type = NavType.IntType
+            defaultValue = 0
+        }
+    )
+
+    @Composable
+    override fun Content(
+        navController: NavController,
+        backStackEntry: NavBackStackEntry
+    ) {
+        val albumId = backStackEntry.arguments?.getInt(ARG_ALBUM_ID) ?: 0
+        val stateHolder = rememberTracksScreenState(albumId)
+        val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+
+        TrackList(navController, uiState)
+    }
+}

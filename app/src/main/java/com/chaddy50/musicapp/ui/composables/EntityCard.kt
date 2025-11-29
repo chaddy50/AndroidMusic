@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.components.cards
+package com.chaddy50.musicapp.ui.composables
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image

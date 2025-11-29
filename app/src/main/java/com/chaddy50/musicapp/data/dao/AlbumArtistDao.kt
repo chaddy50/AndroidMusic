@@ -7,13 +7,12 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.chaddy50.musicapp.data.entity.AlbumArtist
-import com.chaddy50.musicapp.data.entity.Genre
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AlbumArtistDao {
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(albumArtist: AlbumArtist): Long
 
     @Update

@@ -22,7 +22,7 @@ class AlbumArtistRepository(private val albumArtistDao: AlbumArtistDao) {
             genreId = genreId
         )
         albumArtistDao.insert(newAlbumArtist)
-        return albumArtistDao.getAlbumArtistByName(albumArtistName)!!.id
+        return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
     }
 
     suspend fun insert(albumArtist: AlbumArtist) {

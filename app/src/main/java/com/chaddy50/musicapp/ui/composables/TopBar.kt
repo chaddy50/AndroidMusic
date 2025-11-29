@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.components
+package com.chaddy50.musicapp.ui.composables
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack

@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.components.cards
+package com.chaddy50.musicapp.features.tracksScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

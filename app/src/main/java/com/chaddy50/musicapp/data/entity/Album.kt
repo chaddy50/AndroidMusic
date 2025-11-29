@@ -1,12 +1,11 @@
 package com.chaddy50.musicapp.data.entity
 
-import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "albums")
 data class Album(
-    @PrimaryKey val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
     val artistId: Int,
     val year: String,

@@ -2,7 +2,6 @@ package com.chaddy50.musicapp.data.repository
 
 import com.chaddy50.musicapp.data.dao.AlbumDao
 import com.chaddy50.musicapp.data.entity.Album
-import kotlinx.coroutines.flow.Flow
 
 class AlbumRepository(private val albumDao: AlbumDao) {
 

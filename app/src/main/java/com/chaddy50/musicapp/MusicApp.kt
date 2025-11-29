@@ -13,12 +13,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.data.MusicScanner
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
@@ -30,7 +27,6 @@ import com.chaddy50.musicapp.navigation.NavigationHost
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import com.chaddy50.musicapp.viewModel.MusicAppViewModelFactory
-import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.launch
 
 class MusicApp : ComponentActivity() {
@@ -41,8 +37,6 @@ class MusicApp : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        createNotificationChannels(this)
-
         setContent {
             MusicAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -50,10 +44,7 @@ class MusicApp : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavigationHost(
-                        LocalContext.current,
-                        viewModel
-                    )
+                    NavigationHost()
                 }
             }
         }
@@ -67,7 +58,7 @@ class MusicApp : ComponentActivity() {
                 Manifest.permission.READ_MEDIA_AUDIO
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            triggerLibraryScanIfNeeded()
+            //triggerLibraryScanIfNeeded()
         } else {
             permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
         }

@@ -1,7 +1,5 @@
-package com.chaddy50.musicapp.components
+package com.chaddy50.musicapp.features.tracksScreen
 
-import android.graphics.Bitmap
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,19 +15,21 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.chaddy50.musicapp.data.entity.Album
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
-fun AlbumHeader(album: Album?) {
-    if (album == null) {
-        return
-    }
+fun AlbumHeader(albumId: Int, viewModel: MusicAppViewModel) {
+    if (albumId == 0) return
+
+    val album by viewModel.getAlbumById(albumId).collectAsState()
+    if (album == null) return
 
     Column(
         modifier = Modifier
@@ -50,13 +50,13 @@ fun AlbumHeader(album: Album?) {
 //            }
 //        }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
-            Text(album.title, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
+            Text(album!!.title, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
         }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
-            Text(album.artistId.toString(), style = TextStyle(fontSize = 14.sp))
+            Text(album!!.artistId.toString(), style = TextStyle(fontSize = 14.sp))
         }
         Row(modifier = Modifier.padding(10.dp, 3.dp)) {
-            Text(album.year, style = TextStyle(fontSize = 14.sp))
+            Text(album!!.year, style = TextStyle(fontSize = 14.sp))
         }
 
         Row(
