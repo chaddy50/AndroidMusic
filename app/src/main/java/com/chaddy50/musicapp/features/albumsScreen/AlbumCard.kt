@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,14 +18,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
 
 @Composable
 fun AlbumCard(
     album: Album,
-    navController: NavController,
-    shouldShowArtist: Boolean = false) {
+    navController: NavController
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -41,15 +43,13 @@ fun AlbumCard(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-//                Column{
-//                    album.artwork?.asImageBitmap()
-//                        ?.let { Image(
-//                            bitmap = it,
-//                            contentDescription = "Album artwork",
-//                            modifier = Modifier
-//                                .aspectRatio(1f)
-//                        ) }
-//                }
+                Column{
+                    AsyncImage(
+                        model = album.artworkPath,
+                        contentDescription = "${album.title} Artwork",
+                        modifier = Modifier.aspectRatio(1f),
+                    )
+                }
                 Column(modifier = Modifier.padding(10.dp, 0.dp)) {
                     Text(album.title, style = TextStyle(fontSize = 16.sp))
 

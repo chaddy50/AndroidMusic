@@ -29,10 +29,7 @@ fun TrackList(
                 .padding(it)
                 .verticalScroll(rememberScrollState())
         ) {
-
-//            if (albumId != 0) {
-//                AlbumHeader(albumId, viewModel)
-//            }
+            AlbumHeader(uiState.album, uiState.albumArtist)
 
             uiState.tracks.forEach { track ->
                 TrackCard(track)

@@ -12,9 +12,6 @@ class MusicAppViewModelFactory(private val application: MusicApplication) : View
                 musicScanner = application.musicScanner,
                 trackRepository = application.trackRepository,
                 albumRepository = application.albumRepository,
-                artistRepository = application.artistRepository,
-                albumArtistRepository = application.albumArtistRepository,
-                genreRepository = application.genreRepository
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

@@ -9,7 +9,7 @@ data class Album(
     val title: String,
     val artistId: Int,
     val year: String,
-    //var artwork: Bitmap? = null,
+    val artworkPath: String? = null,
     val numberOfTracks: Int? = null,
     val durationInSeconds: Int? = null,
 )

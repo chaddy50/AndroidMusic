@@ -20,6 +20,8 @@ import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -135,12 +137,18 @@ data class MusicScanner(
                     if (albumYear != "Unknown Year") {
                         albumYear = albumYear.take(4)
                     }
+
+                    val albumArtworkBitmap = getAlbumArtwork(context, trackId)
+                    val artworkPath = albumArtworkBitmap?.let { bitmap ->
+                        saveAlbumArtworkToFile(context, bitmap, albumId)
+                    }
                     albumRepository.insert(
                         Album(
                             albumId.toInt(),
                             albumName,
                             albumArtistId,
                             albumYear,
+                            artworkPath
                         )
                     )
 
@@ -169,21 +177,45 @@ data class MusicScanner(
     }
 }
 
-private fun getAlbumArtwork(trackID: Long, context: Context): Bitmap? {
+private fun getAlbumArtwork(
+    context: Context,
+    trackId: Long
+): Bitmap? {
     val uri = ContentUris.withAppendedId(
         MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-        trackID
+        trackId
     )
 
-    var thumbnail: Bitmap? = null
-    try {
-        thumbnail = context.contentResolver.loadThumbnail(
+    return try {
+        context.contentResolver.loadThumbnail(
             uri,
-            Size(10000, 10000),
+            Size(800, 800),
             null
         )
     } catch (e: IOException) {
-
+        e.printStackTrace()
+        null
     }
-    return thumbnail
+}
+
+private fun saveAlbumArtworkToFile(
+    context: Context,
+    bitmap: Bitmap,
+    albumId: Long,
+): String? {
+    val directory = File(context.filesDir, "album_artwork")
+    if (!directory.exists()) {
+        directory.mkdirs()
+    }
+
+    val file = File(directory, "$albumId.jpg")
+    return try {
+        FileOutputStream(file).use { outputStream ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+        }
+        file.absolutePath
+    } catch (e: IOException) {
+        e.printStackTrace()
+        null
+    }
 }

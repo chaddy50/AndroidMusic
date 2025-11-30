@@ -41,9 +41,6 @@ android {
     buildFeatures {
         compose = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -66,6 +63,7 @@ dependencies {
     implementation("androidx.compose.material3:material3-android:1.2.0")
     implementation("com.google.android.gms:play-services-pal:20.2.0")
     implementation("androidx.room:room-runtime:2.8.4")
+    implementation("io.coil-kt:coil-compose:2.6.0")
     ksp("androidx.room:room-compiler:2.8.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

@@ -36,7 +36,6 @@ fun AlbumList(
                     AlbumCard(
                         album,
                         navController,
-                        false
                     )
                 }
             }

@@ -11,7 +11,7 @@ class AlbumArtistRepository(private val albumArtistDao: AlbumArtistDao) {
 
     fun getAlbumArtistName(albumArtistId: Int) = albumArtistDao.getAlbumArtistName(albumArtistId)
 
-    fun getAlbumArtistByName(albumArtistName: String) = albumArtistDao.getAlbumArtistByName(albumArtistName)
+    fun getAlbumArtistById(albumArtistId: Int) = albumArtistDao.getAlbumArtistById(albumArtistId)
 
     suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Int): Int {
         val existingAlbumArtist = albumArtistDao.getAlbumArtistByName(albumArtistName)
