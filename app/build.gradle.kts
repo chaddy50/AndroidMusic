@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.chaddy50.musicapp"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.chaddy50.musicapp"
-        minSdk = 30
-        targetSdk = 34
+        minSdk = 33
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 

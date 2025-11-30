@@ -102,7 +102,7 @@ class MusicApp : ComponentActivity() {
     }
 }
 
-class MusicApplication : Application() {
+class MusicApplication: Application() {
     val database: MusicDatabase by lazy {
         MusicDatabase.getDatabase(this)
     }
