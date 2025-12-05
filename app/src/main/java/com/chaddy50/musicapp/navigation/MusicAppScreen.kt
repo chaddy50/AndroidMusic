@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NamedNavArgument
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 interface MusicAppScreen {
     val route: String
@@ -22,13 +23,13 @@ interface MusicAppScreen {
             return when {
                 optionalArgs.isNotEmpty() && requiredArgs.isEmpty() -> route + optionalPart
                 requiredArgs.isNotEmpty() && optionalArgs.isEmpty() -> route + requiredPart
-                // Handle mixed case if needed, though optional is more common for this structure
                 else -> route
             }
         }
 
     @Composable
     fun Content(
+        viewModel: MusicAppViewModel,
         navController: NavController,
         backStackEntry: NavBackStackEntry
     )

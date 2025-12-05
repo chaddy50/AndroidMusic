@@ -11,11 +11,13 @@ import androidx.navigation.NavController
 import com.chaddy50.musicapp.features.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.ui.composables.EntityCard
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun GenreList(
+    viewModel: MusicAppViewModel,
     navController: NavController,
-    uiState: GenresScreenUiState,
+    uiState: SubGenresScreenUiState,
 ) {
     Scaffold(
         topBar = {
@@ -36,7 +38,10 @@ fun GenreList(
                 items(uiState.genres) { genre ->
                     EntityCard(
                         genre.name,
-                        { navController.navigate(ArtistsScreen.route + "?genreId=${genre.id}") }
+                        {
+                            viewModel.onGenreSelected(genre.id)
+                            navController.navigate(ArtistsScreen.route)
+                        }
                     )
                 }
             }

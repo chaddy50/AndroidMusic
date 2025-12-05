@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.chaddy50.musicapp.navigation.MusicAppScreen
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 object TracksScreen: MusicAppScreen {
     override val route = "tracks_screen"
@@ -22,11 +23,12 @@ object TracksScreen: MusicAppScreen {
 
     @Composable
     override fun Content(
+        viewModel: MusicAppViewModel,
         navController: NavController,
         backStackEntry: NavBackStackEntry
     ) {
-        val albumId = backStackEntry.arguments?.getInt(ARG_ALBUM_ID) ?: 0
-        val stateHolder = rememberTracksScreenState(albumId)
+        val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
+        val stateHolder = rememberTracksScreenState(albumId.value)
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
         TrackList(navController, uiState)

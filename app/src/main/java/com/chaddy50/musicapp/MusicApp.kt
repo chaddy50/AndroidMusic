@@ -45,7 +45,7 @@ class MusicApp : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavigationHost()
+                    NavigationHost(viewModel)
                 }
             }
         }

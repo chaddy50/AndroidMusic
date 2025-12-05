@@ -10,10 +10,12 @@ import com.chaddy50.musicapp.features.albumsScreen.AlbumsScreen
 import com.chaddy50.musicapp.features.artistsScreen.ArtistList
 import com.chaddy50.musicapp.features.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.features.genresScreen.GenresScreen
+import com.chaddy50.musicapp.features.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
 
 @Composable
 fun NavigationHost(
+    viewModel: MusicAppViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
     val screens = listOf(
@@ -21,6 +23,7 @@ fun NavigationHost(
         ArtistsScreen,
         AlbumsScreen,
         TracksScreen,
+        SubGenresScreen,
     )
     NavHost(
         navController = navController,
@@ -32,6 +35,7 @@ fun NavigationHost(
                 arguments = screen.arguments
             ) { backStackEntry ->
                 screen.Content(
+                    viewModel,
                     navController,
                     backStackEntry
                 )

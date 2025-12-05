@@ -21,10 +21,12 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun AlbumCard(
     album: Album,
+    viewModel: MusicAppViewModel,
     navController: NavController
 ) {
     Box(
@@ -32,7 +34,10 @@ fun AlbumCard(
             .fillMaxWidth()
             .height(100.dp)
             .padding(4.dp)
-            .clickable { navController.navigate(TracksScreen.route + "?albumId=${album.id}") }
+            .clickable {
+                viewModel.onAlbumSelected(album.id)
+                navController.navigate(TracksScreen.route)
+            }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -52,11 +57,6 @@ fun AlbumCard(
                 }
                 Column(modifier = Modifier.padding(10.dp, 0.dp)) {
                     Text(album.title, style = TextStyle(fontSize = 16.sp))
-
-//                    if (shouldShowArtist) {
-//                            Text(album.artist, style= TextStyle(fontSize = 14.sp))
-//                    }
-
                     Text(album.year, style = TextStyle(fontSize = 14.sp))
                 }
             }

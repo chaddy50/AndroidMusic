@@ -82,6 +82,8 @@ data class MusicScanner(
     }
 
     //#region Scan Helpers
+
+    //#region Genres
     private suspend fun setUpGenreMappings() {
         // This is how I should eventually do this once the mappings are configurable by the user
 //        genreMappings = genreMappingRepository.getAllMappingsAsMap()
@@ -95,6 +97,7 @@ data class MusicScanner(
         genreMappings = mapOf(
             "Solo Piano" to "Classical",
             "Symphony" to "Classical",
+            "String Quartet" to "Classical"
         )
 
         val classicalId = genreRepository.findOrInsertGenreByName("Classical")
@@ -112,7 +115,9 @@ data class MusicScanner(
         val parentGenreName = genreMappings[genreName] ?: return null
         return parentGenreIdCache[parentGenreName]
     }
+    //#endregion
 
+    //region Artists
     private suspend fun processArtist(cursor: Cursor, columns: ColumnIndices): Int {
         val artistId = cursor.getLongOrNull(columns.artistId) ?: -1
         val artistName = cursor.getStringOrNull(columns.artistName) ?: "Unknown Artist"
@@ -124,7 +129,9 @@ data class MusicScanner(
         )
         return artistId.toInt()
     }
+    //#endregion
 
+    //#region Album Artists
     private suspend fun processAlbumArtist(
         cursor: Cursor,
         columns: ColumnIndices,
@@ -143,7 +150,9 @@ data class MusicScanner(
         )
         return albumArtistId
     }
+    //#endregion
 
+    //#region Albums
     private suspend fun processAlbum(
         cursor: Cursor,
         columns: ColumnIndices,
@@ -226,7 +235,9 @@ data class MusicScanner(
             null
         }
     }
+    //#endregion
 
+    //#region Tracks
     private suspend fun processTrack(
         cursor: Cursor,
         columns: ColumnIndices,
@@ -264,6 +275,7 @@ data class MusicScanner(
             )
         )
     }
+    //#endregion
 
     private data class ColumnIndices(
         val trackId: Int,

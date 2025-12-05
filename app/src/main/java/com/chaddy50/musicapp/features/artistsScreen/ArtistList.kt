@@ -11,16 +11,18 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.features.albumsScreen.AlbumsScreen
+import com.chaddy50.musicapp.features.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.ui.composables.EntityCard
+import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun ArtistList(
+    viewModel: MusicAppViewModel,
     navController: NavController,
-    genreId: Int = 0
+    uiState: ArtistsScreenUiState,
 ) {
-    val stateHolder = rememberArtistsScreenState(genreId)
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+    val selectedGenreId = viewModel.selectedGenreId.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -39,7 +41,16 @@ fun ArtistList(
                 items(uiState.artists) { artist ->
                     EntityCard(
                         artist.name,
-                        { navController.navigate(AlbumsScreen.route + "?artistId=${artist.id}") }
+                        {
+                            viewModel.onAlbumArtistSelected(artist.id)
+
+                            if (selectedGenreId.value == viewModel.classicalGenreId) {
+                                navController.navigate(SubGenresScreen.route)
+                            }
+                            else {
+                                navController.navigate(AlbumsScreen.route)
+                            }
+                        }
                     )
                 }
             }

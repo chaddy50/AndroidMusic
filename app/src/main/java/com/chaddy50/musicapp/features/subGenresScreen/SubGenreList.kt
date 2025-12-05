@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.albumsScreen
+package com.chaddy50.musicapp.features.subGenresScreen
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -6,18 +6,19 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.features.albumsScreen.AlbumsScreen
+import com.chaddy50.musicapp.features.genresScreen.SubGenresScreenUiState
+import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
-fun AlbumList(
+fun SubGenreList(
     viewModel: MusicAppViewModel,
     navController: NavController,
-    uiState: AlbumsScreenUiState
+    uiState: SubGenresScreenUiState,
 ) {
     Scaffold(
         topBar = {
@@ -27,18 +28,18 @@ fun AlbumList(
                 navController
             )
         }
-    ) {
+    ) { paddingValues ->
         if (uiState.isLoading) {
             CircularProgressIndicator()
         } else {
-            LazyColumn(
-                modifier = Modifier.padding(it)
-            ) {
-                items(uiState.albums) { album ->
-                    AlbumCard(
-                        album,
-                        viewModel,
-                        navController,
+            LazyColumn(Modifier.padding(paddingValues)) {
+                items(uiState.genres) { genre ->
+                    EntityCard(
+                        genre.name,
+                        {
+                            viewModel.onSubGenreSelected(genre.id)
+                            navController.navigate(AlbumsScreen.route)
+                        }
                     )
                 }
             }

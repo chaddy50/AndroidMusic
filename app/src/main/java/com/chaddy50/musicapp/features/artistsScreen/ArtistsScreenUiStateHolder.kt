@@ -19,23 +19,23 @@ import kotlinx.coroutines.flow.stateIn
 
 @Stable
 class ArtistsScreenStateHolder(
-    genreId: Int,
+    genreId: Int?,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
     coroutineScope: CoroutineScope
 ) {
-    lateinit var uiState: StateFlow<ArtistsScreenUiState>
+    var uiState: StateFlow<ArtistsScreenUiState>
 
     init {
         var artistsToShow: Flow<List<AlbumArtist>>
-        if (genreId != 0) {
+        if (genreId != null) {
             artistsToShow = albumArtistRepository.getAlbumArtistsForGenre(genreId)
         } else {
             artistsToShow = albumArtistRepository.getAllAlbumArtists()
         }
 
         var genreName: Flow<String?> = flowOf(null)
-        if (genreId != 0) {
+        if (genreId != null) {
             genreName = genreRepository.getGenreName(genreId)
         }
 
@@ -55,7 +55,7 @@ class ArtistsScreenStateHolder(
 
 @Composable
 fun rememberArtistsScreenState(
-    genreId: Int,
+    genreId: Int?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     albumArtistRepository: AlbumArtistRepository = app.albumArtistRepository,
     genreRepository: GenreRepository = app.genreRepository,

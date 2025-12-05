@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 @OptIn(ExperimentalCoroutinesApi::class)
 @Stable
 class TracksScreenUiStateHolder(
-    albumId: Int,
+    albumId: Int?,
     trackRepository: TrackRepository,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
@@ -35,12 +35,12 @@ class TracksScreenUiStateHolder(
 
     init {
         var tracks: Flow<List<Track>> = flowOf(emptyList())
-        if (albumId != 0) {
+        if (albumId != null) {
             tracks = trackRepository.getTracksForAlbum(albumId)
         }
 
         var album: Flow<Album?> = flowOf(null)
-        if (albumId != 0) {
+        if (albumId != null) {
             album = albumRepository.getAlbumById(albumId)
         }
 
@@ -73,7 +73,7 @@ class TracksScreenUiStateHolder(
 
 @Composable
 fun rememberTracksScreenState(
-    albumId: Int,
+    albumId: Int?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     trackRepository: TrackRepository = app.trackRepository,
     albumRepository: AlbumRepository = app.albumRepository,
