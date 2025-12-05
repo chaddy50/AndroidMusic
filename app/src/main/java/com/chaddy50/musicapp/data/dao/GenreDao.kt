@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface GenreDao {
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(genre: Genre)
+    suspend fun insert(genre: Genre): Long
 
     @Update
     suspend fun update(genre: Genre)
@@ -24,9 +24,18 @@ interface GenreDao {
     @Query("SELECT * FROM genres WHERE id = :id")
     fun getGenreById(id: Int): Flow<Genre?>
 
+    @Query("SELECT * FROM genres WHERE name = :name LIMIT 1")
+    suspend fun getGenreByName(name: String): Genre?
+
     @Query("SELECT * FROM genres ORDER BY name ASC")
     fun getAllGenres(): Flow<List<Genre>>
 
     @Query("SELECT name FROM genres WHERE id = :genreId")
     fun getGenreName(genreId: Int): Flow<String?>
+
+    @Query("SELECT * FROM genres WHERE parentGenreId IS NULL ORDER BY name ASC")
+    fun getAllTopLevelGenres(): Flow<List<Genre>>
+
+    @Query("SELECT id FROM genres WHERE parentGenreId = :parentGenreId")
+    fun getSubGenreIds(parentGenreId: Int): List<Int>
 }

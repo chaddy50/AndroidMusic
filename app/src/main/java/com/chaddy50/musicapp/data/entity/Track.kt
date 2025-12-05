@@ -13,4 +13,5 @@ data class Track(
     val artistId: Int,
     val genreId: Int,
     val duration: Duration,
+    val discNumber: Int,
 )

@@ -1,13 +1,31 @@
 package com.chaddy50.musicapp.data.repository
 
 import com.chaddy50.musicapp.data.dao.AlbumArtistDao
+import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 
-class AlbumArtistRepository(private val albumArtistDao: AlbumArtistDao) {
+class AlbumArtistRepository(
+    private val albumArtistDao: AlbumArtistDao,
+    private val genreDao: GenreDao,
+) {
+    suspend fun insert(albumArtist: AlbumArtist) {
+        albumArtistDao.insert(albumArtist)
+    }
+
+    suspend fun update(albumArtist: AlbumArtist) {
+        albumArtistDao.update(albumArtist)
+    }
+
+    suspend fun delete(albumArtist: AlbumArtist) {
+        albumArtistDao.delete(albumArtist)
+    }
+
     fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = albumArtistDao.getAllAlbumArtists()
-
-    fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>> = albumArtistDao.getAlbumArtistsForGenre(genreId)
 
     fun getAlbumArtistName(albumArtistId: Int) = albumArtistDao.getAlbumArtistName(albumArtistId)
 
@@ -25,15 +43,12 @@ class AlbumArtistRepository(private val albumArtistDao: AlbumArtistDao) {
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
     }
 
-    suspend fun insert(albumArtist: AlbumArtist) {
-        albumArtistDao.insert(albumArtist)
-    }
+    fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>> {
+        return flow {
+            val subGenreIds = genreDao.getSubGenreIds(genreId)
+            val genreIds = subGenreIds.ifEmpty { listOf(genreId) }
 
-    suspend fun update(albumArtist: AlbumArtist) {
-        albumArtistDao.update(albumArtist)
-    }
-
-    suspend fun delete(albumArtist: AlbumArtist) {
-        albumArtistDao.delete(albumArtist)
+            emitAll(albumArtistDao.getAlbumArtistsForGenreIds(genreIds))
+        }.flowOn(Dispatchers.IO)
     }
 }

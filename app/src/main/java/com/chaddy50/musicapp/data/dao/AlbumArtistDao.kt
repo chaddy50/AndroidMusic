@@ -24,8 +24,8 @@ interface AlbumArtistDao {
     @Query("SELECT * FROM albumArtists WHERE id = :artistId")
     fun getAlbumsForArtist(artistId: Int): Flow<List<AlbumArtist>>
 
-    @Query("SELECT * FROM albumArtists WHERE genreID = :genreId ORDER BY name")
-    fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>>
+    @Query("SELECT * FROM albumArtists WHERE genreID IN (:genreIds) ORDER BY name")
+    fun getAlbumArtistsForGenreIds(genreIds: List<Int>): Flow<List<AlbumArtist>>
 
     @Query("SELECT * FROM albumArtists ORDER BY name ASC")
     fun getAllAlbumArtists(): Flow<List<AlbumArtist>>

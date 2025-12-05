@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
-import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,10 +18,10 @@ class GenresScreenUiStateHolder(
     genreRepository: GenreRepository,
     coroutineScope: CoroutineScope,
 ) {
-    lateinit var uiState: StateFlow<GenresScreenUiState>
+    var uiState: StateFlow<GenresScreenUiState>
 
     init {
-        val genres = genreRepository.getAllGenres()
+        val genres = genreRepository.getAllTopLevelGenres()
 
         uiState = genres.map { genres ->
             GenresScreenUiState(

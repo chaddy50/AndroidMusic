@@ -12,11 +12,11 @@ import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Artist
-import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import kotlinx.coroutines.Dispatchers
@@ -30,16 +30,21 @@ import kotlin.time.toDuration
 data class MusicScanner(
     val context: Context,
     val genreRepository: GenreRepository,
-    var artistRepository: ArtistRepository,
-    var albumArtistRepository: AlbumArtistRepository,
-    var albumRepository: AlbumRepository,
-    var trackRepository: TrackRepository,
+    val artistRepository: ArtistRepository,
+    val albumArtistRepository: AlbumArtistRepository,
+    val albumRepository: AlbumRepository,
+    val trackRepository: TrackRepository,
+    val genreMappingRepository: GenreMappingRepository
 ) {
+    private var genreMappings: Map<String, String> = emptyMap()
+    private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
+
     suspend fun scan() {
+        setUpGenreMappings()
+
         withContext(Dispatchers.IO) {
             val projection = arrayOf(
                 MediaStore.Audio.AudioColumns._ID,
-                MediaStore.Audio.AudioColumns.GENRE_ID,
                 MediaStore.Audio.AudioColumns.GENRE,
                 MediaStore.Audio.AudioColumns.ALBUM_ID,
                 MediaStore.Audio.AudioColumns.ALBUM,
@@ -48,6 +53,7 @@ data class MusicScanner(
                 MediaStore.Audio.AudioColumns.ALBUM_ARTIST,
                 MediaStore.Audio.AudioColumns.YEAR,
                 MediaStore.Audio.AudioColumns.TITLE,
+                MediaStore.Audio.AudioColumns.DISC_NUMBER,
                 MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER,
                 MediaStore.Audio.AudioColumns.DURATION,
             )
@@ -76,16 +82,35 @@ data class MusicScanner(
     }
 
     //#region Scan Helpers
-    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Int {
-        val genreId = cursor.getLongOrNull(columns.genreId) ?: -1
-        val genreName = cursor.getStringOrNull(columns.genreName) ?: "Unknown Genre"
-        genreRepository.insert(
-            Genre(
-                genreId.toInt(),
-                genreName,
-            )
+    private suspend fun setUpGenreMappings() {
+        // This is how I should eventually do this once the mappings are configurable by the user
+//        genreMappings = genreMappingRepository.getAllMappingsAsMap()
+//        val parentGenreNames = genreMappings.values.distinct()
+//        for (parentGenreName in parentGenreNames) {
+//            val parentId = genreRepository.findOrInsertGenreByName(parentGenreName)
+//            parentGenreIdCache[parentGenreName] = parentId
+//        }
+
+        // For now, hard coding everything
+        genreMappings = mapOf(
+            "Solo Piano" to "Classical",
+            "Symphony" to "Classical",
         )
-        return genreId.toInt()
+
+        val classicalId = genreRepository.findOrInsertGenreByName("Classical")
+        parentGenreIdCache["Classical"] = classicalId
+    }
+
+    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Int {
+        val genreName = cursor.getStringOrNull(columns.genreName) ?: "Unknown Genre"
+        val parentGenreId = getParentGenreId(genreName)
+
+        return genreRepository.findOrInsertGenreByName(genreName, parentGenreId)
+    }
+
+    private fun getParentGenreId(genreName: String): Int? {
+        val parentGenreName = genreMappings[genreName] ?: return null
+        return parentGenreIdCache[parentGenreName]
     }
 
     private suspend fun processArtist(cursor: Cursor, columns: ColumnIndices): Int {
@@ -130,7 +155,7 @@ data class MusicScanner(
         var albumName = cursor.getStringOrNull(columns.albumName)
         if (albumName == null) {
             albumName =
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_TITLE)
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
                     ?: "Unknown Album"
         }
         var albumYear = cursor.getStringOrNull(columns.year)
@@ -218,6 +243,13 @@ data class MusicScanner(
                 retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
                     ?.toIntOrNull() ?: -1
         }
+
+        var discNumber = cursor.getIntOrNull(columns.discNumber) ?: 0
+        if (discNumber == 0) {
+            discNumber =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DISC_NUMBER)
+                    ?.toIntOrNull() ?: -1
+        }
         val trackDuration = cursor.getIntOrNull(columns.trackDuration) ?: 0
         trackRepository.insert(
             Track(
@@ -228,6 +260,7 @@ data class MusicScanner(
                 artistId,
                 genreId,
                 trackDuration.toDuration(DurationUnit.MILLISECONDS),
+                discNumber,
             )
         )
     }
@@ -240,10 +273,10 @@ data class MusicScanner(
         val albumId: Int,
         val albumName: Int,
         val albumArtistName: Int,
+        val discNumber: Int,
         val trackNumber: Int,
         val trackDuration: Int,
         val year: Int,
-        val genreId: Int,
         val genreName: Int
     ) {
         constructor(cursor: Cursor) : this(
@@ -254,10 +287,10 @@ data class MusicScanner(
             albumId = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM_ID),
             albumName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM),
             albumArtistName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.ALBUM_ARTIST),
+            discNumber = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DISC_NUMBER),
             trackNumber = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER),
             trackDuration = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DURATION),
             year = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.YEAR),
-            genreId = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.GENRE_ID),
             genreName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.GENRE)
         )
     }

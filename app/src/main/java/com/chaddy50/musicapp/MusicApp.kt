@@ -21,6 +21,7 @@ import com.chaddy50.musicapp.data.MusicScanner
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.navigation.NavigationHost
@@ -111,7 +112,8 @@ class MusicApplication: Application() {
     val albumRepository by lazy { AlbumRepository(database.albumDao()) }
     val artistRepository by lazy { ArtistRepository(database.artistDao()) }
     val genreRepository by lazy { GenreRepository(database.genreDao()) }
-    val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao()) }
+    val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao()) }
+    val genreMappingRepository by lazy { GenreMappingRepository(database.genreMappingDao()) }
 
     val musicScanner by lazy {
         MusicScanner(
@@ -121,6 +123,7 @@ class MusicApplication: Application() {
             albumArtistRepository,
             albumRepository,
             trackRepository,
+            genreMappingRepository,
         )
     }
 
