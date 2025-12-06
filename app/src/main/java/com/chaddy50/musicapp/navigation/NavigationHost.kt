@@ -7,9 +7,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import com.chaddy50.musicapp.features.albumsScreen.AlbumsScreen
-import com.chaddy50.musicapp.features.artistsScreen.ArtistList
 import com.chaddy50.musicapp.features.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.features.genresScreen.GenresScreen
+import com.chaddy50.musicapp.features.performancesScreen.PerformancesScreen
 import com.chaddy50.musicapp.features.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
 
@@ -24,6 +24,7 @@ fun NavigationHost(
         AlbumsScreen,
         TracksScreen,
         SubGenresScreen,
+        PerformancesScreen,
     )
     NavHost(
         navController = navController,

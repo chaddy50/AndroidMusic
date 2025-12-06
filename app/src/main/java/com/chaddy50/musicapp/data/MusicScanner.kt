@@ -12,12 +12,14 @@ import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Artist
+import com.chaddy50.musicapp.data.entity.Performance
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
+import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,6 +29,8 @@ import java.io.IOException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
+const val GENRE_CLASSICAL = "Classical"
+
 data class MusicScanner(
     val context: Context,
     val genreRepository: GenreRepository,
@@ -34,10 +38,12 @@ data class MusicScanner(
     val albumArtistRepository: AlbumArtistRepository,
     val albumRepository: AlbumRepository,
     val trackRepository: TrackRepository,
-    val genreMappingRepository: GenreMappingRepository
+    val genreMappingRepository: GenreMappingRepository,
+    val performanceRepository: PerformanceRepository,
 ) {
     private var genreMappings: Map<String, String> = emptyMap()
     private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
+    private var performanceIdCache: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
 
     suspend fun scan() {
         setUpGenreMappings()
@@ -71,11 +77,17 @@ data class MusicScanner(
                     val trackId = cursor.getLong(columns.trackId)
                     val retriever = getMediaMetadataRetriever(trackId)
 
-                    val genreId = processGenre(cursor, columns)
+                    val (genreId, genreName) = processGenre(cursor, columns)
                     val artistId = processArtist(cursor, columns)
                     val albumArtistId = processAlbumArtist(cursor, columns, retriever, genreId)
                     val albumId = processAlbum(cursor, columns, retriever, trackId, albumArtistId)
-                    processTrack(cursor, columns, retriever, trackId, genreId, artistId, albumId)
+
+                    var performanceId: Int? = performanceIdCache[Pair(albumId, artistId)]
+                    if (performanceId == null && genreMappings[genreName] == GENRE_CLASSICAL) {
+                        performanceId = processPerformance(cursor, columns, retriever, albumId, artistId)
+                        performanceIdCache.put(Pair(albumId, artistId), performanceId)
+                    }
+                    processTrack(cursor, columns, retriever, trackId, genreId, artistId, albumId, performanceId)
                 }
             }
         }
@@ -100,15 +112,15 @@ data class MusicScanner(
             "String Quartet" to "Classical"
         )
 
-        val classicalId = genreRepository.findOrInsertGenreByName("Classical")
-        parentGenreIdCache["Classical"] = classicalId
+        val classicalId = genreRepository.findOrInsertGenreByName(GENRE_CLASSICAL)
+        parentGenreIdCache[GENRE_CLASSICAL] = classicalId
     }
 
-    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Int {
+    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Pair<Int, String> {
         val genreName = cursor.getStringOrNull(columns.genreName) ?: "Unknown Genre"
         val parentGenreId = getParentGenreId(genreName)
 
-        return genreRepository.findOrInsertGenreByName(genreName, parentGenreId)
+        return Pair(genreRepository.findOrInsertGenreByName(genreName, parentGenreId), genreName)
     }
 
     private fun getParentGenreId(genreName: String): Int? {
@@ -120,7 +132,7 @@ data class MusicScanner(
     //region Artists
     private suspend fun processArtist(cursor: Cursor, columns: ColumnIndices): Int {
         val artistId = cursor.getLongOrNull(columns.artistId) ?: -1
-        val artistName = cursor.getStringOrNull(columns.artistName) ?: "Unknown Artist"
+        val artistName = getArtistName(cursor, columns)
         artistRepository.insert(
             Artist(
                 artistId.toInt(),
@@ -161,21 +173,8 @@ data class MusicScanner(
         albumArtistId: Int,
     ): Int {
         val albumId = cursor.getLongOrNull(columns.albumId) ?: -1
-        var albumName = cursor.getStringOrNull(columns.albumName)
-        if (albumName == null) {
-            albumName =
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
-                    ?: "Unknown Album"
-        }
-        var albumYear = cursor.getStringOrNull(columns.year)
-        if (albumYear == null) {
-            albumYear =
-                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
-                    ?: "Unknown Year"
-        }
-        if (albumYear != "Unknown Year") {
-            albumYear = albumYear.take(4)
-        }
+        val albumName = getAlbumName(cursor, columns, retriever)
+        val albumYear = getYear(cursor, columns, retriever)
 
         val albumArtworkBitmap = getAlbumArtwork(context, trackId)
         val artworkPath = albumArtworkBitmap?.let { bitmap ->
@@ -246,6 +245,7 @@ data class MusicScanner(
         genreId: Int,
         artistId: Int,
         albumId: Int,
+        performanceId: Int?,
     ) {
         val trackTitle = cursor.getStringOrNull(columns.trackTitle) ?: "Unknown Title"
         var trackNumber = cursor.getIntOrNull(columns.trackNumber) ?: 0
@@ -272,10 +272,76 @@ data class MusicScanner(
                 genreId,
                 trackDuration.toDuration(DurationUnit.MILLISECONDS),
                 discNumber,
+                performanceId
             )
         )
     }
     //#endregion
+
+    //#region Performance
+    private suspend fun processPerformance(
+        cursor: Cursor,
+        columns: ColumnIndices,
+        retriever: MediaMetadataRetriever,
+        albumId: Int,
+        artistId: Int,
+    ): Int {
+        val albumName = getAlbumName(cursor, columns, retriever)
+        val artistName = getArtistName(cursor, columns)
+        return performanceRepository.insert(
+            Performance(
+                0,
+                albumId,
+                albumName,
+                artistId,
+                artistName,
+                getYear(
+                    cursor,
+                    columns,
+                    retriever
+                )
+            )
+        )
+    }
+    //#endregion
+
+    private fun getYear(
+        cursor: Cursor,
+        columns: ColumnIndices,
+        retriever: MediaMetadataRetriever
+    ): String {
+        var year = cursor.getStringOrNull(columns.year)
+        if (year == null) {
+            year =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
+                    ?: "Unknown Year"
+        }
+        if (year != "Unknown Year") {
+            year = year.take(4)
+        }
+        return year
+    }
+
+    private fun getAlbumName(
+        cursor: Cursor,
+        columns: ColumnIndices,
+        retriever: MediaMetadataRetriever
+    ): String {
+        var albumName = cursor.getStringOrNull(columns.albumName)
+        if (albumName == null) {
+            albumName =
+                retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_ALBUM)
+                    ?: "Unknown Album"
+        }
+        return albumName
+    }
+
+    private fun getArtistName(
+        cursor: Cursor,
+        columns: ColumnIndices,
+    ): String {
+        return cursor.getStringOrNull(columns.artistName) ?: "Unknown Artist"
+    }
 
     private data class ColumnIndices(
         val trackId: Int,

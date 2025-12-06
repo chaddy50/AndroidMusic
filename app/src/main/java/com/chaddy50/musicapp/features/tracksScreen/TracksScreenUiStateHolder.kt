@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.stateIn
 @Stable
 class TracksScreenUiStateHolder(
     albumId: Int?,
+    performanceId: Int?,
     trackRepository: TrackRepository,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
@@ -35,7 +36,9 @@ class TracksScreenUiStateHolder(
 
     init {
         var tracks: Flow<List<Track>> = flowOf(emptyList())
-        if (albumId != null) {
+        if (performanceId != null) {
+            tracks = trackRepository.getTracksForPerformance(performanceId)
+        } else if (albumId != null) {
             tracks = trackRepository.getTracksForAlbum(albumId)
         }
 
@@ -74,15 +77,17 @@ class TracksScreenUiStateHolder(
 @Composable
 fun rememberTracksScreenState(
     albumId: Int?,
+    performanceId: Int?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     trackRepository: TrackRepository = app.trackRepository,
     albumRepository: AlbumRepository = app.albumRepository,
     albumArtistRepository: AlbumArtistRepository = app.albumArtistRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): TracksScreenUiStateHolder {
-    return remember(albumId, trackRepository, albumRepository, albumArtistRepository, coroutineScope) {
+    return remember(albumId, performanceId, trackRepository, albumRepository, albumArtistRepository, coroutineScope) {
         TracksScreenUiStateHolder(
             albumId,
+            performanceId,
             trackRepository,
             albumRepository,
             albumArtistRepository,

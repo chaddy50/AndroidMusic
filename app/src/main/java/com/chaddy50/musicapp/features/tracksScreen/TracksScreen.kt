@@ -8,6 +8,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.chaddy50.musicapp.navigation.MusicAppScreen
+import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 object TracksScreen: MusicAppScreen {
@@ -27,8 +28,24 @@ object TracksScreen: MusicAppScreen {
         navController: NavController,
         backStackEntry: NavBackStackEntry
     ) {
+        CleanUpWhenNavigatingBackEffect(
+            navController,
+            route,
+            {
+                if (viewModel.selectedPerformanceId.value != null) {
+                    viewModel.updateSelectedPerformance(null)
+                } else {
+                    viewModel.updateSelectedAlbum(null)
+                }
+            }
+        )
+
         val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
-        val stateHolder = rememberTracksScreenState(albumId.value)
+        val performanceId = viewModel.selectedPerformanceId.collectAsStateWithLifecycle()
+        val stateHolder = rememberTracksScreenState(
+            albumId.value,
+            performanceId.value
+        )
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
         TrackList(navController, uiState)

@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.chaddy50.musicapp.data.entity.Album
+import com.chaddy50.musicapp.features.performancesScreen.PerformancesScreen
 import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
@@ -29,14 +31,21 @@ fun AlbumCard(
     viewModel: MusicAppViewModel,
     navController: NavController
 ) {
+    val selectedGenreId = viewModel.selectedGenreId.collectAsStateWithLifecycle()
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
             .padding(4.dp)
             .clickable {
-                viewModel.onAlbumSelected(album.id)
-                navController.navigate(TracksScreen.route)
+                viewModel.updateSelectedAlbum(album.id)
+
+                if (selectedGenreId.value == viewModel.classicalGenreId) {
+                    navController.navigate(PerformancesScreen.route)
+                } else {
+                    navController.navigate(TracksScreen.route)
+                }
             }
     ) {
         Column(

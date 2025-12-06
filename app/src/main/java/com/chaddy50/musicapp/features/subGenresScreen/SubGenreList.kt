@@ -37,7 +37,7 @@ fun SubGenreList(
                     EntityCard(
                         genre.name,
                         {
-                            viewModel.onSubGenreSelected(genre.id)
+                            viewModel.updateSelectedSubGenre(genre.id)
                             navController.navigate(AlbumsScreen.route)
                         }
                     )

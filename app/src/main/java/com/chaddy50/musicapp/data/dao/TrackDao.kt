@@ -40,4 +40,7 @@ interface TrackDao {
     // Get all tracks belonging to a specific album.
     @Query("SELECT * FROM tracks WHERE albumID = :albumId ORDER BY discNumber, number ASC")
     fun getTracksForAlbum(albumId: Int): Flow<List<Track>>
+
+    @Query("SELECT * FROM tracks WHERE performanceId = :performanceId ORDER BY discNumber, number ASC")
+    fun getTracksForPerformance(performanceId: Int): Flow<List<Track>>
 }

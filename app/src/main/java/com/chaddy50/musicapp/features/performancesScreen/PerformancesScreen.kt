@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.subGenresScreen
+package com.chaddy50.musicapp.features.performancesScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -9,8 +9,8 @@ import com.chaddy50.musicapp.navigation.MusicAppScreen
 import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
-object SubGenresScreen : MusicAppScreen {
-    override val route = "sub_genres_screen"
+object PerformancesScreen : MusicAppScreen {
+    override val route = "performances_screen"
 
     @Composable
     override fun Content(
@@ -22,23 +22,19 @@ object SubGenresScreen : MusicAppScreen {
             navController,
             route,
             {
-                viewModel.updateSelectedAlbumArtist(null)
+                viewModel.updateSelectedAlbum(null)
             }
         )
 
-        val selectedGenreId = viewModel.selectedGenreId.collectAsStateWithLifecycle()
-        val selectedAlbumArtistId = viewModel.selectedAlbumArtistId.collectAsStateWithLifecycle()
+        val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
 
-        val stateHolder = rememberSubGenresScreenState(
-            selectedGenreId.value,
-            selectedAlbumArtistId.value,
-        )
+        val stateHolder = rememberPerformancesScreenState(albumId.value)
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
-        SubGenreList(
+        PerformanceList(
             viewModel,
             navController,
-            uiState,
+            uiState
         )
     }
 }

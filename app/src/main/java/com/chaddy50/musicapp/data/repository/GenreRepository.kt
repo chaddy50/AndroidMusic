@@ -1,13 +1,11 @@
 package com.chaddy50.musicapp.data.repository
 
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.Genre
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 
 class GenreRepository(private val genreDao: GenreDao) {
@@ -55,5 +53,9 @@ class GenreRepository(private val genreDao: GenreDao) {
         }.flowOn(Dispatchers.IO)
     }
 
-    fun getSubGenres(parentGenreId: Int) = flowOf(genreDao.getSubGenres(parentGenreId))
+    fun getSubGenres(parentGenreId: Int): Flow<List<Genre>> {
+        return flow {
+            emitAll(genreDao.getSubGenres(parentGenreId))
+        }.flowOn(Dispatchers.IO)
+    }
 }

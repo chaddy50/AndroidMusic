@@ -1,13 +1,8 @@
 package com.chaddy50.musicapp.viewModel
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.chaddy50.musicapp.data.MusicScanner
-import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +26,9 @@ class MusicAppViewModel(
     private val _selectedAlbumId = MutableStateFlow<Int?>(null)
     val selectedAlbumId = _selectedAlbumId.asStateFlow()
 
+    private val _selectedPerformanceId = MutableStateFlow<Int?>(null)
+    val selectedPerformanceId = _selectedPerformanceId.asStateFlow()
+
     init {
         viewModelScope.launch {
             initializeClassicalGenreId()
@@ -39,20 +37,24 @@ class MusicAppViewModel(
 
     var classicalGenreId: Int? = null
 
-    fun onGenreSelected(genreId: Int) {
+    fun updateSelectedGenre(genreId: Int?) {
         _selectedGenreId.value = genreId
     }
 
-    fun onAlbumArtistSelected(albumArtistId: Int) {
+    fun updateSelectedAlbumArtist(albumArtistId: Int?) {
         _selectedAlbumArtistId.value = albumArtistId
     }
 
-    fun onSubGenreSelected(genreId: Int) {
+    fun updateSelectedSubGenre(genreId: Int?) {
         _selectedSubGenreId.value = genreId
     }
 
-    fun onAlbumSelected(albumId: Int) {
+    fun updateSelectedAlbum(albumId: Int?) {
         _selectedAlbumId.value = albumId
+    }
+
+    fun updateSelectedPerformance(performanceId: Int?) {
+        _selectedPerformanceId.value = performanceId
     }
 
     suspend fun getTrackCount(): Int {

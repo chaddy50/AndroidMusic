@@ -18,7 +18,8 @@ import androidx.room.PrimaryKey
     indices = [Index("parentGenreId")]
 )
 data class Genre(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
     val name: String,
     val parentGenreId: Int? = null
 )

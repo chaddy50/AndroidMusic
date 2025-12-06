@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -42,7 +41,7 @@ fun ArtistList(
                     EntityCard(
                         artist.name,
                         {
-                            viewModel.onAlbumArtistSelected(artist.id)
+                            viewModel.updateSelectedAlbumArtist(artist.id)
 
                             if (selectedGenreId.value == viewModel.classicalGenreId) {
                                 navController.navigate(SubGenresScreen.route)

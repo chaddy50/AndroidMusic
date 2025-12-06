@@ -12,6 +12,8 @@ class TrackRepository(private val trackDao: TrackDao) {
 
     fun getTracksForAlbum(albumId: Int): Flow<List<Track>> = trackDao.getTracksForAlbum(albumId)
 
+    fun getTracksForPerformance(performanceId: Int): Flow<List<Track>> = trackDao.getTracksForPerformance(performanceId)
+
     suspend fun count(): Int {
         return trackDao.count()
     }
