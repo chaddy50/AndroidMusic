@@ -64,7 +64,8 @@ class TracksScreenUiStateHolder(
                 album?.title ?: "Tracks",
                 tracks,
                 album,
-                albumArtist
+                albumArtist,
+                false,
             )
         }.stateIn(
             coroutineScope,

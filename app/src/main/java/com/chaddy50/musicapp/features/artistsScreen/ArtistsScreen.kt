@@ -5,8 +5,13 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.features.albumsScreen.AlbumsScreen
+import com.chaddy50.musicapp.features.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.navigation.MusicAppScreen
 import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
+import com.chaddy50.musicapp.ui.composables.EntityCard
+import com.chaddy50.musicapp.ui.composables.EntityScreen
+import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 object ArtistsScreen: MusicAppScreen {
@@ -28,10 +33,28 @@ object ArtistsScreen: MusicAppScreen {
         val stateHolder = rememberArtistsScreenState(selectedGenreId.value)
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
-        ArtistList(
+        EntityScreen(
             viewModel,
             navController,
-            uiState
+            EntityType.Genre,
+            uiState.screenTitle,
+            uiState.isLoading,
+            {
+                uiState.artists.forEach { artist ->
+                    EntityCard(
+                        artist.name,
+                        {
+                            viewModel.updateSelectedAlbumArtist(artist.id)
+
+                            if (selectedGenreId.value == viewModel.classicalGenreId) {
+                                navController.navigate(SubGenresScreen.route)
+                            } else {
+                                navController.navigate(AlbumsScreen.route)
+                            }
+                        }
+                    )
+                }
+            }
         )
     }
 }

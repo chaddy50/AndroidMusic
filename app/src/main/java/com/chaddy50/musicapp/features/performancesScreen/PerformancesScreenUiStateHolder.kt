@@ -32,7 +32,7 @@ class PerformancesScreenUiStateHolder(
 
         uiState = performances.map { performances ->
             PerformanceScreenUiState(
-                screenTitle = "Performances",
+                "Performances",
                 performances,
                 false,
             )

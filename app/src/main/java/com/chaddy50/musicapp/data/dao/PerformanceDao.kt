@@ -20,6 +20,9 @@ interface PerformanceDao {
     @Delete
     suspend fun delete(performance: Performance)
 
+    @Query("SELECT * FROM performances WHERE id = :id")
+    fun getPerformanceById(id: Int): Flow<Performance>
+
     @Query("SELECT * FROM performances WHERE albumId = :albumId")
     fun getPerformancesForAlbum(albumId: Int): Flow<List<Performance>>
 }

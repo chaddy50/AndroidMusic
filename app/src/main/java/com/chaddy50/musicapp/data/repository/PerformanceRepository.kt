@@ -18,5 +18,7 @@ class PerformanceRepository(
         performanceDao.delete(performance)
     }
 
+    fun getPerformanceById(id: Int) = performanceDao.getPerformanceById(id)
+
     fun getPerformancesForAlbum(albumId: Int) = performanceDao.getPerformancesForAlbum(albumId)
 }
