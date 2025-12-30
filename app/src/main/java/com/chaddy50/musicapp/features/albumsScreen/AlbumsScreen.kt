@@ -40,7 +40,7 @@ object AlbumsScreen: MusicAppScreen {
         EntityScreen(
             viewModel,
             navController,
-            if (selectedSubGenreId != null) EntityType.SubGenre else EntityType.AlbumArtist,
+            EntityType.AlbumArtist,
             uiState.screenTitle,
             uiState.isLoading,
             {

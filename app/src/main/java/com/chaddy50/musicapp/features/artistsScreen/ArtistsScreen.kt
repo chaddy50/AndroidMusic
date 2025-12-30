@@ -45,12 +45,7 @@ object ArtistsScreen: MusicAppScreen {
                         artist.name,
                         {
                             viewModel.updateSelectedAlbumArtist(artist.id)
-
-                            if (selectedGenreId.value == viewModel.classicalGenreId) {
-                                navController.navigate(SubGenresScreen.route)
-                            } else {
-                                navController.navigate(AlbumsScreen.route)
-                            }
+                            navController.navigate(AlbumsScreen.route)
                         }
                     )
                 }

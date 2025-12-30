@@ -183,35 +183,18 @@ class EntityHeaderStateHolder(
                 return@flatMapLatest flowOf(EntityHeaderState())
             }
 
-            if (selectedGenreId == viewModel.classicalGenreId) {
-                combine(
-                    albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
-                    genreRepository.getGenreById(selectedGenreId),
-                    genreRepository.getNumberOfSubGenresForAlbumArtist(selectedGenreId, selectedAlbumArtistId)
-                ) { albumArtist, genre, numberOfSubGenres ->
-                    EntityHeaderState(
-                        albumArtist?.name ?: "Artist",
-                        genre?.name ?: "Genre",
-                        "$numberOfSubGenres genres",
-                        null,
-                        false
-                    )
-                }
-            }
-            else {
-                combine(
-                    albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
-                    genreRepository.getGenreById(selectedGenreId),
-                    albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
-                ) { albumArtist, genre, numberOfAlbums ->
-                    EntityHeaderState(
-                        albumArtist?.name ?: "Artist",
-                        genre?.name ?: "Genre",
-                        "$numberOfAlbums albums",
-                        null,
-                        false
-                    )
-                }
+            combine(
+                albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
+                genreRepository.getGenreById(selectedGenreId),
+                albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
+            ) { albumArtist, genre, numberOfAlbums ->
+                EntityHeaderState(
+                    albumArtist?.name ?: "Artist",
+                    genre?.name ?: "Genre",
+                    "$numberOfAlbums albums",
+                    null,
+                    false
+                )
             }
         }
     }
