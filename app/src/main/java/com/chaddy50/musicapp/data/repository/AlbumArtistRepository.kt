@@ -41,10 +41,21 @@ class AlbumArtistRepository(
 
         val newAlbumArtist = AlbumArtist(
             name = albumArtistName,
-            genreId = genreId
+            sortName = getSortName(albumArtistName),
+            genreId = genreId,
         )
         albumArtistDao.insert(newAlbumArtist)
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
+    }
+
+    private fun getSortName(name: String): String {
+        val prefixes = listOf("The ", "A ", "An ")
+        for (prefix in prefixes) {
+            if (name.startsWith(prefix, ignoreCase = true)) {
+                return name.substring(prefix.length).trim()
+            }
+        }
+        return name.trim()
     }
 
     fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>> {

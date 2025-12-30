@@ -27,10 +27,10 @@ interface AlbumArtistDao {
     @Query("SELECT * FROM albumArtists WHERE id = :artistId")
     fun getAlbumsForArtist(artistId: Int): Flow<List<AlbumArtist>>
 
-    @Query("SELECT * FROM albumArtists WHERE genreID IN (:genreIds) ORDER BY name")
+    @Query("SELECT * FROM albumArtists WHERE genreID IN (:genreIds) ORDER BY sortName")
     fun getAlbumArtistsForGenreIds(genreIds: List<Int>): Flow<List<AlbumArtist>>
 
-    @Query("SELECT * FROM albumArtists ORDER BY name ASC")
+    @Query("SELECT * FROM albumArtists ORDER BY sortName ASC")
     fun getAllAlbumArtists(): Flow<List<AlbumArtist>>
 
     @Query("SELECT * FROM albumArtists WHERE name = :albumArtistName LIMIT 1")
