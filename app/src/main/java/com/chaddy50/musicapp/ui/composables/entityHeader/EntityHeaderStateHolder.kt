@@ -6,6 +6,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
@@ -21,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -45,15 +45,7 @@ class EntityHeaderStateHolder(
             EntityType.Genre -> getStateForGenre()
             EntityType.AlbumArtist -> getStateForAlbumArtist()
             EntityType.SubGenre -> getStateForSubGenre()
-            EntityType.All -> flowOf(
-                EntityHeaderState(
-                    "All Music",
-                    "",
-                    null,
-                    null,
-                    false
-                )
-            )
+            EntityType.All -> getStateForAllMusic()
             else -> flowOf(EntityHeaderState(isLoading = false))
         }
             uiState = stateFlow.stateIn(
@@ -62,6 +54,34 @@ class EntityHeaderStateHolder(
             EntityHeaderState()
         )
     }
+
+    private fun getStateForAllMusic(): Flow<EntityHeaderState> {
+        return combine(
+            genreRepository.getNumberOfGenres(),
+            albumArtistRepository.getNumberOfAlbumArtists(),
+            albumRepository.getNumberOfAlbums(),
+            trackRepository.getNumberOfTracks(),
+        ) { numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks ->
+            AllMusicStats(numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks)
+        }.flatMapLatest { (numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks) ->
+            flowOf(
+                EntityHeaderState(
+                    "All Music",
+                    "$numberOfGenres genre - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
+                    "",
+                    null,
+                    false
+                )
+            )
+        }
+    }
+
+    data class AllMusicStats(
+        val numberOfGenres: Int,
+        val numberOfAlbumArtists : Int,
+        val numberOfAlbums: Int,
+        val numberOfTracks: Int,
+    )
 
     private fun getStateForAlbum(): Flow<EntityHeaderState> {
         return combine(
@@ -78,12 +98,13 @@ class EntityHeaderStateHolder(
             if (selectedPerformanceId != null) {
                 combine(
                     albumRepository.getAlbumById(selectedAlbumId),
-                    performanceRepository.getPerformanceById(selectedPerformanceId)
-                ) { album, performance ->
+                    performanceRepository.getPerformanceById(selectedPerformanceId),
+                    trackRepository.getNumberOfTracksInPerformance(selectedPerformanceId)
+                ) { album, performance, numberOfTracks ->
                     EntityHeaderState(
                         album?.title ?: "Album",
                         "${performance?.year} - ${performance.artistName}",
-                        null,
+                        "$numberOfTracks tracks",
                         null,
                         false
                     )
@@ -94,11 +115,16 @@ class EntityHeaderStateHolder(
                     if (album == null) {
                         return@flatMapLatest flowOf(EntityHeaderState())
                     }
-                    albumArtistRepository.getAlbumArtistById(album.artistId).map { albumArtist ->
+
+                    combine(
+                        albumArtistRepository.getAlbumArtistById(album.artistId),
+                        trackRepository.getNumberOfTracksInAlbum(selectedAlbumId),
+                        performanceRepository.getNumberOfPerformancesForAlbum(selectedAlbumId)
+                    ) { albumArtist, numberOfTracks, numberOfPerformances ->
                         EntityHeaderState(
                             album.title,
                             albumArtist?.name ?: "Unknown Artist",
-                            album.year,
+                            getDetailsForAlbumNoPerformance(selectedGenreId, album, numberOfTracks, numberOfPerformances),
                             if (selectedGenreId == viewModel.classicalGenreId) null else album.artworkPath,
                             false
                         )
@@ -108,15 +134,33 @@ class EntityHeaderStateHolder(
         }
     }
 
+    private fun getDetailsForAlbumNoPerformance(
+        genreId: Int?,
+        album: Album,
+        numberOfTracks: Int,
+        numberOfPerformances: Int
+    ): String {
+        var subtitle = "${album.year}"
+        if (genreId == viewModel.classicalGenreId) {
+            subtitle += " - $numberOfPerformances performances"
+        } else {
+            subtitle += " - $numberOfTracks tracks"
+        }
+        return subtitle
+    }
+
     private fun getStateForGenre(): Flow<EntityHeaderState> {
         return viewModel.selectedGenreId.flatMapLatest { selectedGenreId ->
             if (selectedGenreId == null) {
                 return@flatMapLatest flowOf(EntityHeaderState())
             }
-            genreRepository.getGenreById(selectedGenreId).map { genre ->
+            combine(
+            genreRepository.getGenreById(selectedGenreId),
+                albumArtistRepository.getNumberOfAlbumArtistsForGenre(selectedGenreId)
+            ) { genre, numberOfAlbumArtists ->
                 EntityHeaderState(
                     genre?.name ?: "Genre",
-                    "",
+                    "$numberOfAlbumArtists artists",
                     null,
                     null,
                     false
@@ -126,18 +170,48 @@ class EntityHeaderStateHolder(
     }
 
     private fun getStateForAlbumArtist(): Flow<EntityHeaderState> {
-        return viewModel.selectedAlbumArtistId.flatMapLatest { selectedAlbumArtistId ->
+        return combine(
+            viewModel.selectedAlbumArtistId,
+            viewModel.selectedGenreId
+        ) { selectedAlbumArtistId, selectedGenreId ->
+            Pair(selectedAlbumArtistId, selectedGenreId)
+        }.flatMapLatest { (selectedAlbumArtistId, selectedGenreId) ->
             if (selectedAlbumArtistId == null) {
                 return@flatMapLatest flowOf(EntityHeaderState())
             }
-            albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId).map { albumArtist ->
-                EntityHeaderState(
-                    albumArtist?.name ?: "Artist",
-                    "",
-                    null,
-                    null,
-                    false
-                )
+            if (selectedGenreId == null) {
+                return@flatMapLatest flowOf(EntityHeaderState())
+            }
+
+            if (selectedGenreId == viewModel.classicalGenreId) {
+                combine(
+                    albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
+                    genreRepository.getGenreById(selectedGenreId),
+                    genreRepository.getNumberOfSubGenresForAlbumArtist(selectedGenreId, selectedAlbumArtistId)
+                ) { albumArtist, genre, numberOfSubGenres ->
+                    EntityHeaderState(
+                        albumArtist?.name ?: "Artist",
+                        genre?.name ?: "Genre",
+                        "$numberOfSubGenres genres",
+                        null,
+                        false
+                    )
+                }
+            }
+            else {
+                combine(
+                    albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
+                    genreRepository.getGenreById(selectedGenreId),
+                    albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
+                ) { albumArtist, genre, numberOfAlbums ->
+                    EntityHeaderState(
+                        albumArtist?.name ?: "Artist",
+                        genre?.name ?: "Genre",
+                        "$numberOfAlbums albums",
+                        null,
+                        false
+                    )
+                }
             }
         }
     }
@@ -155,11 +229,12 @@ class EntityHeaderStateHolder(
 
             combine(
                 albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
-                genreRepository.getGenreById(selectedSubGenreId)
-            ) { albumArtist, subGenre ->
+                genreRepository.getGenreById(selectedSubGenreId),
+                albumRepository.getNumberOfAlbumsForAlbumArtistInGenre(selectedAlbumArtistId, selectedSubGenreId)
+            ) { albumArtist, subGenre, numberOfPieces ->
                 EntityHeaderState(
                     "${albumArtist?.name} - ${subGenre?.name}",
-                    "",
+                    "$numberOfPieces pieces",
                     null,
                     null,
                     false

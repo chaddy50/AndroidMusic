@@ -20,6 +20,9 @@ interface GenreDao {
     @Delete
     suspend fun delete(genre: Genre)
 
+    @Query("SELECT COUNT(*) FROM genres")
+    fun getNumberOfGenres(): Flow<Int>
+
     @Query("SELECT * FROM genres WHERE id = :id")
     fun getGenreById(id: Int): Flow<Genre?>
 
@@ -49,4 +52,13 @@ interface GenreDao {
         ORDER BY genres.name ASC
     """)
     fun getSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<List<Genre>>
+
+    @Query("""
+        SELECT COUNT(DISTINCT genres.id) FROM genres
+        INNER JOIN tracks ON genres.id = tracks.genreId
+        INNER JOIN albums ON tracks.albumId = albums.id
+        WHERE albums.artistId = :albumArtistId AND genres.parentGenreId = :parentGenreId
+        ORDER BY genres.name ASC
+    """)
+    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<Int>
 }

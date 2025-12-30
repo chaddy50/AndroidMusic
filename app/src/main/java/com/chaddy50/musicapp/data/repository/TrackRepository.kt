@@ -14,12 +14,22 @@ class TrackRepository(private val trackDao: TrackDao) {
 
     fun getTracksForPerformance(performanceId: Int): Flow<List<Track>> = trackDao.getTracksForPerformance(performanceId)
 
-    suspend fun count(): Int {
-        return trackDao.count()
+    fun getNumberOfTracksInAlbum(albumId: Int) = trackDao.getNumberOfTracksInAlbum(albumId)
+
+    fun getNumberOfTracks() = trackDao.getNumberOfTracks()
+
+    fun getNumberOfTracksInPerformance(performanceId: Int) = trackDao.getNumberOfTracksInPerformance(performanceId)
+
+    suspend fun getNumberOfTracksSuspend(): Int {
+        return trackDao.getNumberOfTracksSuspend()
     }
 
     suspend fun insert(track: Track) {
         trackDao.insert(track)
+    }
+
+    suspend fun insertMultiple(tracks: List<Track>) {
+        trackDao.insertMultiple(tracks)
     }
 
     suspend fun update(track: Track) {

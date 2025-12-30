@@ -25,11 +25,15 @@ class AlbumArtistRepository(
         albumArtistDao.delete(albumArtist)
     }
 
+    fun getNumberOfAlbumArtists() = albumArtistDao.getNumberOfAlbumArtists()
+
     fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = albumArtistDao.getAllAlbumArtists()
 
     fun getAlbumArtistName(albumArtistId: Int) = albumArtistDao.getAlbumArtistName(albumArtistId)
 
     fun getAlbumArtistById(albumArtistId: Int) = albumArtistDao.getAlbumArtistById(albumArtistId)
+
+    fun getNumberOfAlbumArtistsForGenre(genreId: Int) = albumArtistDao.getNumberOfAlbumArtistsForGenre(genreId)
 
     suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Int): Int {
         val existingAlbumArtist = albumArtistDao.getAlbumArtistByName(albumArtistName)

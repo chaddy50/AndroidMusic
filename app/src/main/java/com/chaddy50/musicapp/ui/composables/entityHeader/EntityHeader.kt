@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
@@ -72,7 +71,7 @@ fun EntityHeader(
                         contentDescription = "${uiState.title} Artwork",
                         modifier = Modifier
                             .aspectRatio(1f)
-                            .size(10.dp, 10.dp)
+                            .fillMaxHeight()
                     )
                 }
             }

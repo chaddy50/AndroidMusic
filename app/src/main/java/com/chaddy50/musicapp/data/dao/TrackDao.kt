@@ -16,6 +16,9 @@ interface TrackDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(track: Track)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMultiple(tracks: List<Track>)
+
     // Update an existing track.
     @Update
     suspend fun update(track: Track)
@@ -25,7 +28,10 @@ interface TrackDao {
     suspend fun delete(track: Track)
 
     @Query("SELECT COUNT(*) FROM tracks")
-    suspend fun count(): Int
+    fun getNumberOfTracks(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM tracks")
+    suspend fun getNumberOfTracksSuspend(): Int
 
     // Get a single track by its ID. Returns a Flow, which will automatically update
     // if the track's data changes.
@@ -43,4 +49,10 @@ interface TrackDao {
 
     @Query("SELECT * FROM tracks WHERE performanceId = :performanceId ORDER BY discNumber, number ASC")
     fun getTracksForPerformance(performanceId: Int): Flow<List<Track>>
+
+    @Query("SELECT COUNT(*) FROM tracks WHERE albumId = :albumId")
+    fun getNumberOfTracksInAlbum(albumId: Int): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM tracks WHERE performanceId = :performanceId")
+    fun getNumberOfTracksInPerformance(performanceId: Int): Flow<Int>
 }

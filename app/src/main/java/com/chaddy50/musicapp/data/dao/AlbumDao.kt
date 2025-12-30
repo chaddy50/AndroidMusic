@@ -21,6 +21,9 @@ interface AlbumDao {
     @Delete
     suspend fun delete(album: Album)
 
+    @Query("SELECT COUNT(*) FROM albums")
+    fun getNumberOfAlbums(): Flow<Int>
+
     @Query("SELECT * FROM albums WHERE id = :id")
     fun getAlbumById(id: Int): Flow<Album?>
 
@@ -40,4 +43,15 @@ interface AlbumDao {
 
     @Query("SELECT title FROM albums WHERE id = :albumId")
     fun getAlbumName(albumId: Int): Flow<String?>
+
+    @Query("SELECT COUNT(*) FROM albums WHERE artistId = :albumArtistId")
+    fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Int): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(DISTINCT(albums.id)) FROM albums
+        INNER JOIN tracks ON tracks.albumId = albums.id
+        WHERE albums.artistId = :albumArtistId
+        AND tracks.genreId = :genreId
+    """)
+    fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Int, genreId: Int): Flow<Int>
 }

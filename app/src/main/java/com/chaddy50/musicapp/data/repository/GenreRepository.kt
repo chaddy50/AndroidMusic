@@ -22,6 +22,8 @@ class GenreRepository(private val genreDao: GenreDao) {
         genreDao.delete(genre)
     }
 
+    fun getNumberOfGenres() = genreDao.getNumberOfGenres()
+
     fun getAllGenres() = genreDao.getAllGenres()
 
     fun getGenreName(genreId: Int) = genreDao.getGenreName(genreId)
@@ -52,6 +54,8 @@ class GenreRepository(private val genreDao: GenreDao) {
             emitAll(genreDao.getSubGenresForAlbumArtist(parentGenreId, albumArtistId))
         }.flowOn(Dispatchers.IO)
     }
+
+    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int) = genreDao.getNumberOfSubGenresForAlbumArtist(parentGenreId, albumArtistId)
 
     fun getSubGenres(parentGenreId: Int): Flow<List<Genre>> {
         return flow {

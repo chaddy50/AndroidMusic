@@ -58,7 +58,7 @@ class MusicAppViewModel(
     }
 
     suspend fun getTrackCount(): Int {
-        return trackRepository.count()
+        return trackRepository.getNumberOfTracksSuspend()
     }
 
     suspend fun refreshLibrary() {
