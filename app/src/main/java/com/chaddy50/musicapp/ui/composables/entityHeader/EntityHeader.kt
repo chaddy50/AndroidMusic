@@ -97,7 +97,7 @@ fun EntityHeader(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { viewModel.playCurrentEntity(type) },
                     modifier = Modifier
                         .fillMaxHeight()
                         .weight(1f)

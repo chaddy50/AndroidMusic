@@ -21,6 +21,7 @@ import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.utilities.extractCatalogNumber
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -47,8 +48,8 @@ data class MusicScanner(
 
     private val BATCH_SIZE = 500
 
-    private val processedArtists = mutableSetOf<Int>()
-    private val processedAlbums = mutableSetOf<Int>()
+    private val processedArtists = mutableSetOf<Pair<Int, String>>()
+    private val processedAlbums = mutableSetOf<Pair<Int, String>>()
 
     suspend fun scan() {
         setUpGenreMappings()
@@ -83,10 +84,10 @@ data class MusicScanner(
                 while (cursor.moveToNext()) {
                     val trackId = cursor.getLong(columns.trackId)
 
-                    val (genreId, genreName) = processGenre(cursor, columns)
-                    val artistId = processArtist(cursor, columns)
-                    val albumArtistId = processAlbumArtist(cursor, columns, genreId)
-                    val albumId =
+                    val (genreId, genreName, parentGenreId) = processGenre(cursor, columns)
+                    val (artistId, artistName) = processArtist(cursor, columns)
+                    val (albumArtistId, albumArtistName) = processAlbumArtist(cursor, columns, genreId)
+                    val (albumId, albumName) =
                         processAlbum(cursor, columns, trackId, albumArtistId)
 
                     var performanceId: Int? = performanceIdCache[Pair(albumId, artistId)]
@@ -101,8 +102,15 @@ data class MusicScanner(
                             columns,
                             trackId,
                             genreId,
+                            genreName,
+                            parentGenreId,
+                            if (parentGenreId != null) "Classical" else null,
                             artistId,
+                            artistName,
                             albumId,
+                            albumName,
+                            albumArtistId,
+                            albumArtistName,
                             performanceId
                         )
                     )
@@ -136,18 +144,19 @@ data class MusicScanner(
         genreMappings = mapOf(
             "Solo Piano" to "Classical",
             "Symphony" to "Classical",
-            "String Quartet" to "Classical"
+            "String Quartet" to "Classical",
+            "Piano Concerto" to "Classical",
         )
 
         val classicalId = genreRepository.findOrInsertGenreByName(GENRE_CLASSICAL)
         parentGenreIdCache[GENRE_CLASSICAL] = classicalId
     }
 
-    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Pair<Int, String> {
+    private suspend fun processGenre(cursor: Cursor, columns: ColumnIndices): Triple<Int, String, Int?> {
         val genreName = cursor.getStringOrNull(columns.genreName) ?: "Unknown Genre"
         val parentGenreId = getParentGenreId(genreName)
 
-        return Pair(genreRepository.findOrInsertGenreByName(genreName, parentGenreId), genreName)
+        return Triple(genreRepository.findOrInsertGenreByName(genreName, parentGenreId), genreName, parentGenreId)
     }
 
     private fun getParentGenreId(genreName: String): Int? {
@@ -157,9 +166,12 @@ data class MusicScanner(
     //#endregion
 
     //region Artists
-    private suspend fun processArtist(cursor: Cursor, columns: ColumnIndices): Int {
+    private suspend fun processArtist(cursor: Cursor, columns: ColumnIndices): Pair<Int, String> {
         val artistId = (cursor.getLongOrNull(columns.artistId) ?: -1).toInt()
-        if (processedArtists.contains(artistId)) return artistId
+        if (processedArtists.any { it.first == artistId }) {
+            val artistName = processedArtists.first { it.first == artistId }.second
+            return Pair(artistId, artistName)
+        }
 
         val artistName = getArtistName(cursor, columns)
         artistRepository.insert(
@@ -168,8 +180,8 @@ data class MusicScanner(
                 artistName,
             )
         )
-        processedArtists.add(artistId)
-        return artistId
+        processedArtists.add(Pair(artistId, artistName))
+        return Pair(artistId, artistName)
     }
     //#endregion
 
@@ -178,13 +190,13 @@ data class MusicScanner(
         cursor: Cursor,
         columns: ColumnIndices,
         genreId: Int,
-    ): Int {
+    ): Pair<Int, String> {
         val albumArtistName = cursor.getStringOrNull(columns.albumArtistName) ?: "Unknown Artist"
         val albumArtistId = albumArtistRepository.findOrInsertAlbumArtist(
             albumArtistName,
             genreId
         )
-        return albumArtistId
+        return Pair(albumArtistId, albumArtistName)
     }
     //#endregion
 
@@ -194,11 +206,15 @@ data class MusicScanner(
         columns: ColumnIndices,
         trackId: Long,
         albumArtistId: Int,
-    ): Int {
+    ): Pair<Int, String> {
         val albumId = (cursor.getLongOrNull(columns.albumId) ?: -1).toInt()
-        if (processedAlbums.contains(albumId)) return albumId
+        if (processedAlbums.any { it.first == albumId }) {
+            val albumName = processedAlbums.first { it.first == albumId }.second
+            return Pair(albumId, albumName)
+        }
 
         val albumName = getAlbumName(cursor, columns)
+        val catalogueNumber = extractCatalogNumber(albumName)
         val albumYear = getYear(cursor, columns, trackId)
 
         val albumArtworkBitmap = getAlbumArtwork(context, trackId)
@@ -209,13 +225,14 @@ data class MusicScanner(
             Album(
                 albumId,
                 albumName,
+                catalogueNumber,
                 albumArtistId,
                 albumYear,
                 artworkPath
             )
         )
-        processedAlbums.add(albumId)
-        return albumId
+        processedAlbums.add(Pair(albumId, albumName))
+        return Pair(albumId, albumName)
     }
 
     private fun getAlbumArtwork(
@@ -268,10 +285,21 @@ data class MusicScanner(
         columns: ColumnIndices,
         trackId: Long,
         genreId: Int,
+        genreName: String,
+        parentGenreId: Int?,
+        parentGenreName: String?,
         artistId: Int,
+        artistName: String,
         albumId: Int,
+        albumName: String,
+        albumArtistId: Int,
+        albumArtistName: String,
         performanceId: Int?,
     ): Track {
+        val trackUri = ContentUris.withAppendedId(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            trackId
+        ).toString()
         val trackTitle = cursor.getStringOrNull(columns.trackTitle) ?: "Unknown Title"
         val trackNumber = cursor.getIntOrNull(columns.trackNumber) ?: 0
 
@@ -279,11 +307,19 @@ data class MusicScanner(
         val trackDuration = cursor.getIntOrNull(columns.trackDuration) ?: 0
         return Track(
             trackId.toInt(),
+            trackUri,
             trackTitle,
             trackNumber,
             albumId,
+            albumName,
             artistId,
+            artistName,
+            albumArtistId,
+            albumArtistName,
             genreId,
+            genreName,
+            parentGenreId,
+            parentGenreName,
             trackDuration.toDuration(DurationUnit.MILLISECONDS),
             discNumber,
             performanceId

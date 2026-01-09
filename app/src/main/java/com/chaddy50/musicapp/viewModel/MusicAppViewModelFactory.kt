@@ -9,6 +9,7 @@ class MusicAppViewModelFactory(private val application: MusicApplication) : View
         if (modelClass.isAssignableFrom(MusicAppViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return MusicAppViewModel(
+                application,
                 musicScanner = application.musicScanner,
                 trackRepository = application.trackRepository,
                 genreRepository = application.genreRepository,

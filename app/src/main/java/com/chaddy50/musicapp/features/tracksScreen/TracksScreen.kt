@@ -48,7 +48,10 @@ object TracksScreen: MusicAppScreen {
             uiState.isLoading,
             {
                 uiState.tracks.forEach { track ->
-                    TrackCard(track)
+                    TrackCard(
+                        track,
+                        { viewModel.playTrack(track)}
+                    )
                 }
             }
         )

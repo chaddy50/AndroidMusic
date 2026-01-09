@@ -19,12 +19,15 @@ import com.chaddy50.musicapp.data.entity.Track
 import java.text.SimpleDateFormat
 
 @Composable
-fun TrackCard(track: Track) {
+fun TrackCard(
+    track: Track,
+    onTrackClicked: (Track) -> Unit,
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(75.dp)
-            .clickable { }
+            .clickable{ onTrackClicked(track) }
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),

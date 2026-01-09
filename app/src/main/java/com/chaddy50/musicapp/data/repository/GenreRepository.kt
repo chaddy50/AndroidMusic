@@ -32,6 +32,8 @@ class GenreRepository(private val genreDao: GenreDao) {
 
     suspend fun getGenreByName(name: String) = genreDao.getGenreByName(name)
 
+    fun getParentGenreId(genreId: Int) = genreDao.getParentGenreId(genreId)
+
     fun getAllTopLevelGenres() = genreDao.getAllTopLevelGenres()
 
     suspend fun findOrInsertGenreByName(name: String, parentGenreId: Int? = null): Int {

@@ -61,4 +61,7 @@ interface GenreDao {
         ORDER BY genres.name ASC
     """)
     fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<Int>
+
+    @Query("SELECT parentGenreId FROM genres WHERE id = :genreId")
+    fun getParentGenreId(genreId: Int): Flow<Int?>
 }

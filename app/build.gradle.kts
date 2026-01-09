@@ -49,7 +49,6 @@ android {
 }
 
 dependencies {
-
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
@@ -64,6 +63,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-pal:20.2.0")
     implementation("androidx.room:room-runtime:2.8.4")
     implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("androidx.media3:media3-exoplayer:1.9.0")
+    implementation("androidx.media3:media3-ui:1.9.0")
+    implementation("androidx.media3:media3-common:1.9.0")
+    implementation("androidx.media3:media3-session:1.9.0")
     ksp("androidx.room:room-compiler:2.8.4")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

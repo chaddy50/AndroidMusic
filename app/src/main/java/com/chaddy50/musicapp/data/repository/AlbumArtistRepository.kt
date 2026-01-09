@@ -3,6 +3,7 @@ package com.chaddy50.musicapp.data.repository
 import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
+import com.chaddy50.musicapp.utilities.stripArticles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -41,21 +42,11 @@ class AlbumArtistRepository(
 
         val newAlbumArtist = AlbumArtist(
             name = albumArtistName,
-            sortName = getSortName(albumArtistName),
+            sortName = stripArticles(albumArtistName),
             genreId = genreId,
         )
         albumArtistDao.insert(newAlbumArtist)
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
-    }
-
-    private fun getSortName(name: String): String {
-        val prefixes = listOf("The ", "A ", "An ")
-        for (prefix in prefixes) {
-            if (name.startsWith(prefix, ignoreCase = true)) {
-                return name.substring(prefix.length).trim()
-            }
-        }
-        return name.trim()
     }
 
     fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>> {

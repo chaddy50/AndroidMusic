@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -31,7 +32,7 @@ fun AlbumCard(
     viewModel: MusicAppViewModel,
     navController: NavController
 ) {
-    val selectedGenreId = viewModel.selectedGenreId.collectAsStateWithLifecycle()
+    val selectedGenreId by viewModel.selectedGenreId.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
@@ -41,7 +42,7 @@ fun AlbumCard(
             .clickable {
                 viewModel.updateSelectedAlbum(album.id)
 
-                if (selectedGenreId.value == viewModel.classicalGenreId) {
+                if (selectedGenreId == viewModel.classicalGenreId) {
                     navController.navigate(PerformancesScreen.route)
                 } else {
                     navController.navigate(TracksScreen.route)
@@ -57,12 +58,14 @@ fun AlbumCard(
                 modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column{
-                    AsyncImage(
-                        model = album.artworkPath,
-                        contentDescription = "${album.title} Artwork",
-                        modifier = Modifier.aspectRatio(1f),
-                    )
+                if (selectedGenreId != viewModel.classicalGenreId) {
+                    Column {
+                        AsyncImage(
+                            model = album.artworkPath,
+                            contentDescription = "${album.title} Artwork",
+                            modifier = Modifier.aspectRatio(1f),
+                        )
+                    }
                 }
                 Column(modifier = Modifier.padding(10.dp, 0.dp)) {
                     Text(album.title, style = TextStyle(fontSize = 16.sp))

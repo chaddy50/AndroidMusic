@@ -40,7 +40,7 @@ interface TrackDao {
 
     // Get all tracks from the table, ordered by track number.
     // The Flow will emit a new list of tracks whenever the table's content changes.
-    @Query("SELECT * FROM tracks ORDER BY number ASC")
+    @Query("SELECT * FROM tracks ORDER BY title ASC")
     fun getAllTracks(): Flow<List<Track>>
 
     // Get all tracks belonging to a specific album.
@@ -55,4 +55,15 @@ interface TrackDao {
 
     @Query("SELECT COUNT(*) FROM tracks WHERE performanceId = :performanceId")
     fun getNumberOfTracksInPerformance(performanceId: Int): Flow<Int>
+
+    @Query("""
+        SELECT tracks.* FROM tracks
+        INNER JOIN albums on tracks.albumId = albums.id
+        WHERE albums.artistId = :albumArtistId
+        ORDER BY albums.year, tracks.discNumber, tracks.number ASC
+    """)
+    fun getTracksForAlbumArtist(albumArtistId: Int): Flow<List<Track>>
+
+    @Query("SELECT * FROM tracks WHERE genreId = :genreId")
+    fun getTracksForGenre(genreId: Int): Flow<List<Track>>
 }

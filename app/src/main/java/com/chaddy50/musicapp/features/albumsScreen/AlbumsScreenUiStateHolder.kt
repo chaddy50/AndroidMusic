@@ -33,16 +33,17 @@ class AlbumsScreenUiStateHolder(
 
     init {
         val albums: StateFlow<List<Album>> = combine(
+            viewModel.selectedGenreId,
             viewModel.selectedAlbumArtistId,
             viewModel.selectedSubGenreId
-        ) { selectedAlbumArtistId, selectedSubGenreId ->
-            Pair(selectedAlbumArtistId, selectedSubGenreId)
-        }.flatMapLatest { (selectedAlbumArtistId, selectedSubGenreId) ->
+        ) { selectedGenreId, selectedAlbumArtistId, selectedSubGenreId ->
+            Triple(selectedGenreId, selectedAlbumArtistId, selectedSubGenreId)
+        }.flatMapLatest { (selectedGenreId, selectedAlbumArtistId, selectedSubGenreId) ->
             if (selectedAlbumArtistId != null) {
                 if (selectedSubGenreId != null) {
-                    albumRepository.getAlbumsForArtistInGenre(selectedAlbumArtistId, selectedSubGenreId)
+                    albumRepository.getAlbumsForArtistInGenre(selectedAlbumArtistId, selectedSubGenreId, selectedGenreId == viewModel.classicalGenreId)
                 } else {
-                    albumRepository.getAlbumsForArtist(selectedAlbumArtistId)
+                    albumRepository.getAlbumsForArtist(selectedAlbumArtistId, selectedGenreId == viewModel.classicalGenreId)
                 }
             } else {
                 albumRepository.getAllAlbums()
