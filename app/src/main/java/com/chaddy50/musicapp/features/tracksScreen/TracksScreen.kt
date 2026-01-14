@@ -1,7 +1,12 @@
 package com.chaddy50.musicapp.features.tracksScreen
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -40,6 +45,9 @@ object TracksScreen: MusicAppScreen {
         )
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
+        val doesAlbumHaveMultipleDiscs = if (uiState.tracks.isNotEmpty()) uiState.tracks.first().discNumber != uiState.tracks.last().discNumber else false
+        var currentDiscNumber = 0
+
         EntityScreen(
             viewModel,
             navController,
@@ -48,6 +56,14 @@ object TracksScreen: MusicAppScreen {
             uiState.isLoading,
             {
                 uiState.tracks.forEach { track ->
+                    if (doesAlbumHaveMultipleDiscs && (track.discNumber > 0) && (track.discNumber != currentDiscNumber)) {
+                        currentDiscNumber = track.discNumber
+                        Text(
+                            "Disc $currentDiscNumber",
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
                     TrackCard(
                         track,
                         { viewModel.playTrack(track)}
