@@ -50,6 +50,8 @@ data class MusicScanner(
 
     private val processedArtists = mutableSetOf<Pair<Int, String>>()
     private val processedAlbums = mutableSetOf<Pair<Int, String>>()
+    private var metadataRetriever = MediaMetadataRetriever()
+    private var hasRetrieverBeenInitializedForTrack = false
 
     suspend fun scan() {
         setUpGenreMappings()
@@ -82,6 +84,7 @@ data class MusicScanner(
                 val trackBuffer = mutableListOf<Track>()
 
                 while (cursor.moveToNext()) {
+                    hasRetrieverBeenInitializedForTrack = false
                     val trackId = cursor.getLong(columns.trackId)
 
                     val (genreId, genreName, parentGenreId) = processGenre(cursor, columns)
@@ -121,6 +124,7 @@ data class MusicScanner(
                     }
                 }
 
+                metadataRetriever.release()
                 if (trackBuffer.isNotEmpty()) {
                     trackRepository.insertMultiple(trackBuffer)
                 }
@@ -301,8 +305,7 @@ data class MusicScanner(
             trackId
         ).toString()
         val trackTitle = cursor.getStringOrNull(columns.trackTitle) ?: "Unknown Title"
-        val trackNumber = cursor.getIntOrNull(columns.trackNumber) ?: 0
-
+        val trackNumber = getTrackNumber(cursor, columns, trackId)
         val discNumber = cursor.getIntOrNull(columns.discNumber) ?: 0
         val trackDuration = cursor.getIntOrNull(columns.trackDuration) ?: 0
         return Track(
@@ -361,13 +364,8 @@ data class MusicScanner(
     ): String {
         var year = cursor.getStringOrNull(columns.year)
         if (year.isNullOrBlank() || year == "0") {
-            val retriever = MediaMetadataRetriever()
-            try {
-                setRetrieverSource(retriever, trackId)
-                year = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
-            } finally {
-                retriever.release()
-            }
+            initializeMetadataRetrieverIfNeeded(trackId)
+            year = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
         }
         if (year.isNullOrBlank() || year == "0") {
             year = "Unknown Year"
@@ -376,6 +374,26 @@ data class MusicScanner(
             year = year.take(4)
         }
         return year
+    }
+
+    private fun getTrackNumber(
+        cursor: Cursor,
+        columns: ColumnIndices,
+        trackId: Long,
+    ) : Int {
+        var trackNumber = cursor.getIntOrNull(columns.trackNumber) ?: -1
+        if (trackNumber < 1) {
+            initializeMetadataRetrieverIfNeeded(trackId)
+            val trackNumberAsString = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER)
+
+            if (trackNumberAsString?.contains("/") ?: false) {
+                trackNumber = trackNumberAsString.substringBefore("/").toInt()
+            }
+            else {
+                trackNumber = trackNumberAsString?.toInt() ?: -1
+            }
+        }
+        return trackNumber
     }
 
     private fun getAlbumName(
@@ -420,6 +438,15 @@ data class MusicScanner(
             year = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.YEAR),
             genreName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.GENRE)
         )
+    }
+
+    private fun initializeMetadataRetrieverIfNeeded(trackId: Long) {
+        if (hasRetrieverBeenInitializedForTrack) {
+            return
+        }
+
+        setRetrieverSource(metadataRetriever, trackId)
+        hasRetrieverBeenInitializedForTrack = true
     }
 
     private fun setRetrieverSource(
