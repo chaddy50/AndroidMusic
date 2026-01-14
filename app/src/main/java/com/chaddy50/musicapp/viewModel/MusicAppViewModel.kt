@@ -48,9 +48,19 @@ class MusicAppViewModel(
     private val _selectedPerformanceId = MutableStateFlow<Int?>(null)
     val selectedPerformanceId = _selectedPerformanceId.asStateFlow()
 
+    private val _isScanInProgress = MutableStateFlow<Boolean>(false)
+    val isScanInProgress = _isScanInProgress.asStateFlow()
+
+    private val _scanProgress = MutableStateFlow(0f)
+    val scanProgress = _scanProgress.asStateFlow()
+
     init {
         viewModelScope.launch {
             initializeClassicalGenreId()
+
+            musicScanner.scanProgress.collect {
+                _scanProgress.value = it
+            }
         }
     }
 
@@ -81,8 +91,10 @@ class MusicAppViewModel(
     }
 
     suspend fun refreshLibrary() {
+        _isScanInProgress.value = true
         musicScanner.scan()
         initializeClassicalGenreId()
+        _isScanInProgress.value = false
     }
 
     private suspend fun initializeClassicalGenreId() {

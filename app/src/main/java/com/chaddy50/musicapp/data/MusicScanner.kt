@@ -23,6 +23,8 @@ import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.utilities.extractCatalogNumber
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -42,6 +44,9 @@ data class MusicScanner(
     val genreMappingRepository: GenreMappingRepository,
     val performanceRepository: PerformanceRepository,
 ) {
+    private val _scanProgress = MutableSharedFlow<Float>()
+    val scanProgress = _scanProgress.asSharedFlow()
+
     private var genreMappings: Map<String, String> = emptyMap()
     private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
     private var performanceIdCache: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
@@ -79,6 +84,9 @@ data class MusicScanner(
                 null,
                 null
             )?.use { cursor ->
+                val numberOfTracksToScan = cursor.count
+                var numberOfTracksScanned = 0
+
                 val columns = ColumnIndices(cursor)
 
                 val trackBuffer = mutableListOf<Track>()
@@ -117,6 +125,9 @@ data class MusicScanner(
                             performanceId
                         )
                     )
+
+                    numberOfTracksScanned++
+                    _scanProgress.emit(numberOfTracksScanned.toFloat() / numberOfTracksToScan.toFloat())
 
                     if (trackBuffer.size >= BATCH_SIZE) {
                         trackRepository.insertMultiple(trackBuffer)
