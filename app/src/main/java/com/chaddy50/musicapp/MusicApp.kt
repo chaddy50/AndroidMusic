@@ -96,9 +96,7 @@ class MusicApp : ComponentActivity() {
             val trackCount = viewModel.getTrackCount()
 
             if (trackCount == 0) {
-                Toast.makeText(this@MusicApp, "Scanning library", Toast.LENGTH_SHORT).show()
                 viewModel.refreshLibrary()
-                Toast.makeText(this@MusicApp, "Scan complete", Toast.LENGTH_SHORT).show()
             }
         }
     }
