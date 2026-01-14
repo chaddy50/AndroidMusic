@@ -36,7 +36,7 @@ fun TrackCard(
             Column(
                 modifier = Modifier
                     .padding(10.dp, 0.dp)
-                    .width(20.dp)
+                    .width(30.dp)
             ) {
                 Text(track.number.toString())
             }
