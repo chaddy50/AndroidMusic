@@ -30,8 +30,7 @@ fun MusicScannerProgressBar(viewModel: MusicAppViewModel) {
     ) {
         Column {
             HorizontalDivider(
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
 
             Text(
@@ -42,7 +41,9 @@ fun MusicScannerProgressBar(viewModel: MusicAppViewModel) {
 
             LinearProgressIndicator(
                 progress = { scanProgress },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
             )
         }
     }
