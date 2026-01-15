@@ -15,14 +15,9 @@ import androidx.navigation.NavController
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(
-    shouldShow: Boolean,
     title: String,
     navController: NavController
 ) {
-    if (!shouldShow) {
-        return
-    }
-
     val canGoBack = navController.previousBackStackEntry != null
 
     CenterAlignedTopAppBar(

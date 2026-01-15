@@ -31,6 +31,7 @@ interface MusicAppScreen {
     fun Content(
         viewModel: MusicAppViewModel,
         navController: NavController,
-        backStackEntry: NavBackStackEntry
+        backStackEntry: NavBackStackEntry,
+        onTitleChanged: (title: String) -> Unit,
     )
 }
