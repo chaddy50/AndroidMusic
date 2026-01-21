@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.subGenresScreen
+package com.chaddy50.musicapp.features.screens.subGenresScreen
 
 import com.chaddy50.musicapp.data.entity.Genre
 

@@ -1,38 +1,33 @@
 package com.chaddy50.musicapp.viewModel
 
 import android.app.Application
-import android.content.ComponentName
+import android.media.MediaMetadataRetriever
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
-import androidx.media3.session.SessionToken
 import com.chaddy50.musicapp.data.MusicScanner
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
-import com.chaddy50.musicapp.services.PlaybackService
+import com.chaddy50.musicapp.features.nowPlayingBar.NowPlayingState
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
-import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MusicAppViewModel(
-    application: Application,
+    private val application: Application,
     private val musicScanner: MusicScanner,
     private val trackRepository: TrackRepository,
     private val genreRepository: GenreRepository,
 ) : ViewModel() {
-    private var controllerFuture: ListenableFuture<MediaController>? = null
-    private val controller: MediaController? get() = if (controllerFuture?.isDone == true) controllerFuture?.get() else null
+    val nowPlayingState = NowPlayingState(application, viewModelScope)
+    private val controller: MediaController? get() = nowPlayingState.controller
 
-    init {
-        val sessionToken = SessionToken(application.applicationContext, ComponentName(application.applicationContext, PlaybackService::class.java))
-        controllerFuture = MediaController.Builder(application.applicationContext, sessionToken).buildAsync()
-    }
     private val _selectedGenreId = MutableStateFlow<Int?>(null)
     val selectedGenreId = _selectedGenreId.asStateFlow()
 
@@ -54,6 +49,8 @@ class MusicAppViewModel(
     private val _scanProgress = MutableStateFlow(0f)
     val scanProgress = _scanProgress.asStateFlow()
 
+    var classicalGenreId: Int? = null
+
     init {
         viewModelScope.launch {
             initializeClassicalGenreId()
@@ -64,7 +61,6 @@ class MusicAppViewModel(
         }
     }
 
-    var classicalGenreId: Int? = null
 
     fun updateSelectedGenre(genreId: Int?) {
         _selectedGenreId.value = genreId
@@ -152,6 +148,19 @@ class MusicAppViewModel(
     }
 
     private fun buildMediaItem(track: Track): MediaItem {
+        val retriever = MediaMetadataRetriever()
+        val artworkData: ByteArray? = try {
+            retriever.setDataSource(
+                application,
+                track.uri.toUri()
+            ) // Use the path from the URI
+
+            retriever.embeddedPicture
+        } catch (e: Exception) {
+            null // Return null if artwork can't be retrieved
+        } finally {
+            retriever.release()
+        }
 
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
@@ -159,6 +168,8 @@ class MusicAppViewModel(
             .setGenre(track.genreName)
             .setAlbumArtist(track.albumArtistName)
             .setAlbumTitle(track.albumName)
+            .setDurationMs(track.duration.inWholeMilliseconds)
+            .setArtworkData(artworkData, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
             .build()
 
         return MediaItem.Builder()
@@ -166,5 +177,10 @@ class MusicAppViewModel(
             .setUri(track.uri)
             .setMediaMetadata(metadata)
             .build()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        nowPlayingState.release()
     }
 }

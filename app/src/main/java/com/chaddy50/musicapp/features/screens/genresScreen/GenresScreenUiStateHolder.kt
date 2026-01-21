@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.genresScreen
+package com.chaddy50.musicapp.features.screens.genresScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable

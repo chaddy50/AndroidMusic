@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.albumsScreen
+package com.chaddy50.musicapp.features.screens.albumsScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,8 +22,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.chaddy50.musicapp.data.entity.Album
-import com.chaddy50.musicapp.features.performancesScreen.PerformancesScreen
-import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
+import com.chaddy50.musicapp.features.screens.performancesScreen.PerformancesScreen
+import com.chaddy50.musicapp.features.screens.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable

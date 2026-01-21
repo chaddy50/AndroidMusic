@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.performancesScreen
+package com.chaddy50.musicapp.features.screens.subGenresScreen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,17 +10,15 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.features.tracksScreen.TracksScreen
+import com.chaddy50.musicapp.features.screens.albumsScreen.AlbumsScreen
 import com.chaddy50.musicapp.navigation.MusicAppScreen
 import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
-import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
-import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
-object PerformancesScreen : MusicAppScreen {
-    override val route = "performances_screen"
+object SubGenresScreen : MusicAppScreen {
+    override val route = "sub_genres_screen"
 
     @Composable
     override fun Content(
@@ -33,13 +31,17 @@ object PerformancesScreen : MusicAppScreen {
             navController,
             route,
             {
-                viewModel.updateSelectedAlbum(null)
+                viewModel.updateSelectedAlbumArtist(null)
             }
         )
 
-        val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
+        val selectedGenreId = viewModel.selectedGenreId.collectAsStateWithLifecycle()
+        val selectedAlbumArtistId = viewModel.selectedAlbumArtistId.collectAsStateWithLifecycle()
 
-        val stateHolder = rememberPerformancesScreenState(albumId.value)
+        val stateHolder = rememberSubGenresScreenState(
+            selectedGenreId.value,
+            selectedAlbumArtistId.value,
+        )
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
@@ -52,17 +54,12 @@ object PerformancesScreen : MusicAppScreen {
             uiState.isLoading,
             {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item {
-                        EntityHeader(viewModel, EntityType.Album)
-                    }
-
-                    items(uiState.performances) { performance ->
+                    items(uiState.genres) { genre ->
                         EntityCard(
-                            "${performance.year} - ${performance.artistName}",
+                            genre.name,
                             {
-                                viewModel.updateSelectedPerformance(performance.id)
-
-                                navController.navigate(TracksScreen.route)
+                                viewModel.updateSelectedSubGenre(genre.id)
+                                navController.navigate(AlbumsScreen.route)
                             }
                         )
                     }

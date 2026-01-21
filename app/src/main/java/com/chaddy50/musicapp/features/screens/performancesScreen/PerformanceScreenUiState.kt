@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.performancesScreen
+package com.chaddy50.musicapp.features.screens.performancesScreen
 
 import com.chaddy50.musicapp.data.entity.Performance
 

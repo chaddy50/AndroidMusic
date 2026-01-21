@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.subGenresScreen
+package com.chaddy50.musicapp.features.screens.subGenresScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -6,20 +6,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
-import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
-import com.chaddy50.musicapp.features.genresScreen.SubGenresScreenUiState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @Stable

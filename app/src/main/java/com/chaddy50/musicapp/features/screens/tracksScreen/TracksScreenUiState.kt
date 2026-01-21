@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.tracksScreen
+package com.chaddy50.musicapp.features.screens.tracksScreen
 
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist

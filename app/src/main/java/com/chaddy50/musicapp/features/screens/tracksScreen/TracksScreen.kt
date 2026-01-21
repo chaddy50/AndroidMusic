@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.tracksScreen
+package com.chaddy50.musicapp.features.screens.tracksScreen
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.fillMaxSize

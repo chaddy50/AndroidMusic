@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp.features.performancesScreen
+package com.chaddy50.musicapp.features.screens.performancesScreen
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
