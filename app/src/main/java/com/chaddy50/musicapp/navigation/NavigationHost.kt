@@ -48,6 +48,7 @@ fun NavigationHost(
     val isPlaying by viewModel.nowPlayingState.isPlaying.collectAsStateWithLifecycle()
     val playbackPosition by viewModel.nowPlayingState.playbackPosition.collectAsStateWithLifecycle()
     val duration = currentTrack?.mediaMetadata?.durationMs ?: 0
+    val isShuffleModeEnabled by viewModel.nowPlayingState.isShuffleModeEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -64,8 +65,10 @@ fun NavigationHost(
                     isPlaying,
                     playbackPosition,
                     duration,
+                    isShuffleModeEnabled,
                     { viewModel.nowPlayingState.playOrPause() },
-                    { viewModel.nowPlayingState.skipNext() }
+                    { viewModel.nowPlayingState.skipNext() },
+                    { viewModel.nowPlayingState.toggleShuffleMode() },
                 )
             }
         },

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
@@ -40,10 +41,14 @@ fun NowPlayingBar(
     isPlaying: Boolean,
     playbackPosition: Long,
     duration: Long,
+    isShuffleModeEnabled: Boolean,
     onPlayPauseClicked: () -> Unit,
     onSkipTrackClicked: () -> Unit,
+    onShuffleClicked: () -> Unit,
 ) {
-    val metadata = currentTrack?.mediaMetadata
+    if (currentTrack == null) return
+
+    val metadata = currentTrack.mediaMetadata
 
     BottomAppBar {
         Column(
@@ -58,7 +63,7 @@ fun NowPlayingBar(
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
                 AsyncImage(
-                    model = metadata?.artworkData,
+                    model = metadata.artworkData,
                     contentDescription = "Album art",
                     modifier = Modifier
                         .size(50.dp)
@@ -74,18 +79,27 @@ fun NowPlayingBar(
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Text(
-                        text = metadata?.title?.toString() ?: "Nothing Playing",
+                        text = metadata.title?.toString() ?: "Nothing Playing",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = metadata?.artist?.toString() ?: "Unknown Artist",
+                        text = metadata.artist?.toString() ?: "Unknown Artist",
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                IconButton(onClick = onShuffleClicked) {
+                    Icon(
+                        imageVector = Icons.Default.Shuffle,
+                        contentDescription = "Shuffle",
+                        // Tint the icon if shuffle is enabled
+                        tint = if (isShuffleModeEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -134,7 +148,9 @@ private fun NowPlayingBarPreview() {
         true,
         5,
         10,
+        true,
         {},
-        {}
+        {},
+        {},
     )
 }

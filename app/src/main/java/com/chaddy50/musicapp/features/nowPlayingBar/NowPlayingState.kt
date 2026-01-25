@@ -32,6 +32,9 @@ class NowPlayingState(
     private val _duration = MutableStateFlow(0L)
     val duration = _duration.asStateFlow()
 
+    private val _isShuffleModeEnabled = MutableStateFlow(false)
+    val isShuffleModeEnabled = _isShuffleModeEnabled.asStateFlow()
+
     private var controllerFuture: ListenableFuture<MediaController>
     val controller: MediaController? get() = if (controllerFuture.isDone) controllerFuture.get() else null
 
@@ -45,9 +48,8 @@ class NowPlayingState(
             MediaController.Builder(application, sessionToken).buildAsync()
         controllerFuture.addListener(
             {
-                // Controller is ready, attach a listener
+                // Controller is ready, attach a listener so that we get updates about the controller's state
                 controller?.addListener(this)
-                // Immediately update state with current player values
                 updateState()
             },
             MoreExecutors.directExecutor()
@@ -69,6 +71,11 @@ class NowPlayingState(
         }
     }
 
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        super.onShuffleModeEnabledChanged(shuffleModeEnabled)
+        _isShuffleModeEnabled.value = shuffleModeEnabled
+    }
+
     fun play() = controller?.play()
     fun pause() = controller?.pause()
     fun seekTo(position: Long) = controller?.seekTo(position)
@@ -80,6 +87,12 @@ class NowPlayingState(
             pause()
         } else {
             play()
+        }
+    }
+
+    fun toggleShuffleMode() {
+        controller?.let {
+            it.shuffleModeEnabled = !it.shuffleModeEnabled
         }
     }
 
@@ -104,6 +117,7 @@ class NowPlayingState(
             _isPlaying.value = it.isPlaying
             _duration.value = _currentTrack.value?.mediaMetadata?.durationMs ?: 0L
             _playbackPosition.value = it.currentPosition
+            _isShuffleModeEnabled.value = it.shuffleModeEnabled
             if (it.isPlaying) startPositionUpdates() else stopPositionUpdates()
         }
     }

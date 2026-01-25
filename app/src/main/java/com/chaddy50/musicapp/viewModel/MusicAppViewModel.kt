@@ -97,7 +97,7 @@ class MusicAppViewModel(
         classicalGenreId = genreRepository.getGenreByName("Classical")?.id
     }
 
-    fun playCurrentEntity(type: EntityType) {
+    fun playCurrentEntity(type: EntityType, shouldPlayShuffled: Boolean) {
         viewModelScope.launch {
             val tracksToPlay: List<Track> = when(type) {
                 EntityType.All -> {
@@ -131,6 +131,7 @@ class MusicAppViewModel(
                 }
 
                 controller?.let { controller ->
+                    controller.shuffleModeEnabled = shouldPlayShuffled
                     controller.setMediaItems(mediaItems)
                     controller.prepare()
                     controller.play()

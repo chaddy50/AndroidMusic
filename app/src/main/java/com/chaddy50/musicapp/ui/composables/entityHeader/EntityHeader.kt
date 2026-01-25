@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -97,7 +98,7 @@ fun EntityHeader(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Button(
-                    onClick = { viewModel.playCurrentEntity(type) },
+                    onClick = { viewModel.playCurrentEntity(type, false) },
                     modifier = Modifier
                         .fillMaxHeight()
                         .weight(1f)
@@ -106,13 +107,13 @@ fun EntityHeader(
                     Icon(Icons.Filled.PlayArrow, contentDescription = "Play button")
                 }
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { viewModel.playCurrentEntity(type, true)},
                     modifier = Modifier
                         .fillMaxHeight()
                         .weight(1f)
                         .padding(10.dp, 0.dp)
                 ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play button")
+                    Icon(Icons.Filled.Shuffle, contentDescription = "Play button")
                 }
             }
 
