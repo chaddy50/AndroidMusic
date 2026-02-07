@@ -62,16 +62,6 @@ fun NowPlayingBar(
                     .fillMaxWidth()
                     .padding(start = 8.dp, end = 8.dp, bottom = 8.dp)
             ) {
-                AsyncImage(
-                    model = metadata.artworkData,
-                    contentDescription = "Album art",
-                    modifier = Modifier
-                        .size(50.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop,
-                    placeholder = rememberVectorPainter(Icons.Default.MusicNote)
-                )
-
                 Column(
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -99,7 +89,7 @@ fun NowPlayingBar(
                         imageVector = Icons.Default.Shuffle,
                         contentDescription = "Shuffle",
                         // Tint the icon if shuffle is enabled
-                        tint = if (isShuffleModeEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        tint = if (isShuffleModeEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface
                     )
                 }
 

@@ -1,8 +1,6 @@
 package com.chaddy50.musicapp.viewModel
 
 import android.app.Application
-import android.media.MediaMetadataRetriever
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -20,7 +18,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class MusicAppViewModel(
-    private val application: Application,
+    application: Application,
     private val musicScanner: MusicScanner,
     private val trackRepository: TrackRepository,
     private val genreRepository: GenreRepository,
@@ -149,20 +147,6 @@ class MusicAppViewModel(
     }
 
     private fun buildMediaItem(track: Track): MediaItem {
-        val retriever = MediaMetadataRetriever()
-        val artworkData: ByteArray? = try {
-            retriever.setDataSource(
-                application,
-                track.uri.toUri()
-            ) // Use the path from the URI
-
-            retriever.embeddedPicture
-        } catch (e: Exception) {
-            null // Return null if artwork can't be retrieved
-        } finally {
-            retriever.release()
-        }
-
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
             .setArtist(if (track.parentGenreId == classicalGenreId) "${track.albumArtistName} • ${track.albumName}" else track.artistName)
@@ -170,7 +154,6 @@ class MusicAppViewModel(
             .setAlbumArtist(track.albumArtistName)
             .setAlbumTitle(track.albumName)
             .setDurationMs(track.duration.inWholeMilliseconds)
-            .setArtworkData(artworkData, MediaMetadata.PICTURE_TYPE_FRONT_COVER)
             .build()
 
         return MediaItem.Builder()
