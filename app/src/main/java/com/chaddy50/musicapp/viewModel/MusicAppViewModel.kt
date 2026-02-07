@@ -1,6 +1,7 @@
 package com.chaddy50.musicapp.viewModel
 
 import android.app.Application
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
@@ -154,6 +155,7 @@ class MusicAppViewModel(
             .setAlbumArtist(track.albumArtistName)
             .setAlbumTitle(track.albumName)
             .setDurationMs(track.duration.inWholeMilliseconds)
+            .setArtworkUri(track.artworkPath?.toUri())
             .build()
 
         return MediaItem.Builder()
