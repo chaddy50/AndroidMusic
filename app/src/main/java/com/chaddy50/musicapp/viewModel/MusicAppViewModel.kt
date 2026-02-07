@@ -139,12 +139,15 @@ class MusicAppViewModel(
         }
     }
 
-    fun playTrack(track: Track) {
-        val mediaItem = buildMediaItem(track)
+    fun playTrack(track: Track, allTracks: List<Track>) {
+        val mediaItems = allTracks.map { buildMediaItem(it) }
+        val trackIndex = allTracks.indexOfFirst { it.id == track.id }
 
-        controller?.setMediaItem(mediaItem)
-        controller?.prepare()
-        controller?.play()
+        controller?.let { controller ->
+            controller.setMediaItems(mediaItems, trackIndex, 0)
+            controller.prepare()
+            controller.play()
+        }
     }
 
     private fun buildMediaItem(track: Track): MediaItem {

@@ -101,7 +101,7 @@ object TracksScreen: MusicAppScreen {
                         items(tracks) { track ->
                             TrackCard(
                                 track,
-                                { viewModel.playTrack(track) }
+                                { viewModel.playTrack(track, uiState.tracks) }
                             )
                         }
                      }
