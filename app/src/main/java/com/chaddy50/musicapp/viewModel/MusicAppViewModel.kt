@@ -11,7 +11,7 @@ import com.chaddy50.musicapp.data.MusicScanner
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
-import com.chaddy50.musicapp.features.nowPlayingBar.NowPlayingState
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingState
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
