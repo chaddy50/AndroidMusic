@@ -51,11 +51,12 @@ object TracksScreen: MusicAppScreen {
             }
         )
 
-        val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
-        val performanceId = viewModel.selectedPerformanceId.collectAsStateWithLifecycle()
+        val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
+        val albumId by viewModel.selectedAlbumId.collectAsStateWithLifecycle()
+        val performanceId by viewModel.selectedPerformanceId.collectAsStateWithLifecycle()
         val stateHolder = rememberTracksScreenState(
-            albumId.value,
-            performanceId.value
+            albumId,
+            performanceId
         )
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
@@ -101,6 +102,7 @@ object TracksScreen: MusicAppScreen {
                         items(tracks) { track ->
                             TrackCard(
                                 track,
+                                currentTrack?.mediaId == track.id.toString(),
                                 { viewModel.playTrack(track, uiState.tracks) }
                             )
                         }

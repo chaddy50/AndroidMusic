@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,6 +25,7 @@ import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 @Composable
 fun TrackCard(
     track: Track,
+    isCurrentlyPlaying: Boolean,
     onTrackClicked: (Track) -> Unit,
 ) {
     Box(
@@ -34,11 +39,20 @@ fun TrackCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .padding(10.dp, 0.dp)
                     .width(30.dp)
             ) {
-                Text(track.number.toString())
+                if (isCurrentlyPlaying) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = "Now playing",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                } else {
+                    Text(track.number.toString())
+                }
             }
             Column (modifier = Modifier.weight(1f)){
                 Text(track.title)
