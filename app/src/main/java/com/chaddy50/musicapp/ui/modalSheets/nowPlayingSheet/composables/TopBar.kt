@@ -21,7 +21,7 @@ fun TopBar(onDismiss: () -> Unit) {
             .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         IconButton(
-            onClick = { onDismiss },
+            onClick = onDismiss,
             modifier = Modifier.align(Alignment.CenterStart)
         ) {
             Icon(

@@ -20,16 +20,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.NowPlayingSheet
+import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
+import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingBar
+import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.NowPlayingSheet
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreen
 import com.chaddy50.musicapp.ui.screens.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.ui.screens.genresScreen.GenresScreen
 import com.chaddy50.musicapp.ui.screens.performancesScreen.PerformancesScreen
 import com.chaddy50.musicapp.ui.screens.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
-import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
-import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable

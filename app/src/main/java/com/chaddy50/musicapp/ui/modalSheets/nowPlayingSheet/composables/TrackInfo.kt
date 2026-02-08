@@ -35,8 +35,12 @@ fun TrackInfo(currentTrack: MediaItem?) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        val artistName = currentTrack?.mediaMetadata?.artist?.toString() ?: "Unknown Artist"
+        val albumArtistName = currentTrack?.mediaMetadata?.albumArtist?.toString() ?: "Unknown Album Artist"
+        val albumName = currentTrack?.mediaMetadata?.albumTitle?.toString() ?: "Unknown Album"
+
         Text(
-            text = currentTrack?.mediaMetadata?.artist?.toString() ?: "Unknown Artist",
+            text = artistName,
             fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -45,28 +49,32 @@ fun TrackInfo(currentTrack: MediaItem?) {
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        if (albumArtistName != artistName) {
+            Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = currentTrack?.mediaMetadata?.albumArtist?.toString() ?: "Unknown Album Artist",
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = albumArtistName,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        if (albumName != albumArtistName) {
+            Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = currentTrack?.mediaMetadata?.albumTitle?.toString() ?: "Unknown Album",
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth()
-        )
+            Text(
+                text = albumName,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
     }
 }

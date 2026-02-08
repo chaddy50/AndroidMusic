@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.media3.common.MediaItem
@@ -21,6 +22,7 @@ import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.Playback
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.ProgressBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.TopBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.TrackInfo
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -36,6 +38,7 @@ fun NowPlayingSheet(
     onSkipToNextTrack: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
@@ -54,7 +57,12 @@ fun NowPlayingSheet(
                 .background(MaterialTheme.colorScheme.surface)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
-            TopBar(onDismiss)
+            TopBar({
+                coroutineScope.launch {
+                    sheetState.hide()
+                    onDismiss()
+                }
+            })
 
             Column(
                 modifier = Modifier
