@@ -29,9 +29,6 @@ class NowPlayingState(
     private val _playbackPosition = MutableStateFlow(0L)
     val playbackPosition = _playbackPosition.asStateFlow()
 
-    private val _duration = MutableStateFlow(0L)
-    val duration = _duration.asStateFlow()
-
     private val _isShuffleModeEnabled = MutableStateFlow(false)
     val isShuffleModeEnabled = _isShuffleModeEnabled.asStateFlow()
 
@@ -78,9 +75,8 @@ class NowPlayingState(
 
     fun play() = controller?.play()
     fun pause() = controller?.pause()
-    fun seekTo(position: Long) = controller?.seekTo(position)
-    fun skipNext() = controller?.seekToNextMediaItem()
-    fun skipPrevious() = controller?.seekToPreviousMediaItem()
+    fun skipNext(): () -> Unit = { controller?.seekToNextMediaItem() }
+    fun skipPrevious(): () -> Unit = { controller?.seekToPreviousMediaItem() }
 
     fun playOrPause() {
         if (_isPlaying.value) {
@@ -115,7 +111,6 @@ class NowPlayingState(
         controller?.let {
             _currentTrack.value = it.currentMediaItem
             _isPlaying.value = it.isPlaying
-            _duration.value = _currentTrack.value?.mediaMetadata?.durationMs ?: 0L
             _playbackPosition.value = it.currentPosition
             _isShuffleModeEnabled.value = it.shuffleModeEnabled
             if (it.isPlaying) startPositionUpdates() else stopPositionUpdates()

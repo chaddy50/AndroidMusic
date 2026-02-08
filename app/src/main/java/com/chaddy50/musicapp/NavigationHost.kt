@@ -50,8 +50,12 @@ fun NavigationHost(
     val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
     val isPlaying by viewModel.nowPlayingState.isPlaying.collectAsStateWithLifecycle()
     val playbackPosition by viewModel.nowPlayingState.playbackPosition.collectAsStateWithLifecycle()
-    val duration = currentTrack?.mediaMetadata?.durationMs ?: 0
+    val durationMs = currentTrack?.mediaMetadata?.durationMs ?: 0
     val isShuffleModeEnabled by viewModel.nowPlayingState.isShuffleModeEnabled.collectAsStateWithLifecycle()
+    val onPlayPause = { viewModel.nowPlayingState.playOrPause() }
+    val onSkipToPreviousTrack = viewModel.nowPlayingState.skipPrevious()
+    val onSkipToNextTrack = viewModel.nowPlayingState.skipNext()
+    val onShuffleToggled = { viewModel.nowPlayingState.toggleShuffleMode() }
 
     Box(
         modifier = Modifier
@@ -71,11 +75,11 @@ fun NavigationHost(
                         currentTrack,
                         isPlaying,
                         playbackPosition,
-                        duration,
+                        durationMs,
                         isShuffleModeEnabled,
-                        { viewModel.nowPlayingState.playOrPause() },
-                        { viewModel.nowPlayingState.skipNext() },
-                        { viewModel.nowPlayingState.toggleShuffleMode() },
+                        onPlayPause,
+                        onSkipToNextTrack,
+                        onShuffleToggled,
                         { shouldShowNowPlayingSheet = true },
                     )
                 }
@@ -111,6 +115,15 @@ fun NavigationHost(
 
         if (shouldShowNowPlayingSheet) {
             NowPlayingSheet(
+                currentTrack,
+                isPlaying,
+                playbackPosition,
+                durationMs,
+                isShuffleModeEnabled,
+                onShuffleToggled,
+                onPlayPause,
+                onSkipToPreviousTrack,
+                onSkipToNextTrack,
                 { shouldShowNowPlayingSheet = false }
             )
         }

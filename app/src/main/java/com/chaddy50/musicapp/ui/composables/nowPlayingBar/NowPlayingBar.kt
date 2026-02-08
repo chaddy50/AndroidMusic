@@ -40,10 +40,10 @@ fun NowPlayingBar(
     currentTrack: MediaItem?,
     isPlaying: Boolean,
     playbackPosition: Long,
-    duration: Long,
+    durationMs: Long,
     isShuffleModeEnabled: Boolean,
     onPlayPause: () -> Unit,
-    onSkipTrack: () -> Unit,
+    onSkipToNextTrack: () -> Unit,
     onShuffleToggled: () -> Unit,
     onExpand: () -> Unit,
 ) {
@@ -116,7 +116,7 @@ fun NowPlayingBar(
                     )
                 }
 
-                IconButton(onClick = onSkipTrack) {
+                IconButton(onClick = onSkipToNextTrack) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
                         contentDescription = "Skip to next track"
@@ -124,7 +124,7 @@ fun NowPlayingBar(
                 }
             }
 
-            val progress = if (duration > 0) playbackPosition.toFloat() / duration.toFloat() else 0f
+            val progress = if (durationMs > 0) playbackPosition.toFloat() / durationMs.toFloat() else 0f
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier

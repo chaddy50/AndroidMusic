@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.chaddy50.musicapp.data.entity.Track
-import java.text.SimpleDateFormat
+import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 
 @Composable
 fun TrackCard(
@@ -49,7 +49,7 @@ fun TrackCard(
                     .padding(10.dp, 0.dp),
                 horizontalAlignment = Alignment.End
             ) {
-                Text(SimpleDateFormat("m:ss").format(track.duration.inWholeMilliseconds))
+                Text(formatMillisecondsIntoMinutesAndSeconds(track.duration.inWholeMilliseconds))
             }
         }
     }
