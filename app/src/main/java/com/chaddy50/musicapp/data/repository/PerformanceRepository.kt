@@ -22,5 +22,7 @@ class PerformanceRepository(
 
     fun getPerformancesForAlbum(albumId: Int) = performanceDao.getPerformancesForAlbum(albumId)
 
+    fun getPerformancesForAlbumForGenre(albumId: Int, genreId: Int) = performanceDao.getPerformancesForAlbumForGenre(albumId, genreId)
+
     fun getNumberOfPerformancesForAlbum(albumId: Int) = performanceDao.getNumberOfPerformancesForAlbum(albumId)
 }

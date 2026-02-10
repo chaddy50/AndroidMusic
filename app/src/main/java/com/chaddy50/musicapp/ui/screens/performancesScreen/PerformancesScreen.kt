@@ -37,9 +37,10 @@ object PerformancesScreen : MusicAppScreen {
             }
         )
 
-        val albumId = viewModel.selectedAlbumId.collectAsStateWithLifecycle()
+        val albumId by viewModel.selectedAlbumId.collectAsStateWithLifecycle()
+        val subGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
 
-        val stateHolder = rememberPerformancesScreenState(albumId.value)
+        val stateHolder = rememberPerformancesScreenState(albumId, subGenreId)
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
         LaunchedEffect(uiState.screenTitle, uiState.isLoading) {

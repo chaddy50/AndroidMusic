@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 @Stable
 class PerformancesScreenUiStateHolder(
     albumId: Int?,
+    subGenreId: Int?,
     performanceRepository: PerformanceRepository,
     coroutineScope: CoroutineScope
 ) {
@@ -27,7 +28,11 @@ class PerformancesScreenUiStateHolder(
     init {
         var performances: Flow<List<Performance>> = flowOf(emptyList())
         if (albumId != null) {
-            performances = performanceRepository.getPerformancesForAlbum(albumId)
+            if (subGenreId != null) {
+                performances = performanceRepository.getPerformancesForAlbumForGenre(albumId, subGenreId)
+            } else {
+                performances = performanceRepository.getPerformancesForAlbum(albumId)
+            }
         }
 
         uiState = performances.map { performances ->
@@ -47,6 +52,7 @@ class PerformancesScreenUiStateHolder(
 @Composable
 fun rememberPerformancesScreenState(
     albumId: Int?,
+    subGenreId: Int?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     performanceRepository: PerformanceRepository = app.performanceRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope()
@@ -54,6 +60,7 @@ fun rememberPerformancesScreenState(
     return remember(albumId, performanceRepository, coroutineScope) {
         PerformancesScreenUiStateHolder(
             albumId,
+            subGenreId,
             performanceRepository,
             coroutineScope
         )

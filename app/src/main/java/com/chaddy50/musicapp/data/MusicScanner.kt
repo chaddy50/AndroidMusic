@@ -104,7 +104,7 @@ data class MusicScanner(
                     var performanceId: Int? = performanceIdCache[Pair(albumId, artistId)]
                     if (performanceId == null && genreMappings[genreName] == GENRE_CLASSICAL) {
                         performanceId =
-                            processPerformance(cursor, columns, trackId, albumId, artistId)
+                            processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
                         performanceIdCache.put(Pair(albumId, artistId), performanceId)
                     }
                     trackBuffer.add(
@@ -377,6 +377,7 @@ data class MusicScanner(
         trackId: Long,
         albumId: Int,
         artistId: Int,
+        genreId: Int,
     ): Int {
         val albumName = getAlbumName(cursor, columns)
         val artistName = getArtistName(cursor, columns)
@@ -390,8 +391,9 @@ data class MusicScanner(
                 getYear(
                     cursor,
                     columns,
-                    trackId
-                )
+                    trackId,
+                ),
+                genreId,
             )
         )
     }

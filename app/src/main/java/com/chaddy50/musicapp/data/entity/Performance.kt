@@ -33,5 +33,6 @@ data class Performance(
     val albumName: String,
     val artistId: Int,
     val artistName: String,
-    val year: String
+    val year: String,
+    val genreId: Int,
 )
