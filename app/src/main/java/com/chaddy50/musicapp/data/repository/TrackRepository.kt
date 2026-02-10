@@ -8,8 +8,6 @@ class TrackRepository(private val trackDao: TrackDao) {
 
     fun getAllTracks(): Flow<List<Track>> = trackDao.getAllTracks()
 
-    fun getTrackById(id: Int): Flow<Track?> = trackDao.getTrackById(id)
-
     fun getTracksForGenre(genreId: Int) = trackDao.getTracksForGenre(genreId)
 
     fun getTracksForAlbum(albumId: Int): Flow<List<Track>> = trackDao.getTracksForAlbum(albumId)
@@ -17,6 +15,8 @@ class TrackRepository(private val trackDao: TrackDao) {
     fun getTracksForPerformance(performanceId: Int): Flow<List<Track>> = trackDao.getTracksForPerformance(performanceId)
 
     fun getTracksForAlbumArtist(albumArtistId: Int) = trackDao.getTracksForAlbumArtist(albumArtistId)
+
+    fun getTracksForAlbumArtistInGenre(albumArtistId: Int, genreId: Int) = trackDao.getTracksForAlbumArtistInGenre(albumArtistId, genreId)
 
     fun getNumberOfTracksInAlbum(albumId: Int) = trackDao.getNumberOfTracksInAlbum(albumId)
 

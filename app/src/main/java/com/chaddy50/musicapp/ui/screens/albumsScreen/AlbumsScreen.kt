@@ -27,17 +27,12 @@ object AlbumsScreen: MusicAppScreen {
         backStackEntry: NavBackStackEntry,
         onTitleChanged: (title: String) -> Unit,
     ) {
-        val selectedSubGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
-
         CleanUpWhenNavigatingBackEffect(
             navController,
             route,
             {
-                if (selectedSubGenreId != null) {
-                    viewModel.updateSelectedSubGenre(null)
-                } else {
-                    viewModel.updateSelectedAlbumArtist(null)
-                }
+                viewModel.updateSelectedAlbumArtist(null)
+                viewModel.updateSelectedSubGenre(null)
             }
         )
 

@@ -17,10 +17,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
+import com.chaddy50.musicapp.ui.composables.SubGenreFilterButton
 import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.NowPlayingSheet
@@ -57,6 +59,12 @@ fun NavigationHost(
     val onSkipToNextTrack = viewModel.nowPlayingState.skipNext()
     val onShuffleToggled = { viewModel.nowPlayingState.toggleShuffleMode() }
 
+    val subGenres by viewModel.subGenresForAlbumArtist.collectAsStateWithLifecycle()
+    val selectedSubGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
+    val showFilterButton = subGenres.size > 1 && currentRoute == AlbumsScreen.route
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -65,7 +73,16 @@ fun NavigationHost(
             topBar = {
                 TopBar(
                     topBarTitle,
-                    navController
+                    navController,
+                    actions = {
+                        if (showFilterButton) {
+                            SubGenreFilterButton(
+                                subGenres = subGenres,
+                                selectedSubGenreId = selectedSubGenreId,
+                                onSubGenreSelected = { viewModel.updateSelectedSubGenre(it) }
+                            )
+                        }
+                    }
                 )
             },
             bottomBar = {

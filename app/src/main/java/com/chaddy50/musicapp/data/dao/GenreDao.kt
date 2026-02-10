@@ -38,7 +38,7 @@ interface GenreDao {
     @Query("SELECT * FROM genres WHERE parentGenreId IS NULL ORDER BY name ASC")
     fun getAllTopLevelGenres(): Flow<List<Genre>>
 
-    @Query("SELECT * FROM genres WHERE parentGenreId = :parentGenreId")
+    @Query("SELECT * FROM genres WHERE parentGenreId = :parentGenreId ORDER BY name ASC")
     fun getSubGenres(parentGenreId: Int): Flow<List<Genre>>
 
     @Query("SELECT id FROM genres WHERE parentGenreId = :parentGenreId")

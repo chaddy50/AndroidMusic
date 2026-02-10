@@ -1,5 +1,6 @@
 package com.chaddy50.musicapp.ui.composables
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -16,7 +17,8 @@ import androidx.navigation.NavController
 @Composable
 fun TopBar(
     title: String,
-    navController: NavController
+    navController: NavController,
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     val canGoBack = navController.previousBackStackEntry != null
 
@@ -35,6 +37,7 @@ fun TopBar(
                     )
                 }
             }
-        }
+        },
+        actions = actions,
     )
 }

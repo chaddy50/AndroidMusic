@@ -13,9 +13,17 @@ import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingState
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
+import com.chaddy50.musicapp.data.entity.Genre
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MusicAppViewModel(
@@ -49,6 +57,20 @@ class MusicAppViewModel(
     val scanProgress = _scanProgress.asStateFlow()
 
     var classicalGenreId: Int? = null
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val subGenresForAlbumArtist: StateFlow<List<Genre>> = combine(
+        _selectedGenreId,
+        _selectedAlbumArtistId
+    ) { genreId, albumArtistId ->
+        Pair(genreId, albumArtistId)
+    }.flatMapLatest { (genreId, albumArtistId) ->
+        if (genreId != null && genreId == classicalGenreId && albumArtistId != null) {
+            genreRepository.getSubGenresForAlbumArtist(genreId, albumArtistId)
+        } else {
+            flowOf(emptyList())
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
         viewModelScope.launch {
@@ -108,7 +130,14 @@ class MusicAppViewModel(
                 }
                 EntityType.AlbumArtist -> {
                     val albumArtistId = _selectedAlbumArtistId.value
-                    if (albumArtistId != null) trackRepository.getTracksForAlbumArtist(albumArtistId).first() else emptyList()
+                    val subGenreId = _selectedSubGenreId.value
+                    if (albumArtistId != null) {
+                        if (subGenreId != null) {
+                            trackRepository.getTracksForAlbumArtistInGenre(albumArtistId, subGenreId).first()
+                        } else {
+                            trackRepository.getTracksForAlbumArtist(albumArtistId).first()
+                        }
+                    } else emptyList()
                 }
                 EntityType.Album -> {
                     val albumId = _selectedAlbumId.value

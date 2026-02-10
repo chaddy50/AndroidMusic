@@ -64,6 +64,14 @@ interface TrackDao {
     """)
     fun getTracksForAlbumArtist(albumArtistId: Int): Flow<List<Track>>
 
+    @Query("""
+        SELECT tracks.* FROM tracks
+        INNER JOIN albums on tracks.albumId = albums.id
+        WHERE albums.artistId = :albumArtistId AND tracks.genreId = :genreId
+        ORDER BY albums.year, tracks.discNumber, tracks.number ASC
+    """)
+    fun getTracksForAlbumArtistInGenre(albumArtistId: Int, genreId: Int): Flow<List<Track>>
+
     @Query("SELECT * FROM tracks WHERE genreId = :genreId")
     fun getTracksForGenre(genreId: Int): Flow<List<Track>>
 }
