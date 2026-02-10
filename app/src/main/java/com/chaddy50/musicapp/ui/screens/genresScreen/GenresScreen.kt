@@ -56,7 +56,9 @@ object GenresScreen : MusicAppScreen {
                     }
                 }
 
-            }
+            },
+            onPlay = { viewModel.playCurrentEntity(EntityType.All, false) },
+            onShuffle = { viewModel.playCurrentEntity(EntityType.All, true) },
         )
     }
 }

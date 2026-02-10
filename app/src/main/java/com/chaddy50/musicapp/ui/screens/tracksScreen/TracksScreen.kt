@@ -108,7 +108,9 @@ object TracksScreen: MusicAppScreen {
                         }
                      }
                 }
-            }
+            },
+            onPlay = { viewModel.playCurrentEntity(EntityType.Album, false) },
+            onShuffle = { viewModel.playCurrentEntity(EntityType.Album, true) },
         )
     }
 }

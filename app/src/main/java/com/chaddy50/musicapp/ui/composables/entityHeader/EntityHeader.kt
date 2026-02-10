@@ -3,19 +3,16 @@ package com.chaddy50.musicapp.ui.composables.entityHeader
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -80,42 +77,20 @@ fun EntityHeader(
             Row(modifier = Modifier.padding(10.dp, 3.dp)) {
                 Text(uiState.title, style = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold))
             }
-            Row(modifier = Modifier.padding(10.dp, 3.dp)) {
-                Text(uiState.subtitle, style = TextStyle(fontSize = 14.sp))
+
+            if (uiState.subtitle.isNotEmpty()) {
+                Row(modifier = Modifier.padding(10.dp, 3.dp)) {
+                    Text(uiState.subtitle, style = TextStyle(fontSize = 14.sp))
+                }
             }
 
-            if (uiState.details != null) {
+            if (!uiState.details.isNullOrEmpty()) {
                 Row(modifier = Modifier.padding(10.dp, 3.dp)) {
                     Text(uiState.details!!, style = TextStyle(fontSize = 14.sp))
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .height(80.dp)
-                    .fillMaxWidth()
-                    .padding(0.dp, 10.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Button(
-                    onClick = { viewModel.playCurrentEntity(type, false) },
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f)
-                        .padding(10.dp, 0.dp)
-                ) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play button")
-                }
-                Button(
-                    onClick = { viewModel.playCurrentEntity(type, true)},
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(1f)
-                        .padding(10.dp, 0.dp)
-                ) {
-                    Icon(Icons.Filled.Shuffle, contentDescription = "Play button")
-                }
-            }
+            Spacer(modifier = Modifier.size(8.dp))
 
             HorizontalDivider(
                 modifier = Modifier

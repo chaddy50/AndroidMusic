@@ -64,7 +64,9 @@ object ArtistsScreen: MusicAppScreen {
                     }
                 }
 
-            }
+            },
+            onPlay = { viewModel.playCurrentEntity(EntityType.Genre, false) },
+            onShuffle = { viewModel.playCurrentEntity(EntityType.Genre, true) },
         )
     }
 }

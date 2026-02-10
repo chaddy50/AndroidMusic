@@ -69,7 +69,9 @@ object AlbumsScreen: MusicAppScreen {
                     }
                 }
 
-            }
+            },
+            onPlay = { viewModel.playCurrentEntity(EntityType.AlbumArtist, false) },
+            onShuffle = { viewModel.playCurrentEntity(EntityType.AlbumArtist, true) },
         )
     }
 }
