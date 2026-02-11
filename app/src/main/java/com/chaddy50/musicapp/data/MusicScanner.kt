@@ -49,7 +49,7 @@ data class MusicScanner(
 
     private var genreMappings: Map<String, String> = emptyMap()
     private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
-    private var performanceIdCache: MutableMap<Pair<Int, Int>, Int> = mutableMapOf()
+    private var performanceIdCache: MutableMap<Pair<Int, Int>, Pair<Int, String?>> = mutableMapOf()
 
     private val BATCH_SIZE = 500
 
@@ -101,12 +101,13 @@ data class MusicScanner(
                     val (albumId, albumName, albumArtworkPath) =
                         processAlbum(cursor, columns, trackId, albumArtistId)
 
-                    var performanceId: Int? = performanceIdCache[Pair(albumId, artistId)]
-                    if (performanceId == null && genreMappings[genreName] == GENRE_CLASSICAL) {
-                        performanceId =
-                            processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
-                        performanceIdCache.put(Pair(albumId, artistId), performanceId)
+                    var cachedPerformance: Pair<Int, String?>? = performanceIdCache[Pair(albumId, artistId)]
+                    if (cachedPerformance == null && genreMappings[genreName] == GENRE_CLASSICAL) {
+                        cachedPerformance = processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
+                        performanceIdCache.put(Pair(albumId, artistId), cachedPerformance)
                     }
+                    val artworkPath = if (cachedPerformance?.second != null) cachedPerformance.second else albumArtworkPath
+
                     trackBuffer.add(
                         createTrack(
                             cursor,
@@ -120,10 +121,10 @@ data class MusicScanner(
                             artistName,
                             albumId,
                             albumName,
-                            albumArtworkPath,
+                            artworkPath,
                             albumArtistId,
                             albumArtistName,
-                            performanceId
+                            cachedPerformance?.first,
                         )
                     )
 
@@ -301,14 +302,14 @@ data class MusicScanner(
     private fun saveAlbumArtworkToFile(
         context: Context,
         bitmap: Bitmap,
-        albumId: Int,
+        id: Int,
     ): String? {
         val directory = File(context.filesDir, "album_artwork")
         if (!directory.exists()) {
             directory.mkdirs()
         }
 
-        val file = File(directory, "$albumId.jpg")
+        val file = File(directory, "$id.jpg")
         return try {
             FileOutputStream(file).use { outputStream ->
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
@@ -378,10 +379,11 @@ data class MusicScanner(
         albumId: Int,
         artistId: Int,
         genreId: Int,
-    ): Int {
+    ): Pair<Int, String?> {
         val albumName = getAlbumName(cursor, columns)
         val artistName = getArtistName(cursor, columns)
-        return performanceRepository.insert(
+
+        val performanceId = performanceRepository.insert(
             Performance(
                 0,
                 albumId,
@@ -393,9 +395,16 @@ data class MusicScanner(
                     columns,
                     trackId,
                 ),
-                genreId,
+                genreId
             )
         )
+
+        val performanceArtworkBitmap = getAlbumArtwork(context, trackId)
+        val performanceArtworkPath = performanceArtworkBitmap?.let { bitmap ->
+            saveAlbumArtworkToFile(context, bitmap, performanceId)
+        }
+
+        return Pair(performanceId, performanceArtworkPath)
     }
     //#endregion
 
