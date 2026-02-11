@@ -67,7 +67,7 @@ class EntityHeaderStateHolder(
             flowOf(
                 EntityHeaderState(
                     "All Music",
-                    "$numberOfGenres genre - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
+                    "$numberOfGenres genres - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
                     "",
                     null,
                     false
@@ -101,10 +101,11 @@ class EntityHeaderStateHolder(
                     performanceRepository.getPerformanceById(selectedPerformanceId),
                     trackRepository.getNumberOfTracksInPerformance(selectedPerformanceId)
                 ) { album, performance, numberOfTracks ->
+                    val tracksLabel = if (selectedGenreId == viewModel.classicalGenreId) "movements" else "tracks"
                     EntityHeaderState(
                         album?.title ?: "Album",
-                        "${performance?.year} - ${performance.artistName}",
-                        "$numberOfTracks tracks",
+                        "${performance.year} - ${performance.artistName}",
+                        "$numberOfTracks $tracksLabel",
                         null,
                         false
                     )
@@ -158,9 +159,10 @@ class EntityHeaderStateHolder(
             genreRepository.getGenreById(selectedGenreId),
                 albumArtistRepository.getNumberOfAlbumArtistsForGenre(selectedGenreId)
             ) { genre, numberOfAlbumArtists ->
+                val artistLabel = if (genre?.id == viewModel.classicalGenreId) "composers" else "artists"
                 EntityHeaderState(
                     genre?.name ?: "Genre",
-                    "$numberOfAlbumArtists artists",
+                    "$numberOfAlbumArtists $artistLabel",
                     null,
                     null,
                     false
@@ -188,10 +190,11 @@ class EntityHeaderStateHolder(
                 genreRepository.getGenreById(selectedGenreId),
                 albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
             ) { albumArtist, genre, numberOfAlbums ->
+                val albumsLabel = if (genre?.id == viewModel.classicalGenreId) "works" else "albums"
                 EntityHeaderState(
                     albumArtist?.name ?: "Artist",
                     genre?.name ?: "Genre",
-                    "$numberOfAlbums albums",
+                    "$numberOfAlbums $albumsLabel",
                     null,
                     false
                 )
