@@ -7,11 +7,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Performance
+import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -21,11 +24,20 @@ class PerformancesScreenUiStateHolder(
     albumId: Int?,
     subGenreId: Int?,
     performanceRepository: PerformanceRepository,
+    albumRepository: AlbumRepository,
     coroutineScope: CoroutineScope
 ) {
     var uiState: StateFlow<PerformanceScreenUiState>
 
     init {
+        val albumTitle: Flow<String> = if (albumId != null) {
+            albumRepository.getAlbumById(albumId)
+                .filterNotNull() // Ensure we don't proceed with a null album
+                .map { it.title }
+        } else {
+            flowOf("Performances") // Default title
+        }
+
         var performances: Flow<List<Performance>> = flowOf(emptyList())
         if (albumId != null) {
             if (subGenreId != null) {
@@ -35,9 +47,9 @@ class PerformancesScreenUiStateHolder(
             }
         }
 
-        uiState = performances.map { performances ->
+        uiState = combine(performances, albumTitle){ performances, albumTitle ->
             PerformanceScreenUiState(
-                "Performances",
+                albumTitle,
                 performances,
                 false,
             )
@@ -55,6 +67,7 @@ fun rememberPerformancesScreenState(
     subGenreId: Int?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     performanceRepository: PerformanceRepository = app.performanceRepository,
+    albumRepository: AlbumRepository = app.albumRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope()
 ): PerformancesScreenUiStateHolder {
     return remember(albumId, performanceRepository, coroutineScope) {
@@ -62,6 +75,7 @@ fun rememberPerformancesScreenState(
             albumId,
             subGenreId,
             performanceRepository,
+            albumRepository,
             coroutineScope
         )
     }
