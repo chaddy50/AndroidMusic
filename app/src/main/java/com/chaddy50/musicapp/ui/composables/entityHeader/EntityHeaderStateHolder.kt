@@ -13,6 +13,7 @@ import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -99,13 +100,14 @@ class EntityHeaderStateHolder(
                 combine(
                     albumRepository.getAlbumById(selectedAlbumId),
                     performanceRepository.getPerformanceById(selectedPerformanceId),
-                    trackRepository.getNumberOfTracksInPerformance(selectedPerformanceId)
-                ) { album, performance, numberOfTracks ->
+                    trackRepository.getTracksForPerformance(selectedPerformanceId)
+                ) { album, performance, tracks ->
                     val tracksLabel = if (selectedGenreId == viewModel.classicalGenreId) "movements" else "tracks"
+                    val performanceDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
                     EntityHeaderState(
                         album?.title ?: "Album",
                         "${performance.year} - ${performance.artistName}",
-                        "$numberOfTracks $tracksLabel",
+                        "${tracks.size} $tracksLabel - ${formatMillisecondsIntoMinutesAndSeconds(performanceDurationMs)}",
                         null,
                         false
                     )
@@ -119,13 +121,14 @@ class EntityHeaderStateHolder(
 
                     combine(
                         albumArtistRepository.getAlbumArtistById(album.artistId),
-                        trackRepository.getNumberOfTracksInAlbum(selectedAlbumId),
+                        trackRepository.getTracksForAlbum(selectedAlbumId),
                         performanceRepository.getNumberOfPerformancesForAlbum(selectedAlbumId)
-                    ) { albumArtist, numberOfTracks, numberOfPerformances ->
+                    ) { albumArtist, tracks, numberOfPerformances ->
+                        val albumDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
                         EntityHeaderState(
                             album.title,
                             albumArtist?.name ?: "Unknown Artist",
-                            getDetailsForAlbumNoPerformance(selectedGenreId, album, numberOfTracks, numberOfPerformances),
+                            getDetailsForAlbumNoPerformance(selectedGenreId, album, tracks.size, numberOfPerformances, albumDurationMs),
                             if (selectedGenreId == viewModel.classicalGenreId) null else album.artworkPath,
                             false
                         )
@@ -139,13 +142,17 @@ class EntityHeaderStateHolder(
         genreId: Int?,
         album: Album,
         numberOfTracks: Int,
-        numberOfPerformances: Int
+        numberOfPerformances: Int,
+        albumDurationMs: Long,
     ): String {
-        var subtitle = "${album.year}"
+        var subtitle = album.year
         if (genreId == viewModel.classicalGenreId) {
             subtitle += " - $numberOfPerformances performances"
         } else {
             subtitle += " - $numberOfTracks tracks"
+        }
+        if (genreId != viewModel.classicalGenreId) {
+            subtitle += " - ${formatMillisecondsIntoMinutesAndSeconds(albumDurationMs)}"
         }
         return subtitle
     }
