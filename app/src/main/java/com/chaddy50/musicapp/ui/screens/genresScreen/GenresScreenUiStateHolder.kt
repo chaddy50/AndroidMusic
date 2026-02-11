@@ -18,13 +18,13 @@ class GenresScreenUiStateHolder(
     genreRepository: GenreRepository,
     coroutineScope: CoroutineScope,
 ) {
-    var uiState: StateFlow<SubGenresScreenUiState>
+    var uiState: StateFlow<GenresScreenUiState>
 
     init {
         val genres = genreRepository.getAllTopLevelGenres()
 
         uiState = genres.map { genres ->
-            SubGenresScreenUiState(
+            GenresScreenUiState(
                 "Genres",
                 genres,
                 false
@@ -32,7 +32,7 @@ class GenresScreenUiStateHolder(
         }.stateIn(
             scope = coroutineScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = SubGenresScreenUiState(isLoading = true)
+            initialValue = GenresScreenUiState(isLoading = true)
         )
     }
 }
