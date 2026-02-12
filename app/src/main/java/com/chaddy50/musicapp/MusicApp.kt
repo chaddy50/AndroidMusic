@@ -22,6 +22,9 @@ import com.chaddy50.musicapp.data.MusicScanner
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbClient
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusClient
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
@@ -114,6 +117,7 @@ class MusicApplication: Application() {
     val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao()) }
     val genreMappingRepository by lazy { GenreMappingRepository(database.genreMappingDao()) }
     val performanceRepository by lazy { PerformanceRepository(database.performanceDao()) }
+    val composerRepository by lazy { ComposerRepository(database.composerDao()) }
 
     val musicScanner by lazy {
         MusicScanner(
@@ -124,7 +128,10 @@ class MusicApplication: Application() {
             albumRepository,
             trackRepository,
             genreMappingRepository,
-            performanceRepository
+            performanceRepository,
+            composerRepository,
+            OpenOpusClient.service,
+            AudioDbClient.service,
         )
     }
 

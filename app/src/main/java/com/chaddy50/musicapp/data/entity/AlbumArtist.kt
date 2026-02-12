@@ -8,5 +8,6 @@ data class AlbumArtist(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val name: String,
     val sortName: String,
-    val genreId: Int
+    val genreId: Int,
+    val portraitPath: String? = null,
 )

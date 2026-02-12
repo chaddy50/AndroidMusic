@@ -10,29 +10,39 @@ import android.util.Size
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbService
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusComposer
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusService
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Artist
+import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.entity.Performance
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.utilities.extractCatalogNumber
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
+import java.text.Normalizer
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 const val GENRE_CLASSICAL = "Classical"
+private const val API_RATE_LIMIT_DELAY = 500L
 
 data class MusicScanner(
     val context: Context,
@@ -43,11 +53,14 @@ data class MusicScanner(
     val trackRepository: TrackRepository,
     val genreMappingRepository: GenreMappingRepository,
     val performanceRepository: PerformanceRepository,
+    val composerRepository: ComposerRepository,
+    val openOpusService: OpenOpusService,
+    val audioDbService: AudioDbService,
 ) {
     private val _scanProgress = MutableSharedFlow<Float>()
     val scanProgress = _scanProgress.asSharedFlow()
 
-    private var genreMappings: Map<String, String> = emptyMap()
+    private var classicalGenreMappings: Map<String, String> = emptyMap()
     private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
     private var performanceIdCache: MutableMap<Pair<Int, Int>, Triple<Int, String?, String>> = mutableMapOf()
 
@@ -55,6 +68,8 @@ data class MusicScanner(
 
     private val processedArtists = mutableSetOf<Pair<Int, String>>()
     private val processedAlbums = mutableSetOf<ProcessAlbumResult>()
+    private val processedComposers = mutableSetOf<Int>()
+    private val albumArtistPortraitCache = mutableMapOf<String, String?>()
     private var metadataRetriever = MediaMetadataRetriever()
     private var hasRetrieverBeenInitializedForTrack = false
 
@@ -96,14 +111,14 @@ data class MusicScanner(
                     val trackId = cursor.getLong(columns.trackId)
 
                     val (genreId, genreName, parentGenreId) = processGenre(cursor, columns)
+                    val isClassical = classicalGenreMappings[genreName] == GENRE_CLASSICAL
                     val (artistId, artistName) = processArtist(cursor, columns)
-                    val (albumArtistId, albumArtistName) = processAlbumArtist(cursor, columns, genreId)
+                    val (albumArtistId, albumArtistName) = processAlbumArtist(cursor, columns, genreId, genreName)
                     val (albumId, albumName, albumArtworkPath, albumYear) =
                         processAlbum(cursor, columns, trackId, albumArtistId)
-
-                    val isClassical = genreMappings[genreName] == GENRE_CLASSICAL
                     var performance: Triple<Int, String?, String>? = null
                     if (isClassical) {
+                        processComposer(albumArtistId, albumArtistName)
                         performance = processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
                     }
 
@@ -164,7 +179,7 @@ data class MusicScanner(
 //        }
 
         // For now, hard coding everything
-        genreMappings = mapOf(
+        classicalGenreMappings = mapOf(
             "Solo Piano" to "Classical",
             "Symphony" to "Classical",
             "String Quartet" to "Classical",
@@ -208,7 +223,7 @@ data class MusicScanner(
     }
 
     private fun getParentGenreId(genreName: String): Int? {
-        val parentGenreName = genreMappings[genreName] ?: return null
+        val parentGenreName = classicalGenreMappings[genreName] ?: return null
         return parentGenreIdCache[parentGenreName]
     }
     //#endregion
@@ -234,17 +249,118 @@ data class MusicScanner(
     //#endregion
 
     //#region Album Artists
+    val genresToSkip = listOf("Anime", "Movie", "Video Game")
     private suspend fun processAlbumArtist(
         cursor: Cursor,
         columns: ColumnIndices,
         genreId: Int,
+        genreName: String,
     ): Pair<Int, String> {
+        val isClassical = classicalGenreMappings[genreName] == GENRE_CLASSICAL
+
         val albumArtistName = cursor.getStringOrNull(columns.albumArtistName) ?: "Unknown Artist"
+        val portraitPath = if (!isClassical && genreName !in genresToSkip) fetchArtistPortrait(albumArtistName) else null
         val albumArtistId = albumArtistRepository.findOrInsertAlbumArtist(
             albumArtistName,
-            genreId
+            genreId,
+            portraitPath,
         )
         return Pair(albumArtistId, albumArtistName)
+    }
+
+    private suspend fun fetchArtistPortrait(artistName: String): String? {
+        if (albumArtistPortraitCache.containsKey(artistName)) {
+            return albumArtistPortraitCache[artistName]
+        }
+
+        val portraitPath = try {
+            val response = audioDbService.searchArtist(artistName)
+            delay(API_RATE_LIMIT_DELAY)
+            val thumbnailUrl = response.artists?.firstOrNull()?.thumbnailUrl
+            downloadPortrait(thumbnailUrl, "artist_portraits", artistName.hashCode())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+
+        albumArtistPortraitCache[artistName] = portraitPath
+        return portraitPath
+    }
+    //#endregion
+
+    //#region Composers
+    private suspend fun processComposer(albumArtistId: Int, albumArtistName: String) {
+        if (processedComposers.contains(albumArtistId)) return
+        processedComposers.add(albumArtistId)
+
+        try {
+            val openOpusComposer = searchComposer(albumArtistName) ?: return
+
+            val portraitPath = downloadPortrait(openOpusComposer.portraitUrl, "composer_portraits", albumArtistId)
+
+            composerRepository.insert(
+                Composer(
+                    albumArtistId = albumArtistId,
+                    openOpusId = openOpusComposer.id,
+                    completeName = openOpusComposer.completeName,
+                    birthYear = openOpusComposer.birthDate?.take(4),
+                    deathYear = openOpusComposer.deathDate?.take(4),
+                    epoch = openOpusComposer.epoch,
+                    portraitPath = portraitPath,
+                )
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private suspend fun searchComposer(name: String): OpenOpusComposer? {
+        // Try the full name first
+        val response = openOpusService.searchComposers(name)
+        response.composers?.firstOrNull()?.let { return it }
+
+        // Strip diacritics and retry (e.g. "Saint-Saëns" → "Saint-Saens")
+        val normalized = stripDiacritics(name)
+        if (normalized != name) {
+            val normalizedResponse = openOpusService.searchComposers(normalized)
+            normalizedResponse.composers?.firstOrNull()?.let { return it }
+        }
+
+        // Try individual words of the name (e.g. "Saint-Saëns" → "Saint", "Saens")
+        val words = normalized.split(" ", "-").filter { it.isNotBlank() }
+        for (word in words) {
+            val wordResponse = openOpusService.searchComposers(word)
+            wordResponse.composers?.firstOrNull()?.let { return it }
+        }
+
+        return null
+    }
+
+    private fun stripDiacritics(input: String): String {
+        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+        return normalized.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+    }
+
+    private fun downloadPortrait(url: String?, directoryName: String, fileId: Int): String? {
+        if (url == null) return null
+        return try {
+            val directory = File(context.filesDir, directoryName)
+            if (!directory.exists()) directory.mkdirs()
+            val file = File(directory, "$fileId.jpg")
+
+            val client = OkHttpClient()
+            val request = Request.Builder().url(url).build()
+            val response = client.newCall(request).execute()
+            response.body?.byteStream()?.use { input ->
+                FileOutputStream(file).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            file.absolutePath
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
     //#endregion
 

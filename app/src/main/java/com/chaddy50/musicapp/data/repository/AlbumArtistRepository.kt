@@ -36,7 +36,11 @@ class AlbumArtistRepository(
 
     fun getNumberOfAlbumArtistsForGenre(genreId: Int) = albumArtistDao.getNumberOfAlbumArtistsForGenre(genreId)
 
-    suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Int): Int {
+    suspend fun findOrInsertAlbumArtist(
+        albumArtistName: String,
+        genreId: Int,
+        portraitPath: String? = null,
+    ): Int {
         val existingAlbumArtist = albumArtistDao.getAlbumArtistByName(albumArtistName)
         if (existingAlbumArtist != null) return existingAlbumArtist.id
 
@@ -44,6 +48,7 @@ class AlbumArtistRepository(
             name = albumArtistName,
             sortName = stripArticles(albumArtistName),
             genreId = genreId,
+            portraitPath = portraitPath,
         )
         albumArtistDao.insert(newAlbumArtist)
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1

@@ -10,6 +10,7 @@ import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -36,6 +37,7 @@ class EntityHeaderStateHolder(
     private val albumRepository: AlbumRepository,
     private val trackRepository: TrackRepository,
     private val performanceRepository: PerformanceRepository,
+    private val composerRepository: ComposerRepository,
     coroutineScope: CoroutineScope,
 ) {
     var uiState: StateFlow<EntityHeaderState>
@@ -196,15 +198,33 @@ class EntityHeaderStateHolder(
                 albumArtistRepository.getAlbumArtistById(selectedAlbumArtistId),
                 genreRepository.getGenreById(selectedGenreId),
                 albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
-            ) { albumArtist, genre, numberOfAlbums ->
-                val albumsLabel = if (genre?.id == viewModel.classicalGenreId) "works" else "albums"
-                EntityHeaderState(
-                    albumArtist?.name ?: "Artist",
-                    genre?.name ?: "Genre",
-                    "$numberOfAlbums $albumsLabel",
-                    null,
-                    false
-                )
+                composerRepository.getComposerForAlbumArtist(selectedAlbumArtistId),
+            ) { albumArtist, genre, numberOfAlbums, composer ->
+                val isClassical = genre?.id == viewModel.classicalGenreId
+                val albumsLabel = if (isClassical) "works" else "albums"
+
+                if (composer != null) {
+                    val lifespan = listOfNotNull(composer.birthYear, composer.deathYear)
+                        .joinToString("–")
+                    val subtitle = listOfNotNull(composer.epoch, lifespan.ifEmpty { null })
+                        .joinToString(" - ")
+
+                    EntityHeaderState(
+                        composer.completeName,
+                        subtitle,
+                        "$numberOfAlbums $albumsLabel",
+                        composer.portraitPath,
+                        false
+                    )
+                } else {
+                    EntityHeaderState(
+                        albumArtist?.name ?: "Artist",
+                        genre?.name ?: "Genre",
+                        "$numberOfAlbums $albumsLabel",
+                        albumArtist?.portraitPath,
+                        false
+                    )
+                }
             }
         }
     }
@@ -248,6 +268,7 @@ fun rememberEntityHeaderState(
     albumRepository: AlbumRepository = app.albumRepository,
     trackRepository: TrackRepository = app.trackRepository,
     performanceRepository: PerformanceRepository = app.performanceRepository,
+    composerRepository: ComposerRepository = app.composerRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): EntityHeaderStateHolder {
     return remember(
@@ -259,6 +280,7 @@ fun rememberEntityHeaderState(
         albumRepository,
         trackRepository,
         performanceRepository,
+        composerRepository,
         coroutineScope
     ) {
         EntityHeaderStateHolder(
@@ -270,6 +292,7 @@ fun rememberEntityHeaderState(
             albumRepository,
             trackRepository,
             performanceRepository,
+            composerRepository,
             coroutineScope
         )
     }

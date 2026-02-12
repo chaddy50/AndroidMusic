@@ -10,6 +10,7 @@ import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.AlbumDao
 import com.chaddy50.musicapp.data.dao.ArtistDao
 import com.chaddy50.musicapp.data.dao.GenreDao
+import com.chaddy50.musicapp.data.dao.ComposerDao
 import com.chaddy50.musicapp.data.dao.GenreMappingDao
 import com.chaddy50.musicapp.data.dao.PerformanceDao
 import com.chaddy50.musicapp.data.entity.Track
@@ -17,6 +18,7 @@ import com.chaddy50.musicapp.data.dao.TrackDao
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Artist
+import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.entity.GenreMapping
 import com.chaddy50.musicapp.data.entity.Performance
@@ -32,7 +34,8 @@ import kotlin.time.Duration.Companion.milliseconds
         AlbumArtist::class,
         Genre::class,
         GenreMapping::class,
-        Performance::class],
+        Performance::class,
+        Composer::class],
     version = 1,
     exportSchema = false
 )
@@ -45,6 +48,7 @@ abstract class MusicDatabase : RoomDatabase() {
     abstract fun genreDao(): GenreDao
     abstract fun genreMappingDao(): GenreMappingDao
     abstract fun performanceDao(): PerformanceDao
+    abstract fun composerDao(): ComposerDao
 
     companion object {
         @Volatile
