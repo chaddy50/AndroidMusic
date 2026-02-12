@@ -180,9 +180,14 @@ class MusicAppViewModel(
     }
 
     private fun buildMediaItem(track: Track): MediaItem {
+        var artist = track.artistName
+        if (track.parentGenreId == classicalGenreId) {
+            artist += " - ${track.year}"
+        }
+
         val metadata = MediaMetadata.Builder()
             .setTitle(track.title)
-            .setArtist(track.artistName)
+            .setArtist(artist)
             .setGenre(track.genreName)
             .setAlbumArtist(track.albumArtistName)
             .setAlbumTitle(track.albumName)

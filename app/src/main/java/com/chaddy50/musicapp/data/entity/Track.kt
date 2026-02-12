@@ -24,4 +24,5 @@ data class Track(
     val discNumber: Int,
     val performanceId: Int? = null,
     val artworkPath: String? = null,
+    val year: String
 )

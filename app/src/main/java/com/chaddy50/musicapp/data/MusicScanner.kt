@@ -49,12 +49,12 @@ data class MusicScanner(
 
     private var genreMappings: Map<String, String> = emptyMap()
     private var parentGenreIdCache: MutableMap<String, Int> = mutableMapOf()
-    private var performanceIdCache: MutableMap<Pair<Int, Int>, Pair<Int, String?>> = mutableMapOf()
+    private var performanceIdCache: MutableMap<Pair<Int, Int>, Triple<Int, String?, String>> = mutableMapOf()
 
     private val BATCH_SIZE = 500
 
     private val processedArtists = mutableSetOf<Pair<Int, String>>()
-    private val processedAlbums = mutableSetOf<Triple<Int, String, String?>>()
+    private val processedAlbums = mutableSetOf<ProcessAlbumResult>()
     private var metadataRetriever = MediaMetadataRetriever()
     private var hasRetrieverBeenInitializedForTrack = false
 
@@ -98,15 +98,20 @@ data class MusicScanner(
                     val (genreId, genreName, parentGenreId) = processGenre(cursor, columns)
                     val (artistId, artistName) = processArtist(cursor, columns)
                     val (albumArtistId, albumArtistName) = processAlbumArtist(cursor, columns, genreId)
-                    val (albumId, albumName, albumArtworkPath) =
+                    val (albumId, albumName, albumArtworkPath, albumYear) =
                         processAlbum(cursor, columns, trackId, albumArtistId)
 
-                    var cachedPerformance: Pair<Int, String?>? = performanceIdCache[Pair(albumId, artistId)]
-                    if (cachedPerformance == null && genreMappings[genreName] == GENRE_CLASSICAL) {
-                        cachedPerformance = processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
-                        performanceIdCache.put(Pair(albumId, artistId), cachedPerformance)
+                    val isClassical = genreMappings[genreName] == GENRE_CLASSICAL
+                    var performance: Triple<Int, String?, String>? = null
+                    if (isClassical) {
+                        performance = processPerformance(cursor, columns, trackId, albumId, artistId, genreId)
                     }
-                    val artworkPath = if (cachedPerformance?.second != null) cachedPerformance.second else albumArtworkPath
+
+                    // Always use performance artwork for classical
+                    // Even if it doesn't have artwork, we don't want to use artwork from a different performance
+                    val artworkPath = if (isClassical) performance?.second else albumArtworkPath
+                    // Same for year
+                    val year = if (isClassical) performance?.third ?: "Unknown Year" else albumYear
 
                     trackBuffer.add(
                         createTrack(
@@ -124,7 +129,8 @@ data class MusicScanner(
                             artworkPath,
                             albumArtistId,
                             albumArtistName,
-                            cachedPerformance?.first,
+                            performance?.first,
+                            year
                         )
                     )
 
@@ -243,17 +249,24 @@ data class MusicScanner(
     //#endregion
 
     //#region Albums
+    private data class ProcessAlbumResult(
+        val albumId: Int,
+        val albumName: String,
+        val artworkPath: String?,
+        val year: String
+    )
     private suspend fun processAlbum(
         cursor: Cursor,
         columns: ColumnIndices,
         trackId: Long,
         albumArtistId: Int,
-    ): Triple<Int, String, String?> {
+    ): ProcessAlbumResult {
         val albumId = (cursor.getLongOrNull(columns.albumId) ?: -1).toInt()
-        if (processedAlbums.any { it.first == albumId }) {
-            val albumName = processedAlbums.first { it.first == albumId }.second
-            val albumArtworkPath = processedAlbums.first { it.first == albumId}.third
-            return Triple(albumId, albumName, albumArtworkPath)
+        if (processedAlbums.any { it.albumId == albumId }) {
+            val albumName = processedAlbums.first { it.albumId == albumId }.albumName
+            val albumArtworkPath = processedAlbums.first { it.albumId == albumId}.artworkPath
+            val year = processedAlbums.first { it.albumId == albumId}.year
+            return ProcessAlbumResult(albumId, albumName, albumArtworkPath, year)
         }
 
         val albumName = getAlbumName(cursor, columns)
@@ -274,8 +287,8 @@ data class MusicScanner(
                 albumArtworkPath
             )
         )
-        processedAlbums.add(Triple(albumId, albumName, albumArtworkPath))
-        return Triple(albumId, albumName, albumArtworkPath)
+        processedAlbums.add(ProcessAlbumResult(albumId, albumName, albumArtworkPath, albumYear))
+        return ProcessAlbumResult(albumId, albumName, albumArtworkPath, albumYear)
     }
 
     private fun getAlbumArtwork(
@@ -339,6 +352,7 @@ data class MusicScanner(
         albumArtistId: Int,
         albumArtistName: String,
         performanceId: Int?,
+        year: String,
     ): Track {
         val trackUri = ContentUris.withAppendedId(
             MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
@@ -366,7 +380,8 @@ data class MusicScanner(
             trackDuration.toDuration(DurationUnit.MILLISECONDS),
             discNumber,
             performanceId,
-            albumArtworkPath
+            albumArtworkPath,
+            year
         )
     }
     //#endregion
@@ -379,9 +394,15 @@ data class MusicScanner(
         albumId: Int,
         artistId: Int,
         genreId: Int,
-    ): Pair<Int, String?> {
+    ): Triple<Int, String?, String>? {
+        val performance = performanceIdCache[Pair(albumId, artistId)]
+        if (performance != null) {
+            return Triple(performance.first, performance.second, performance.third)
+        }
+
         val albumName = getAlbumName(cursor, columns)
         val artistName = getArtistName(cursor, columns)
+        val year = getYear(cursor, columns, trackId)
 
         val performanceId = performanceRepository.insert(
             Performance(
@@ -390,11 +411,7 @@ data class MusicScanner(
                 albumName,
                 artistId,
                 artistName,
-                getYear(
-                    cursor,
-                    columns,
-                    trackId,
-                ),
+                year,
                 genreId
             )
         )
@@ -404,7 +421,8 @@ data class MusicScanner(
             saveAlbumArtworkToFile(context, bitmap, performanceId)
         }
 
-        return Pair(performanceId, performanceArtworkPath)
+        performanceIdCache.put(Pair(albumId, artistId), Triple(performanceId, performanceArtworkPath, year))
+        return Triple(performanceId, performanceArtworkPath, year)
     }
     //#endregion
 
