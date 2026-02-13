@@ -49,6 +49,19 @@ interface GenreDao {
     """)
     fun getAllTopLevelGenres(): Flow<List<Genre>>
 
+    @Query("""
+        SELECT DISTINCT COUNT(*) FROM genres
+        WHERE parentGenreId IS NULL AND EXISTS (
+            SELECT 1 FROM tracks
+            WHERE tracks.genreId = genres.id
+            UNION
+            SELECT 1 FROM tracks
+            INNER JOIN genres AS sub_genres ON tracks.genreId = sub_genres.id
+            WHERE sub_genres.parentGenreId = genres.id
+        )
+    """)
+    fun getNumberOfTopLevelGenres(): Flow<Int>
+
     @Query("SELECT * FROM genres WHERE parentGenreId = :parentGenreId ORDER BY name ASC")
     fun getSubGenres(parentGenreId: Int): Flow<List<Genre>>
 

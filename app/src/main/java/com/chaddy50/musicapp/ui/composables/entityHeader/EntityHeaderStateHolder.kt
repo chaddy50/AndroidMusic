@@ -69,17 +69,17 @@ class EntityHeaderStateHolder(
 
     private fun getStateForAllMusic(): Flow<EntityHeaderState> {
         return combine(
-            genreRepository.getNumberOfGenres(),
+            genreRepository.getNumberOfTopLevelGenres(),
             albumArtistRepository.getNumberOfAlbumArtists(),
             albumRepository.getNumberOfAlbums(),
             trackRepository.getNumberOfTracks(),
-        ) { numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks ->
-            AllMusicStats(numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks)
-        }.flatMapLatest { (numberOfGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks) ->
+        ) { numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks ->
+            AllMusicStats(numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks)
+        }.flatMapLatest { (numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks) ->
             flowOf(
                 EntityHeaderState(
                     "All Music",
-                    "$numberOfGenres genres - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
+                    "$numberOfTopLevelGenres genres - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
                     "",
                     null,
                     false
@@ -89,7 +89,7 @@ class EntityHeaderStateHolder(
     }
 
     data class AllMusicStats(
-        val numberOfGenres: Int,
+        val numberOfTopLevelGenres: Int,
         val numberOfAlbumArtists : Int,
         val numberOfAlbums: Int,
         val numberOfTracks: Int,
