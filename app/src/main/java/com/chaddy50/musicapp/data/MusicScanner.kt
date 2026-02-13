@@ -10,12 +10,10 @@ import android.util.Size
 import androidx.core.database.getIntOrNull
 import androidx.core.database.getLongOrNull
 import androidx.core.database.getStringOrNull
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbService
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusComposer
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusService
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Artist
-import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.entity.Performance
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
@@ -26,23 +24,20 @@ import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.utilities.extractCatalogNumber
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
-import java.text.Normalizer
 import java.io.FileOutputStream
 import java.io.IOException
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 const val GENRE_CLASSICAL = "Classical"
-private const val API_RATE_LIMIT_DELAY = 500L
+val GENRES_WITHOUT_ARTIST_ARTWORK = listOf("Anime", "Movie", "Video Game")
 
 data class MusicScanner(
     val context: Context,
@@ -54,8 +49,9 @@ data class MusicScanner(
     val genreMappingRepository: GenreMappingRepository,
     val performanceRepository: PerformanceRepository,
     val composerRepository: ComposerRepository,
-    val openOpusService: OpenOpusService,
-    val audioDbService: AudioDbService,
+    val openOpusRepository: OpenOpusRepository,
+    val audioDbRepository: AudioDbRepository,
+    val artworkDownloader: ArtworkDownloader,
 ) {
     private val _scanProgress = MutableSharedFlow<Float>()
     val scanProgress = _scanProgress.asSharedFlow()
@@ -249,7 +245,6 @@ data class MusicScanner(
     //#endregion
 
     //#region Album Artists
-    val genresToSkip = listOf("Anime", "Movie", "Video Game")
     private suspend fun processAlbumArtist(
         cursor: Cursor,
         columns: ColumnIndices,
@@ -259,7 +254,7 @@ data class MusicScanner(
         val isClassical = classicalGenreMappings[genreName] == GENRE_CLASSICAL
 
         val albumArtistName = cursor.getStringOrNull(columns.albumArtistName) ?: "Unknown Artist"
-        val portraitPath = if (!isClassical && genreName !in genresToSkip) fetchArtistPortrait(albumArtistName) else null
+        val portraitPath = if (!isClassical && genreName !in GENRES_WITHOUT_ARTIST_ARTWORK) fetchArtistPortrait(albumArtistName) else null
         val albumArtistId = albumArtistRepository.findOrInsertAlbumArtist(
             albumArtistName,
             genreId,
@@ -273,16 +268,7 @@ data class MusicScanner(
             return albumArtistPortraitCache[artistName]
         }
 
-        val portraitPath = try {
-            val response = audioDbService.searchArtist(artistName)
-            delay(API_RATE_LIMIT_DELAY)
-            val thumbnailUrl = response.artists?.firstOrNull()?.thumbnailUrl
-            downloadPortrait(thumbnailUrl, "artist_portraits", artistName.hashCode())
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-
+        val portraitPath = audioDbRepository.fetchArtistPortraitUrl(artistName)
         albumArtistPortraitCache[artistName] = portraitPath
         return portraitPath
     }
@@ -293,74 +279,7 @@ data class MusicScanner(
         if (processedComposers.contains(albumArtistId)) return
         processedComposers.add(albumArtistId)
 
-        try {
-            val openOpusComposer = searchComposer(albumArtistName) ?: return
-
-            val portraitPath = downloadPortrait(openOpusComposer.portraitUrl, "composer_portraits", albumArtistId)
-
-            composerRepository.insert(
-                Composer(
-                    albumArtistId = albumArtistId,
-                    openOpusId = openOpusComposer.id,
-                    completeName = openOpusComposer.completeName,
-                    birthYear = openOpusComposer.birthDate?.take(4),
-                    deathYear = openOpusComposer.deathDate?.take(4),
-                    epoch = openOpusComposer.epoch,
-                    portraitPath = portraitPath,
-                )
-            )
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private suspend fun searchComposer(name: String): OpenOpusComposer? {
-        // Try the full name first
-        val response = openOpusService.searchComposers(name)
-        response.composers?.firstOrNull()?.let { return it }
-
-        // Strip diacritics and retry (e.g. "Saint-Saëns" → "Saint-Saens")
-        val normalized = stripDiacritics(name)
-        if (normalized != name) {
-            val normalizedResponse = openOpusService.searchComposers(normalized)
-            normalizedResponse.composers?.firstOrNull()?.let { return it }
-        }
-
-        // Try individual words of the name (e.g. "Saint-Saëns" → "Saint", "Saens")
-        val words = normalized.split(" ", "-").filter { it.isNotBlank() }
-        for (word in words) {
-            val wordResponse = openOpusService.searchComposers(word)
-            wordResponse.composers?.firstOrNull()?.let { return it }
-        }
-
-        return null
-    }
-
-    private fun stripDiacritics(input: String): String {
-        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
-        return normalized.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
-    }
-
-    private fun downloadPortrait(url: String?, directoryName: String, fileId: Int): String? {
-        if (url == null) return null
-        return try {
-            val directory = File(context.filesDir, directoryName)
-            if (!directory.exists()) directory.mkdirs()
-            val file = File(directory, "$fileId.jpg")
-
-            val client = OkHttpClient()
-            val request = Request.Builder().url(url).build()
-            val response = client.newCall(request).execute()
-            response.body?.byteStream()?.use { input ->
-                FileOutputStream(file).use { output ->
-                    input.copyTo(output)
-                }
-            }
-            file.absolutePath
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        composerRepository.fetchAndInsertComposer(albumArtistId, albumArtistName)
     }
     //#endregion
 

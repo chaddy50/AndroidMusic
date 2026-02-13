@@ -9,10 +9,8 @@ data class ComposerSearchResponse(
 
 data class OpenOpusStatus(
     @SerializedName("success") private val _success: String?,
-    @SerializedName("rows") val numberOfRows: Int?,
-) {
-    val wasSuccessful: Boolean get() = _success == "true"
-}
+    val rows: Int?,
+)
 
 data class OpenOpusComposer(
     val id: Int,

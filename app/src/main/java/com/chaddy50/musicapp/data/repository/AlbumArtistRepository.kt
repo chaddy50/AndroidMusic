@@ -1,5 +1,6 @@
 package com.chaddy50.musicapp.data.repository
 
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.flowOn
 class AlbumArtistRepository(
     private val albumArtistDao: AlbumArtistDao,
     private val genreDao: GenreDao,
+    private val audioDbRepository: AudioDbRepository,
 ) {
     suspend fun insert(albumArtist: AlbumArtist) {
         albumArtistDao.insert(albumArtist)
@@ -61,5 +63,12 @@ class AlbumArtistRepository(
 
             emitAll(albumArtistDao.getAlbumArtistsForGenreIds(genreIds))
         }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun fetchAndUpdatePortrait(
+        albumArtist: AlbumArtist,
+    ) {
+        val portraitPath = audioDbRepository.fetchArtistPortraitUrl(albumArtist.name)
+        update(albumArtist.copy(portraitPath = portraitPath))
     }
 }

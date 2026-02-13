@@ -23,7 +23,10 @@ import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbClient
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusClient
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
+import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
@@ -114,10 +117,13 @@ class MusicApplication: Application() {
     val albumRepository by lazy { AlbumRepository(database.albumDao()) }
     val artistRepository by lazy { ArtistRepository(database.artistDao()) }
     val genreRepository by lazy { GenreRepository(database.genreDao()) }
-    val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao()) }
+    val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao(), audioDbRepository) }
     val genreMappingRepository by lazy { GenreMappingRepository(database.genreMappingDao()) }
     val performanceRepository by lazy { PerformanceRepository(database.performanceDao()) }
-    val composerRepository by lazy { ComposerRepository(database.composerDao()) }
+    val composerRepository by lazy { ComposerRepository(database.composerDao(), openOpusRepository, artworkDownloader) }
+    val artworkDownloader by lazy { ArtworkDownloader(this) }
+    val openOpusRepository = OpenOpusRepository(OpenOpusClient.service)
+    val audioDbRepository = AudioDbRepository(AudioDbClient.service, artworkDownloader)
 
     val musicScanner by lazy {
         MusicScanner(
@@ -130,8 +136,9 @@ class MusicApplication: Application() {
             genreMappingRepository,
             performanceRepository,
             composerRepository,
-            OpenOpusClient.service,
-            AudioDbClient.service,
+            openOpusRepository,
+            audioDbRepository,
+            artworkDownloader,
         )
     }
 

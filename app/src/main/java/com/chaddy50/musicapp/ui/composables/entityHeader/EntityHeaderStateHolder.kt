@@ -6,6 +6,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.GENRES_WITHOUT_ARTIST_ARTWORK
+import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
+import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
@@ -14,9 +17,11 @@ import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,6 +30,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @Stable
@@ -38,7 +44,10 @@ class EntityHeaderStateHolder(
     private val trackRepository: TrackRepository,
     private val performanceRepository: PerformanceRepository,
     private val composerRepository: ComposerRepository,
-    coroutineScope: CoroutineScope,
+    private val openOpusRepository: OpenOpusRepository,
+    private val audioDbRepository: AudioDbRepository,
+    private val artworkDownloader: ArtworkDownloader,
+    private val coroutineScope: CoroutineScope,
 ) {
     var uiState: StateFlow<EntityHeaderState>
 
@@ -203,6 +212,26 @@ class EntityHeaderStateHolder(
                 val isClassical = genre?.id == viewModel.classicalGenreId
                 val albumsLabel = if (isClassical) "works" else "albums"
 
+                if (isClassical && albumArtist != null && composer == null) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        composerRepository.fetchAndInsertComposer(
+                            selectedAlbumArtistId,
+                            albumArtist.name,
+                        )
+                    }
+                }
+
+                if (
+                    !isClassical
+                    && albumArtist?.portraitPath == null
+                    && albumArtist != null
+                    && genre?.name !in GENRES_WITHOUT_ARTIST_ARTWORK
+                    ) {
+                    coroutineScope.launch(Dispatchers.IO) {
+                        albumArtistRepository.fetchAndUpdatePortrait(albumArtist)
+                    }
+                }
+
                 if (composer != null) {
                     val lifespan = listOfNotNull(composer.birthYear, composer.deathYear)
                         .joinToString("–")
@@ -269,6 +298,9 @@ fun rememberEntityHeaderState(
     trackRepository: TrackRepository = app.trackRepository,
     performanceRepository: PerformanceRepository = app.performanceRepository,
     composerRepository: ComposerRepository = app.composerRepository,
+    openOpusRepository: OpenOpusRepository = app.openOpusRepository,
+    audioDbRepository: AudioDbRepository = app.audioDbRepository,
+    artworkDownloader: ArtworkDownloader = app.artworkDownloader,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): EntityHeaderStateHolder {
     return remember(
@@ -281,6 +313,9 @@ fun rememberEntityHeaderState(
         trackRepository,
         performanceRepository,
         composerRepository,
+        openOpusRepository,
+        audioDbRepository,
+        artworkDownloader,
         coroutineScope
     ) {
         EntityHeaderStateHolder(
@@ -293,6 +328,9 @@ fun rememberEntityHeaderState(
             trackRepository,
             performanceRepository,
             composerRepository,
+            openOpusRepository,
+            audioDbRepository,
+            artworkDownloader,
             coroutineScope
         )
     }
