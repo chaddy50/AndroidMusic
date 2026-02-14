@@ -13,7 +13,7 @@ data class OpenOpusStatus(
 )
 
 data class OpenOpusComposer(
-    val id: Int,
+    val id: Long,
     val name: String,
     @SerializedName("complete_name") val completeName: String,
     @SerializedName("birth") val birthDate: String?,

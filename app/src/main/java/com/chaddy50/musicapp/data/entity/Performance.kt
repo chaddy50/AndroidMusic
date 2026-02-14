@@ -28,11 +28,11 @@ import androidx.room.PrimaryKey
 )
 data class Performance(
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0,
-    val albumId: Int,
+    val id: Long = 0,
+    val albumId: Long,
     val albumName: String,
-    val artistId: Int,
+    val artistId: Long,
     val artistName: String,
     val year: String,
-    val genreId: Int,
+    val genreId: Long,
 )

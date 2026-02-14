@@ -18,9 +18,9 @@ import androidx.room.PrimaryKey
     indices = [Index("albumArtistId", unique = true)]
 )
 data class Composer(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val albumArtistId: Int,
-    val openOpusId: Int,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val albumArtistId: Long,
+    val openOpusId: Long,
     val completeName: String,
     val birthYear: String?,
     val deathYear: String?,

@@ -25,7 +25,7 @@ interface AlbumDao {
     fun getNumberOfAlbums(): Flow<Int>
 
     @Query("SELECT * FROM albums WHERE id = :id")
-    fun getAlbumById(id: Int): Flow<Album?>
+    fun getAlbumById(id: Long): Flow<Album?>
 
     @Query("SELECT * FROM albums ORDER BY title ASC")
     fun getAllAlbums(): Flow<List<Album>>
@@ -37,7 +37,7 @@ interface AlbumDao {
             CASE WHEN :shouldSortByCatalogueNumber = 1 THEN albums.catalogueNumber END ASC,
             CASE WHEN :shouldSortByCatalogueNumber = 0 THEN albums.year END DESC
     """)
-    fun getAlbumsForArtist(artistId: Int, shouldSortByCatalogueNumber: Boolean): Flow<List<Album>>
+    fun getAlbumsForArtist(artistId: Long, shouldSortByCatalogueNumber: Boolean): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT albums.* FROM albums 
@@ -48,16 +48,16 @@ interface AlbumDao {
             CASE WHEN :shouldSortByCatalogueNumber = 0 THEN albums.year END DESC
     """)
     fun getAlbumsForArtistInGenre(
-        albumArtistId: Int,
-        genreId: Int,
+        albumArtistId: Long,
+        genreId: Long,
         shouldSortByCatalogueNumber: Boolean,
     ): Flow<List<Album>>
 
     @Query("SELECT title FROM albums WHERE id = :albumId")
-    fun getAlbumName(albumId: Int): Flow<String?>
+    fun getAlbumName(albumId: Long): Flow<String?>
 
     @Query("SELECT COUNT(*) FROM albums WHERE artistId = :albumArtistId")
-    fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Int): Flow<Int>
+    fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Long): Flow<Int>
 
     @Query("""
         SELECT COUNT(DISTINCT(albums.id)) FROM albums
@@ -65,5 +65,5 @@ interface AlbumDao {
         WHERE albums.artistId = :albumArtistId
         AND tracks.genreId = :genreId
     """)
-    fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Int, genreId: Int): Flow<Int>
+    fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Long, genreId: Long): Flow<Int>
 }

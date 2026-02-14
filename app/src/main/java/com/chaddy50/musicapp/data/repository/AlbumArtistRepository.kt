@@ -32,17 +32,17 @@ class AlbumArtistRepository(
 
     fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = albumArtistDao.getAllAlbumArtists()
 
-    fun getAlbumArtistName(albumArtistId: Int) = albumArtistDao.getAlbumArtistName(albumArtistId)
+    fun getAlbumArtistName(albumArtistId: Long) = albumArtistDao.getAlbumArtistName(albumArtistId)
 
-    fun getAlbumArtistById(albumArtistId: Int) = albumArtistDao.getAlbumArtistById(albumArtistId)
+    fun getAlbumArtistById(albumArtistId: Long) = albumArtistDao.getAlbumArtistById(albumArtistId)
 
-    fun getNumberOfAlbumArtistsForGenre(genreId: Int) = albumArtistDao.getNumberOfAlbumArtistsForGenre(genreId)
+    fun getNumberOfAlbumArtistsForGenre(genreId: Long) = albumArtistDao.getNumberOfAlbumArtistsForGenre(genreId)
 
     suspend fun findOrInsertAlbumArtist(
         albumArtistName: String,
-        genreId: Int,
+        genreId: Long,
         portraitPath: String? = null,
-    ): Int {
+    ): Long {
         val existingAlbumArtist = albumArtistDao.getAlbumArtistByName(albumArtistName)
         if (existingAlbumArtist != null) return existingAlbumArtist.id
 
@@ -56,7 +56,7 @@ class AlbumArtistRepository(
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
     }
 
-    fun getAlbumArtistsForGenre(genreId: Int): Flow<List<AlbumArtist>> {
+    fun getAlbumArtistsForGenre(genreId: Long): Flow<List<AlbumArtist>> {
         return flow {
             val subGenreIds = genreDao.getSubGenreIds(genreId)
             val genreIds = subGenreIds.ifEmpty { listOf(genreId) }

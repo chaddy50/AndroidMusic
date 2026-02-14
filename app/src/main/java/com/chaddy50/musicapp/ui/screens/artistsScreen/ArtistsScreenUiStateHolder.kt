@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 
 @Stable
 class ArtistsScreenStateHolder(
-    genreId: Int?,
+    genreId: Long?,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
     coroutineScope: CoroutineScope
@@ -55,7 +55,7 @@ class ArtistsScreenStateHolder(
 
 @Composable
 fun rememberArtistsScreenState(
-    genreId: Int?,
+    genreId: Long?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     albumArtistRepository: AlbumArtistRepository = app.albumArtistRepository,
     genreRepository: GenreRepository = app.genreRepository,

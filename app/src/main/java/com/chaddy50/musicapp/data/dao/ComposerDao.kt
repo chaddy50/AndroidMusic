@@ -13,5 +13,5 @@ interface ComposerDao {
     suspend fun insert(composer: Composer): Long
 
     @Query("SELECT * FROM composers WHERE albumArtistId = :albumArtistId")
-    fun getComposerForAlbumArtist(albumArtistId: Int): Flow<Composer?>
+    fun getComposerForAlbumArtist(albumArtistId: Long): Flow<Composer?>
 }

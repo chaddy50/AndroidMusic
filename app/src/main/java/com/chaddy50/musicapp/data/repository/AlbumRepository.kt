@@ -21,21 +21,21 @@ class AlbumRepository(private val albumDao: AlbumDao) {
     fun getAllAlbums() = albumDao.getAllAlbums()
 
     fun getAlbumsForArtist(
-        albumArtistId: Int,
+        albumArtistId: Long,
         shouldSortByCatalogueNumber: Boolean,
     ) = albumDao.getAlbumsForArtist(albumArtistId, shouldSortByCatalogueNumber)
 
     fun getAlbumsForArtistInGenre(
-        albumArtistId: Int,
-        genreId: Int,
+        albumArtistId: Long,
+        genreId: Long,
         shouldSortByCatalogueNumber: Boolean,
     ) = albumDao.getAlbumsForArtistInGenre(albumArtistId, genreId, shouldSortByCatalogueNumber)
 
-    fun getAlbumById(id: Int) = albumDao.getAlbumById(id)
+    fun getAlbumById(id: Long) = albumDao.getAlbumById(id)
 
-    fun getAlbumName(albumId: Int) = albumDao.getAlbumName(albumId)
+    fun getAlbumName(albumId: Long) = albumDao.getAlbumName(albumId)
 
-    fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Int) = albumDao.getNumberOfAlbumsForAlbumArtist(albumArtistId)
+    fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Long) = albumDao.getNumberOfAlbumsForAlbumArtist(albumArtistId)
 
-    fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Int, genreId: Int) = albumDao.getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId, genreId)
+    fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Long, genreId: Long) = albumDao.getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId, genreId)
 }

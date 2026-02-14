@@ -24,7 +24,7 @@ interface GenreDao {
     fun getNumberOfGenres(): Flow<Int>
 
     @Query("SELECT * FROM genres WHERE id = :id")
-    fun getGenreById(id: Int): Flow<Genre?>
+    fun getGenreById(id: Long): Flow<Genre?>
 
     @Query("SELECT * FROM genres WHERE name = :name LIMIT 1")
     suspend fun getGenreByName(name: String): Genre?
@@ -33,7 +33,7 @@ interface GenreDao {
     fun getAllGenres(): Flow<List<Genre>>
 
     @Query("SELECT name FROM genres WHERE id = :genreId")
-    fun getGenreName(genreId: Int): Flow<String?>
+    fun getGenreName(genreId: Long): Flow<String?>
 
     @Query("""
         SELECT * FROM genres
@@ -63,10 +63,10 @@ interface GenreDao {
     fun getNumberOfTopLevelGenres(): Flow<Int>
 
     @Query("SELECT * FROM genres WHERE parentGenreId = :parentGenreId ORDER BY name ASC")
-    fun getSubGenres(parentGenreId: Int): Flow<List<Genre>>
+    fun getSubGenres(parentGenreId: Long): Flow<List<Genre>>
 
     @Query("SELECT id FROM genres WHERE parentGenreId = :parentGenreId")
-    fun getSubGenreIds(parentGenreId: Int): List<Int>
+    fun getSubGenreIds(parentGenreId: Long): List<Long>
 
     @Query("""
         SELECT DISTINCT genres.* FROM genres
@@ -75,7 +75,7 @@ interface GenreDao {
         WHERE albums.artistId = :albumArtistId AND genres.parentGenreId = :parentGenreId
         ORDER BY genres.name ASC
     """)
-    fun getSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<List<Genre>>
+    fun getSubGenresForAlbumArtist(parentGenreId: Long, albumArtistId: Long): Flow<List<Genre>>
 
     @Query("""
         SELECT COUNT(DISTINCT genres.id) FROM genres
@@ -84,8 +84,8 @@ interface GenreDao {
         WHERE albums.artistId = :albumArtistId AND genres.parentGenreId = :parentGenreId
         ORDER BY genres.name ASC
     """)
-    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<Int>
+    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Long, albumArtistId: Long): Flow<Int>
 
     @Query("SELECT parentGenreId FROM genres WHERE id = :genreId")
-    fun getParentGenreId(genreId: Int): Flow<Int?>
+    fun getParentGenreId(genreId: Long): Flow<Long?>
 }

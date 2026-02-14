@@ -26,19 +26,19 @@ class GenreRepository(private val genreDao: GenreDao) {
 
     fun getAllGenres() = genreDao.getAllGenres()
 
-    fun getGenreName(genreId: Int) = genreDao.getGenreName(genreId)
+    fun getGenreName(genreId: Long) = genreDao.getGenreName(genreId)
 
-    fun getGenreById(id: Int) = genreDao.getGenreById(id)
+    fun getGenreById(id: Long) = genreDao.getGenreById(id)
 
     suspend fun getGenreByName(name: String) = genreDao.getGenreByName(name)
 
-    fun getParentGenreId(genreId: Int) = genreDao.getParentGenreId(genreId)
+    fun getParentGenreId(genreId: Long) = genreDao.getParentGenreId(genreId)
 
     fun getAllTopLevelGenres() = genreDao.getAllTopLevelGenres()
 
     fun getNumberOfTopLevelGenres() = genreDao.getNumberOfTopLevelGenres()
 
-    suspend fun findOrInsertGenreByName(name: String, parentGenreId: Int? = null): Int {
+    suspend fun findOrInsertGenreByName(name: String, parentGenreId: Long? = null): Long {
         val existingGenre = genreDao.getGenreByName(name)
         if (existingGenre != null) {
             return existingGenre.id
@@ -47,21 +47,21 @@ class GenreRepository(private val genreDao: GenreDao) {
         val newGenre = Genre(name = name, parentGenreId = parentGenreId)
         val newGenreId = genreDao.insert(newGenre)
         return if (newGenreId != -1L) {
-            newGenreId.toInt()
+            newGenreId
         } else {
             genreDao.getGenreByName(name)!!.id
         }
     }
 
-    fun getSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int): Flow<List<Genre>> {
+    fun getSubGenresForAlbumArtist(parentGenreId: Long, albumArtistId: Long): Flow<List<Genre>> {
         return flow {
             emitAll(genreDao.getSubGenresForAlbumArtist(parentGenreId, albumArtistId))
         }.flowOn(Dispatchers.IO)
     }
 
-    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Int, albumArtistId: Int) = genreDao.getNumberOfSubGenresForAlbumArtist(parentGenreId, albumArtistId)
+    fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Long, albumArtistId: Long) = genreDao.getNumberOfSubGenresForAlbumArtist(parentGenreId, albumArtistId)
 
-    fun getSubGenres(parentGenreId: Int): Flow<List<Genre>> {
+    fun getSubGenres(parentGenreId: Long): Flow<List<Genre>> {
         return flow {
             emitAll(genreDao.getSubGenres(parentGenreId))
         }.flowOn(Dispatchers.IO)

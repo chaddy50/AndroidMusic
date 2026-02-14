@@ -6,7 +6,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.chaddy50.musicapp.MusicApplication
-import com.chaddy50.musicapp.data.GENRES_WITHOUT_ARTIST_ARTWORK
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
 import com.chaddy50.musicapp.data.entity.Album
@@ -17,6 +16,7 @@ import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
@@ -150,7 +150,7 @@ class EntityHeaderStateHolder(
     }
 
     private fun getDetailsForAlbumNoPerformance(
-        genreId: Int?,
+        genreId: Long?,
         album: Album,
         numberOfTracks: Int,
         numberOfPerformances: Int,
@@ -225,7 +225,7 @@ class EntityHeaderStateHolder(
                     !isClassical
                     && albumArtist?.portraitPath == null
                     && albumArtist != null
-                    && genre?.name !in GENRES_WITHOUT_ARTIST_ARTWORK
+                    && shouldFetchArtistArtworkForGenre(genre?.name)
                     ) {
                     coroutineScope.launch(Dispatchers.IO) {
                         albumArtistRepository.fetchAndUpdatePortrait(albumArtist)

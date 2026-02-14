@@ -18,7 +18,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.chaddy50.musicapp.data.MusicDatabase
-import com.chaddy50.musicapp.data.MusicScanner
+import com.chaddy50.musicapp.data.scanner.MusicScanner
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
@@ -133,12 +133,9 @@ class MusicApplication: Application() {
             albumArtistRepository,
             albumRepository,
             trackRepository,
-            genreMappingRepository,
             performanceRepository,
             composerRepository,
-            openOpusRepository,
             audioDbRepository,
-            artworkDownloader,
         )
     }
 

@@ -21,14 +21,14 @@ interface PerformanceDao {
     suspend fun delete(performance: Performance)
 
     @Query("SELECT * FROM performances WHERE id = :id")
-    fun getPerformanceById(id: Int): Flow<Performance>
+    fun getPerformanceById(id: Long): Flow<Performance>
 
     @Query("SELECT * FROM performances WHERE albumId = :albumId")
-    fun getPerformancesForAlbum(albumId: Int): Flow<List<Performance>>
+    fun getPerformancesForAlbum(albumId: Long): Flow<List<Performance>>
 
     @Query("SELECT * FROM performances WHERE albumId = :albumId AND genreId = :genreId")
-    fun getPerformancesForAlbumForGenre(albumId: Int, genreId: Int): Flow<List<Performance>>
+    fun getPerformancesForAlbumForGenre(albumId: Long, genreId: Long): Flow<List<Performance>>
 
     @Query("SELECT COUNT(*) FROM performances WHERE albumId = :albumId")
-    fun getNumberOfPerformancesForAlbum(albumId: Int): Flow<Int>
+    fun getNumberOfPerformancesForAlbum(albumId: Long): Flow<Int>
 }

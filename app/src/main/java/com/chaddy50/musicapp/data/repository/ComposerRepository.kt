@@ -16,14 +16,14 @@ class ComposerRepository(
     }
 
     suspend fun fetchAndInsertComposer(
-        albumArtistId: Int,
+        albumArtistId: Long,
         albumArtistName: String,
     ) {
         if (albumArtistName.isEmpty()) return
         try {
             val openOpusComposer = openOpusRepository.findComposerByName(albumArtistName) ?: return
             val portraitPath = artworkDownloader.downloadArtwork(
-                openOpusComposer.portraitUrl, "composer_portraits", albumArtistId
+                openOpusComposer.portraitUrl, "composer_portraits",albumArtistId
             )
             insert(
                 Composer(
@@ -41,7 +41,7 @@ class ComposerRepository(
         }
     }
 
-    fun getComposerForAlbumArtist(albumArtistId: Int): Flow<Composer?> {
+    fun getComposerForAlbumArtist(albumArtistId: Long): Flow<Composer?> {
         return composerDao.getComposerForAlbumArtist(albumArtistId)
     }
 }

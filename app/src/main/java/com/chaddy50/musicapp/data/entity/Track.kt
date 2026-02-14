@@ -6,23 +6,23 @@ import kotlin.time.Duration
 
 @Entity(tableName = "tracks")
 data class Track(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val uri: String,
     val title: String,
     val number: Int,
-    val albumId: Int,
+    val albumId: Long,
     val albumName: String,
-    val artistId: Int,
+    val artistId: Long,
     val artistName: String,
-    val albumArtistId: Int,
+    val albumArtistId: Long,
     val albumArtistName: String,
-    val genreId: Int,
+    val genreId: Long,
     val genreName: String,
-    val parentGenreId: Int?,
+    val parentGenreId: Long?,
     val parentGenreName: String?,
     val duration: Duration,
     val discNumber: Int,
-    val performanceId: Int? = null,
+    val performanceId: Long? = null,
     val artworkPath: String? = null,
     val year: String
 )

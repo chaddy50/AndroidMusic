@@ -36,7 +36,7 @@ interface TrackDao {
     // Get a single track by its ID. Returns a Flow, which will automatically update
     // if the track's data changes.
     @Query("SELECT * FROM tracks WHERE id = :id")
-    fun getTrackById(id: Int): Flow<Track?>
+    fun getTrackById(id: Long): Flow<Track?>
 
     // Get all tracks from the table, ordered by track number.
     // The Flow will emit a new list of tracks whenever the table's content changes.
@@ -45,16 +45,16 @@ interface TrackDao {
 
     // Get all tracks belonging to a specific album.
     @Query("SELECT * FROM tracks WHERE albumID = :albumId ORDER BY discNumber, number ASC")
-    fun getTracksForAlbum(albumId: Int): Flow<List<Track>>
+    fun getTracksForAlbum(albumId: Long): Flow<List<Track>>
 
     @Query("SELECT * FROM tracks WHERE performanceId = :performanceId ORDER BY discNumber, number ASC")
-    fun getTracksForPerformance(performanceId: Int): Flow<List<Track>>
+    fun getTracksForPerformance(performanceId: Long): Flow<List<Track>>
 
     @Query("SELECT COUNT(*) FROM tracks WHERE albumId = :albumId")
-    fun getNumberOfTracksInAlbum(albumId: Int): Flow<Int>
+    fun getNumberOfTracksInAlbum(albumId: Long): Flow<Int>
 
     @Query("SELECT COUNT(*) FROM tracks WHERE performanceId = :performanceId")
-    fun getNumberOfTracksInPerformance(performanceId: Int): Flow<Int>
+    fun getNumberOfTracksInPerformance(performanceId: Long): Flow<Int>
 
     @Query("""
         SELECT tracks.* FROM tracks
@@ -62,7 +62,7 @@ interface TrackDao {
         WHERE albums.artistId = :albumArtistId
         ORDER BY albums.year, tracks.discNumber, tracks.number ASC
     """)
-    fun getTracksForAlbumArtist(albumArtistId: Int): Flow<List<Track>>
+    fun getTracksForAlbumArtist(albumArtistId: Long): Flow<List<Track>>
 
     @Query("""
         SELECT tracks.* FROM tracks
@@ -70,8 +70,8 @@ interface TrackDao {
         WHERE albums.artistId = :albumArtistId AND tracks.genreId = :genreId
         ORDER BY albums.year, tracks.discNumber, tracks.number ASC
     """)
-    fun getTracksForAlbumArtistInGenre(albumArtistId: Int, genreId: Int): Flow<List<Track>>
+    fun getTracksForAlbumArtistInGenre(albumArtistId: Long, genreId: Long): Flow<List<Track>>
 
     @Query("SELECT * FROM tracks WHERE genreId = :genreId OR parentGenreId = :genreId")
-    fun getTracksForGenre(genreId: Int): Flow<List<Track>>
+    fun getTracksForGenre(genreId: Long): Flow<List<Track>>
 }

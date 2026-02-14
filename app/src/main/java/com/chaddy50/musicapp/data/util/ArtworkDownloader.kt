@@ -9,7 +9,7 @@ import java.io.FileOutputStream
 class ArtworkDownloader(private val context: Context) {
     private val client = OkHttpClient()
 
-    fun downloadArtwork(url: String?, directoryName: String, fileId: Int): String? {
+    fun downloadArtwork(url: String?, directoryName: String, fileId: Long): String? {
         if (url == null) return null
         return try {
             val directory = File(context.filesDir, directoryName)

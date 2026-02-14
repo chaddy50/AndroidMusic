@@ -6,8 +6,8 @@ import com.chaddy50.musicapp.data.entity.Performance
 class PerformanceRepository(
     private val performanceDao: PerformanceDao
 ) {
-    suspend fun insert(performance: Performance): Int {
-        return performanceDao.insert(performance).toInt()
+    suspend fun insert(performance: Performance): Long {
+        return performanceDao.insert(performance)
     }
 
     suspend fun update(performance: Performance) {
@@ -18,11 +18,11 @@ class PerformanceRepository(
         performanceDao.delete(performance)
     }
 
-    fun getPerformanceById(id: Int) = performanceDao.getPerformanceById(id)
+    fun getPerformanceById(id: Long) = performanceDao.getPerformanceById(id)
 
-    fun getPerformancesForAlbum(albumId: Int) = performanceDao.getPerformancesForAlbum(albumId)
+    fun getPerformancesForAlbum(albumId: Long) = performanceDao.getPerformancesForAlbum(albumId)
 
-    fun getPerformancesForAlbumForGenre(albumId: Int, genreId: Int) = performanceDao.getPerformancesForAlbumForGenre(albumId, genreId)
+    fun getPerformancesForAlbumForGenre(albumId: Long, genreId: Long) = performanceDao.getPerformancesForAlbumForGenre(albumId, genreId)
 
-    fun getNumberOfPerformancesForAlbum(albumId: Int) = performanceDao.getNumberOfPerformancesForAlbum(albumId)
+    fun getNumberOfPerformancesForAlbum(albumId: Long) = performanceDao.getNumberOfPerformancesForAlbum(albumId)
 }

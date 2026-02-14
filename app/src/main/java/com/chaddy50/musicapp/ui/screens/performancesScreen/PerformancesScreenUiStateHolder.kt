@@ -21,8 +21,8 @@ import kotlinx.coroutines.flow.stateIn
 
 @Stable
 class PerformancesScreenUiStateHolder(
-    albumId: Int?,
-    subGenreId: Int?,
+    albumId: Long?,
+    subGenreId: Long?,
     performanceRepository: PerformanceRepository,
     albumRepository: AlbumRepository,
     coroutineScope: CoroutineScope
@@ -63,8 +63,8 @@ class PerformancesScreenUiStateHolder(
 
 @Composable
 fun rememberPerformancesScreenState(
-    albumId: Int?,
-    subGenreId: Int?,
+    albumId: Long?,
+    subGenreId: Long?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     performanceRepository: PerformanceRepository = app.performanceRepository,
     albumRepository: AlbumRepository = app.albumRepository,

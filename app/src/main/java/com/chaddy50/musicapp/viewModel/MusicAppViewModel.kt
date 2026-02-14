@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
-import com.chaddy50.musicapp.data.MusicScanner
+import com.chaddy50.musicapp.data.scanner.MusicScanner
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -35,19 +35,19 @@ class MusicAppViewModel(
     val nowPlayingState = NowPlayingState(application, viewModelScope)
     private val controller: MediaController? get() = nowPlayingState.controller
 
-    private val _selectedGenreId = MutableStateFlow<Int?>(null)
+    private val _selectedGenreId = MutableStateFlow<Long?>(null)
     val selectedGenreId = _selectedGenreId.asStateFlow()
 
-    private val _selectedSubGenreId = MutableStateFlow<Int?>(null)
+    private val _selectedSubGenreId = MutableStateFlow<Long?>(null)
     val selectedSubGenreId = _selectedSubGenreId.asStateFlow()
 
-    private val _selectedAlbumArtistId = MutableStateFlow<Int?>(null)
+    private val _selectedAlbumArtistId = MutableStateFlow<Long?>(null)
     val selectedAlbumArtistId = _selectedAlbumArtistId.asStateFlow()
 
-    private val _selectedAlbumId = MutableStateFlow<Int?>(null)
+    private val _selectedAlbumId = MutableStateFlow<Long?>(null)
     val selectedAlbumId = _selectedAlbumId.asStateFlow()
 
-    private val _selectedPerformanceId = MutableStateFlow<Int?>(null)
+    private val _selectedPerformanceId = MutableStateFlow<Long?>(null)
     val selectedPerformanceId = _selectedPerformanceId.asStateFlow()
 
     private val _isScanInProgress = MutableStateFlow<Boolean>(false)
@@ -56,7 +56,7 @@ class MusicAppViewModel(
     private val _scanProgress = MutableStateFlow(0f)
     val scanProgress = _scanProgress.asStateFlow()
 
-    var classicalGenreId: Int? = null
+    var classicalGenreId: Long? = null
 
     @OptIn(ExperimentalCoroutinesApi::class)
     val subGenresForAlbumArtist: StateFlow<List<Genre>> = combine(
@@ -83,23 +83,23 @@ class MusicAppViewModel(
     }
 
 
-    fun updateSelectedGenre(genreId: Int?) {
+    fun updateSelectedGenre(genreId: Long?) {
         _selectedGenreId.value = genreId
     }
 
-    fun updateSelectedAlbumArtist(albumArtistId: Int?) {
+    fun updateSelectedAlbumArtist(albumArtistId: Long?) {
         _selectedAlbumArtistId.value = albumArtistId
     }
 
-    fun updateSelectedSubGenre(genreId: Int?) {
+    fun updateSelectedSubGenre(genreId: Long?) {
         _selectedSubGenreId.value = genreId
     }
 
-    fun updateSelectedAlbum(albumId: Int?) {
+    fun updateSelectedAlbum(albumId: Long?) {
         _selectedAlbumId.value = albumId
     }
 
-    fun updateSelectedPerformance(performanceId: Int?) {
+    fun updateSelectedPerformance(performanceId: Long?) {
         _selectedPerformanceId.value = performanceId
     }
 

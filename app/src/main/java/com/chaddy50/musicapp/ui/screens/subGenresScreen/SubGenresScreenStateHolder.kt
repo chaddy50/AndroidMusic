@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.stateIn
 
 @Stable
 class SubGenresScreenStateHolder(
-    parentGenreId: Int?,
-    albumArtistId: Int?,
+    parentGenreId: Long?,
+    albumArtistId: Long?,
     genreRepository: GenreRepository,
     albumArtistRepository: AlbumArtistRepository,
     coroutineScope: CoroutineScope
@@ -58,8 +58,8 @@ class SubGenresScreenStateHolder(
 
 @Composable
 fun rememberSubGenresScreenState(
-    parentGenreId: Int?,
-    albumArtistId: Int?,
+    parentGenreId: Long?,
+    albumArtistId: Long?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     genreRepository: GenreRepository = app.genreRepository,
     albumArtistRepository: AlbumArtistRepository = app.albumArtistRepository,

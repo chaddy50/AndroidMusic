@@ -19,8 +19,8 @@ import com.chaddy50.musicapp.data.entity.Genre
 @Composable
 fun SubGenreFilterButton(
     subGenres: List<Genre>,
-    selectedSubGenreId: Int?,
-    onSubGenreSelected: (Int?) -> Unit,
+    selectedSubGenreId: Long?,
+    onSubGenreSelected: (Long?) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 

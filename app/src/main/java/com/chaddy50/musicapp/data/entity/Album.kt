@@ -5,10 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "albums")
 data class Album(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
     val catalogueNumber: Int?,
-    val artistId: Int,
+    val artistId: Long,
     val year: String,
     val artworkPath: String? = null,
     val numberOfTracks: Int? = null,

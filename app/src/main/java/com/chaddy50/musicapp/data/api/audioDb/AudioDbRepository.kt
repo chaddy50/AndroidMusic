@@ -14,7 +14,7 @@ class AudioDbRepository(
             val response = service.searchArtist(artistName)
             delay(API_RATE_LIMIT_DELAY)
             val thumbnailUrl = response.artists?.firstOrNull()?.thumbnailUrl
-            artworkDownloader.downloadArtwork(thumbnailUrl, "artist_portraits", artistName.hashCode())
+            artworkDownloader.downloadArtwork(thumbnailUrl, "artist_portraits", artistName.hashCode().toLong())
         } catch (e: Exception) {
             e.printStackTrace()
             null

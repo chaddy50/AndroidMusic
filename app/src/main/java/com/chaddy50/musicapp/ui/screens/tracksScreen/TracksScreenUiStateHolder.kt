@@ -25,8 +25,8 @@ import kotlinx.coroutines.flow.stateIn
 @OptIn(ExperimentalCoroutinesApi::class)
 @Stable
 class TracksScreenUiStateHolder(
-    albumId: Int?,
-    performanceId: Int?,
+    albumId: Long?,
+    performanceId: Long?,
     trackRepository: TrackRepository,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
@@ -77,8 +77,8 @@ class TracksScreenUiStateHolder(
 
 @Composable
 fun rememberTracksScreenState(
-    albumId: Int?,
-    performanceId: Int?,
+    albumId: Long?,
+    performanceId: Long?,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     trackRepository: TrackRepository = app.trackRepository,
     albumRepository: AlbumRepository = app.albumRepository,
