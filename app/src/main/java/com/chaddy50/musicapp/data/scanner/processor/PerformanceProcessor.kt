@@ -31,7 +31,7 @@ class PerformanceProcessor(
         val artistName = cursorData.artistName ?: "Unknown Artist"
         val year = yearResolver()
 
-        val performanceId = performanceRepository.insert(
+        var performanceId = performanceRepository.insert(
             Performance(
                 0,
                 albumId,
@@ -42,6 +42,12 @@ class PerformanceProcessor(
                 genreId
             )
         )
+
+        // If insert returned -1, another worker already inserted this performance
+        if (performanceId == -1L) {
+            performanceId = performanceRepository.findByAlbumAndArtist(albumId, artistId)
+                ?: return null
+        }
 
         val performanceArtworkPath = artworkSaver.loadAndSaveArtwork(trackId, performanceId)
 

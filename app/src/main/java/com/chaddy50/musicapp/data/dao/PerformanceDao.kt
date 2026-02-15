@@ -31,4 +31,7 @@ interface PerformanceDao {
 
     @Query("SELECT COUNT(*) FROM performances WHERE albumId = :albumId")
     fun getNumberOfPerformancesForAlbum(albumId: Long): Flow<Int>
+
+    @Query("SELECT id FROM performances WHERE albumId = :albumId AND artistId = :artistId LIMIT 1")
+    suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long?
 }

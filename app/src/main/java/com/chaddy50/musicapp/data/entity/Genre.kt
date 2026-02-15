@@ -15,7 +15,7 @@ import androidx.room.PrimaryKey
             ForeignKey.CASCADE
         )
     ],
-    indices = [Index("parentGenreId")]
+    indices = [Index("parentGenreId"), Index(value = ["name"], unique = true)]
 )
 data class Genre(
     @PrimaryKey(autoGenerate = true)

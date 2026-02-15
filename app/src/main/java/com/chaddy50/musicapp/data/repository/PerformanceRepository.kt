@@ -25,4 +25,7 @@ class PerformanceRepository(
     fun getPerformancesForAlbumForGenre(albumId: Long, genreId: Long) = performanceDao.getPerformancesForAlbumForGenre(albumId, genreId)
 
     fun getNumberOfPerformancesForAlbum(albumId: Long) = performanceDao.getNumberOfPerformancesForAlbum(albumId)
+
+    suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long? =
+        performanceDao.findByAlbumAndArtist(albumId, artistId)
 }

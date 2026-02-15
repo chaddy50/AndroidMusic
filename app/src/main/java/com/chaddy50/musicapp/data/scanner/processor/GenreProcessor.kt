@@ -29,7 +29,6 @@ class GenreProcessor(
             genreName,
             parentGenreId,
             isClassical,
-            shouldFetchArtistArtworkForGenre(genreName)
         )
     }
 
@@ -90,7 +89,6 @@ data class GenreProcessorResponse(
     val genreName: String,
     val parentGenreId: Long?,
     val isClassical: Boolean,
-    val shouldFetchArtistArtwork: Boolean,
 )
 
 fun shouldFetchArtistArtworkForGenre(genreName: String?): Boolean {
