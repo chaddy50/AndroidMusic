@@ -54,7 +54,10 @@ fun NavigationHost(
     val playbackPosition by viewModel.nowPlayingState.playbackPosition.collectAsStateWithLifecycle()
     val durationMs = currentTrack?.mediaMetadata?.durationMs ?: 0
     val isShuffleModeEnabled by viewModel.nowPlayingState.isShuffleModeEnabled.collectAsStateWithLifecycle()
+    val queue by viewModel.nowPlayingState.queue.collectAsStateWithLifecycle()
+    val currentTrackIndex by viewModel.nowPlayingState.currentTrackIndex.collectAsStateWithLifecycle()
     val onPlayPause = { viewModel.nowPlayingState.playOrPause() }
+    val onSkipToTrack = { index: Int -> viewModel.nowPlayingState.skipToTrack(index) }
     val onSkipToPreviousTrack = viewModel.nowPlayingState.skipPrevious()
     val onSkipToNextTrack = viewModel.nowPlayingState.skipNext()
     val onShuffleToggled = { viewModel.nowPlayingState.toggleShuffleMode() }
@@ -137,10 +140,13 @@ fun NavigationHost(
                 playbackPosition,
                 durationMs,
                 isShuffleModeEnabled,
+                queue,
+                currentTrackIndex,
                 onShuffleToggled,
                 onPlayPause,
                 onSkipToPreviousTrack,
                 onSkipToNextTrack,
+                onSkipToTrack,
                 { shouldShowNowPlayingSheet = false }
             )
         }

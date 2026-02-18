@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -20,6 +22,7 @@ import androidx.media3.common.MediaItem
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.AlbumArtwork
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.PlaybackControls
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.ProgressBar
+import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.QueueView
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.TopBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.TrackInfo
 import kotlinx.coroutines.launch
@@ -32,14 +35,19 @@ fun NowPlayingSheet(
     playbackPosition: Long,
     durationMs: Long,
     isShuffleModeEnabled: Boolean,
+    queue: List<MediaItem>,
+    currentTrackIndex: Int,
     onShuffleToggled: () -> Unit,
     onPlayPause: () -> Unit,
     onSkipToPreviousTrack: () -> Unit,
     onSkipToNextTrack: () -> Unit,
+    onSkipToTrack: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val pagerState = rememberPagerState(pageCount = { 2 })
+    val isShowingQueue = pagerState.currentPage == 1
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -57,36 +65,52 @@ fun NowPlayingSheet(
                 .background(MaterialTheme.colorScheme.surface)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
-            TopBar({
-                coroutineScope.launch {
-                    sheetState.hide()
-                    onDismiss()
+            TopBar(
+                onDismiss = {
+                    coroutineScope.launch {
+                        sheetState.hide()
+                        onDismiss()
+                    }
+                },
+                isShowingQueue = isShowingQueue,
+                onQueueToggled = {
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(if (isShowingQueue) 0 else 1)
+                    }
                 }
-            })
+            )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceEvenly
-            ) {
-                AlbumArtwork(currentTrack)
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                if (page == 1) {
+                    QueueView(queue, currentTrackIndex, onSkipToTrack)
+                } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        AlbumArtwork(currentTrack)
 
-                TrackInfo(currentTrack)
+                        TrackInfo(currentTrack)
 
-                ProgressBar(
-                    playbackPosition,
-                    durationMs
-                )
+                        ProgressBar(
+                            playbackPosition,
+                            durationMs
+                        )
 
-                PlaybackControls(
-                    isPlaying,
-                    isShuffleModeEnabled,
-                    onShuffleToggled,
-                    onPlayPause,
-                    onSkipToPreviousTrack,
-                    onSkipToNextTrack
-                )
+                        PlaybackControls(
+                            isPlaying,
+                            isShuffleModeEnabled,
+                            onShuffleToggled,
+                            onPlayPause,
+                            onSkipToPreviousTrack,
+                            onSkipToNextTrack
+                        )
+                    }
+                }
             }
         }
     }

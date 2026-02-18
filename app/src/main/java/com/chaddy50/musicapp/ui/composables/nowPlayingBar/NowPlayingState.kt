@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.ComponentName
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.chaddy50.musicapp.services.PlaybackService
@@ -32,6 +33,12 @@ class NowPlayingState(
     private val _isShuffleModeEnabled = MutableStateFlow(false)
     val isShuffleModeEnabled = _isShuffleModeEnabled.asStateFlow()
 
+    private val _queue = MutableStateFlow<List<MediaItem>>(emptyList())
+    val queue = _queue.asStateFlow()
+
+    private val _currentTrackIndex = MutableStateFlow(0)
+    val currentTrackIndex = _currentTrackIndex.asStateFlow()
+
     private var controllerFuture: ListenableFuture<MediaController>
     val controller: MediaController? get() = if (controllerFuture.isDone) controllerFuture.get() else null
 
@@ -57,6 +64,12 @@ class NowPlayingState(
         super.onMediaItemTransition(mediaItem, reason)
         _currentTrack.value = mediaItem
         updateState()
+        updateQueue()
+    }
+
+    override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        super.onTimelineChanged(timeline, reason)
+        updateQueue()
     }
 
     override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -92,6 +105,18 @@ class NowPlayingState(
         }
     }
 
+    fun skipToTrack(index: Int) {
+        controller?.seekToDefaultPosition(index)
+        controller?.play()
+    }
+
+    private fun updateQueue() {
+        controller?.let {
+            _queue.value = (0 until it.mediaItemCount).map { i -> it.getMediaItemAt(i) }
+            _currentTrackIndex.value = it.currentMediaItemIndex
+        }
+    }
+
     private fun startPositionUpdates() {
         stopPositionUpdates() // Ensure only one job is running
         positionUpdateJob = scope.launch {
@@ -115,6 +140,7 @@ class NowPlayingState(
             _isShuffleModeEnabled.value = it.shuffleModeEnabled
             if (it.isPlaying) startPositionUpdates() else stopPositionUpdates()
         }
+        updateQueue()
     }
 
     fun release() {
