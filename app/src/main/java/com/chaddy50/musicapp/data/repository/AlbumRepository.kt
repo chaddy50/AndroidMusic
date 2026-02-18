@@ -3,8 +3,12 @@ package com.chaddy50.musicapp.data.repository
 import com.chaddy50.musicapp.data.dao.AlbumDao
 import com.chaddy50.musicapp.data.entity.Album
 
-class AlbumRepository(private val albumDao: AlbumDao) {
-    suspend fun insert(album: Album) {
+interface IAlbumRepository {
+    suspend fun insert(album: Album)
+}
+
+class AlbumRepository(private val albumDao: AlbumDao) : IAlbumRepository {
+    override suspend fun insert(album: Album) {
         albumDao.insert(album)
     }
 

@@ -91,7 +91,10 @@ data class GenreProcessorResponse(
     val isClassical: Boolean,
 )
 
-fun shouldFetchArtistArtworkForGenre(genreName: String?): Boolean {
+fun shouldFetchArtistArtworkForGenre(
+    genreName: String?,
+    genresWithoutArtistArtwork: List<String> = GENRES_WITHOUT_ARTIST_ARTWORK,
+): Boolean {
     if (genreName == null) return false
-    return genreName !in GENRES_WITHOUT_ARTIST_ARTWORK
+    return genreName !in genresWithoutArtistArtwork
 }

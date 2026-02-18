@@ -4,13 +4,17 @@ import com.chaddy50.musicapp.data.dao.ArtistDao
 import com.chaddy50.musicapp.data.entity.Artist
 import kotlinx.coroutines.flow.Flow
 
-class ArtistRepository(private val artistDao: ArtistDao) {
+interface IArtistRepository {
+    suspend fun insert(artist: Artist)
+}
+
+class ArtistRepository(private val artistDao: ArtistDao) : IArtistRepository {
 
     fun getAllArtists(): Flow<List<Artist>> = artistDao.getAllArtists()
 
     fun getArtistById(id: Int): Flow<Artist?> = artistDao.getArtistById(id)
 
-    suspend fun insert(artist: Artist) {
+    override suspend fun insert(artist: Artist) {
         artistDao.insert(artist)
     }
 

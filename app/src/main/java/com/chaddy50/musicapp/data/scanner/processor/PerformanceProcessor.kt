@@ -1,13 +1,13 @@
 package com.chaddy50.musicapp.data.scanner.processor
 
 import com.chaddy50.musicapp.data.entity.Performance
-import com.chaddy50.musicapp.data.repository.PerformanceRepository
-import com.chaddy50.musicapp.data.scanner.util.ArtworkSaver
+import com.chaddy50.musicapp.data.repository.IPerformanceRepository
+import com.chaddy50.musicapp.data.scanner.util.IArtworkSaver
 import com.chaddy50.musicapp.data.scanner.util.CursorData
 
 class PerformanceProcessor(
-    private val performanceRepository: PerformanceRepository,
-    private val artworkSaver: ArtworkSaver,
+    private val performanceRepository: IPerformanceRepository,
+    private val artworkSaver: IArtworkSaver,
 ) {
     private val performanceIdCache: MutableMap<Pair<Long, Long>, Triple<Long, String?, String>> = mutableMapOf()
 

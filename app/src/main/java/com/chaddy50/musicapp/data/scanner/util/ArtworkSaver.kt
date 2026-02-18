@@ -9,8 +9,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class ArtworkSaver(private val context: Context) {
-    fun loadAndSaveArtwork(trackId: Long, entityId: Long): String? {
+interface IArtworkSaver {
+    fun loadAndSaveArtwork(trackId: Long, entityId: Long): String?
+}
+
+class ArtworkSaver(private val context: Context) : IArtworkSaver {
+    override fun loadAndSaveArtwork(trackId: Long, entityId: Long): String? {
         val bitmap = loadThumbnail(trackId) ?: return null
         return saveToFile(bitmap, entityId)
     }

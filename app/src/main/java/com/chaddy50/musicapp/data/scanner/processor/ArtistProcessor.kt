@@ -1,11 +1,11 @@
 package com.chaddy50.musicapp.data.scanner.processor
 
 import com.chaddy50.musicapp.data.entity.Artist
-import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.IArtistRepository
 import com.chaddy50.musicapp.data.scanner.util.CursorData
 
 class ArtistProcessor(
-    private val artistRepository: ArtistRepository,
+    private val artistRepository: IArtistRepository,
 ) {
     private val processedArtists = mutableMapOf<Long, String>()
 

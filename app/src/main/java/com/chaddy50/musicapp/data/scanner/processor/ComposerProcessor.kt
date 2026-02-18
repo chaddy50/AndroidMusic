@@ -1,9 +1,9 @@
 package com.chaddy50.musicapp.data.scanner.processor
 
-import com.chaddy50.musicapp.data.repository.ComposerRepository
+import com.chaddy50.musicapp.data.repository.IComposerRepository
 
 class ComposerProcessor(
-    private val composerRepository: ComposerRepository
+    private val composerRepository: IComposerRepository
 ) {
     private val processedComposers = mutableSetOf<Long>()
 

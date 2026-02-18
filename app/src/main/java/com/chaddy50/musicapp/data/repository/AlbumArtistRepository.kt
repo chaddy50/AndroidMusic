@@ -11,11 +11,15 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 
+interface IAlbumArtistRepository {
+    suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Long): Long
+}
+
 class AlbumArtistRepository(
     private val albumArtistDao: AlbumArtistDao,
     private val genreDao: GenreDao,
     private val audioDbRepository: AudioDbRepository,
-) {
+) : IAlbumArtistRepository {
     suspend fun insert(albumArtist: AlbumArtist) {
         albumArtistDao.insert(albumArtist)
     }
@@ -38,7 +42,7 @@ class AlbumArtistRepository(
 
     fun getNumberOfAlbumArtistsForGenre(genreId: Long) = albumArtistDao.getNumberOfAlbumArtistsForGenre(genreId)
 
-    suspend fun findOrInsertAlbumArtist(
+    override suspend fun findOrInsertAlbumArtist(
         albumArtistName: String,
         genreId: Long,
     ): Long {

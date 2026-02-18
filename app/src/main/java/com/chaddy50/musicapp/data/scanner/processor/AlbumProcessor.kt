@@ -1,13 +1,13 @@
 package com.chaddy50.musicapp.data.scanner.processor
 
 import com.chaddy50.musicapp.data.entity.Album
-import com.chaddy50.musicapp.data.repository.AlbumRepository
-import com.chaddy50.musicapp.data.scanner.util.ArtworkSaver
+import com.chaddy50.musicapp.data.repository.IAlbumRepository
+import com.chaddy50.musicapp.data.scanner.util.IArtworkSaver
 import com.chaddy50.musicapp.data.scanner.util.CursorData
 
 class AlbumProcessor(
-    private val albumRepository: AlbumRepository,
-    private val artworkSaver: ArtworkSaver,
+    private val albumRepository: IAlbumRepository,
+    private val artworkSaver: IArtworkSaver,
 ) {
     private val processedAlbums = mutableMapOf<Long, AlbumProcessorResult>()
 
@@ -43,7 +43,7 @@ class AlbumProcessor(
 }
 
 private val cataloguePattern = Regex("""(?i)(?:Op\.?|K\.?|BWV|Hob\.?|RV|D\.?|S\.?|M\.?|L\.?)\s*(\d+)""")
-private fun extractCatalogNumber(albumName: String): Int {
+internal fun extractCatalogNumber(albumName: String): Int {
     val match = cataloguePattern.find(albumName)
 
     // Group 1 contains just the digits (\d+)

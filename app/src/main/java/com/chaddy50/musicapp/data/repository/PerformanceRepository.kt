@@ -3,10 +3,15 @@ package com.chaddy50.musicapp.data.repository
 import com.chaddy50.musicapp.data.dao.PerformanceDao
 import com.chaddy50.musicapp.data.entity.Performance
 
+interface IPerformanceRepository {
+    suspend fun insert(performance: Performance): Long
+    suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long?
+}
+
 class PerformanceRepository(
     private val performanceDao: PerformanceDao
-) {
-    suspend fun insert(performance: Performance): Long {
+) : IPerformanceRepository {
+    override suspend fun insert(performance: Performance): Long {
         return performanceDao.insert(performance)
     }
 
@@ -26,6 +31,6 @@ class PerformanceRepository(
 
     fun getNumberOfPerformancesForAlbum(albumId: Long) = performanceDao.getNumberOfPerformancesForAlbum(albumId)
 
-    suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long? =
+    override suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long? =
         performanceDao.findByAlbumAndArtist(albumId, artistId)
 }

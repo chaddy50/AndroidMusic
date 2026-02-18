@@ -1,5 +1,6 @@
 package com.chaddy50.musicapp.utilities
 
+import java.text.Normalizer
 import java.util.Locale
 
 
@@ -11,6 +12,27 @@ fun stripArticles(name: String): String {
         }
     }
     return name.trim()
+}
+
+fun stripDiacritics(input: String): String {
+    val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
+    return normalized.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+}
+
+fun normalizeYear(year: String?): String {
+    if (year.isNullOrBlank() || year == "0") {
+        return "Unknown Year"
+    }
+    return year.take(4)
+}
+
+fun parseTrackNumber(trackNumberAsString: String?): Int {
+    if (trackNumberAsString == null) return -1
+    return if (trackNumberAsString.contains("/")) {
+        trackNumberAsString.substringBefore("/").toIntOrNull() ?: -1
+    } else {
+        trackNumberAsString.toIntOrNull() ?: -1
+    }
 }
 
 fun formatMillisecondsIntoMinutesAndSeconds(milliseconds: Long): String {

@@ -4,6 +4,8 @@ import android.content.ContentUris
 import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.provider.MediaStore
+import com.chaddy50.musicapp.utilities.normalizeYear
+import com.chaddy50.musicapp.utilities.parseTrackNumber
 
 class MetadataResolver(private val context: Context) {
     private val metadataRetriever = MediaMetadataRetriever()
@@ -23,13 +25,7 @@ class MetadataResolver(private val context: Context) {
             initializeMetadataRetrieverIfNeeded(cursorData.trackId)
             year = metadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DATE)
         }
-        if (year.isNullOrBlank() || year == "0") {
-            year = "Unknown Year"
-        }
-        if (year != "Unknown Year") {
-            year = year.take(4)
-        }
-        return year
+        return normalizeYear(year)
     }
 
     fun getTrackNumber(cursorData: CursorData): Int {
@@ -39,11 +35,7 @@ class MetadataResolver(private val context: Context) {
             val trackNumberAsString = metadataRetriever.extractMetadata(
                 MediaMetadataRetriever.METADATA_KEY_CD_TRACK_NUMBER
             )
-            trackNumber = if (trackNumberAsString?.contains("/") == true) {
-                trackNumberAsString.substringBefore("/").toIntOrNull() ?: -1
-            } else {
-                trackNumberAsString?.toIntOrNull() ?: -1
-            }
+            trackNumber = parseTrackNumber(trackNumberAsString)
         }
         return trackNumber
     }

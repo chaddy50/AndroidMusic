@@ -1,6 +1,6 @@
 package com.chaddy50.musicapp.data.api.openOpus
 
-import java.text.Normalizer
+import com.chaddy50.musicapp.utilities.stripDiacritics
 
 class OpenOpusRepository(private val service: OpenOpusService) {
     suspend fun findComposerByName(name: String): OpenOpusComposer? {
@@ -25,8 +25,4 @@ class OpenOpusRepository(private val service: OpenOpusService) {
         return null
     }
 
-    private fun stripDiacritics(input: String): String {
-        val normalized = Normalizer.normalize(input, Normalizer.Form.NFD)
-        return normalized.replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
-    }
 }

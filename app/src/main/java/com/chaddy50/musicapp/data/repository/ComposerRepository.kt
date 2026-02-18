@@ -6,16 +6,20 @@ import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import kotlinx.coroutines.flow.Flow
 
+interface IComposerRepository {
+    suspend fun fetchAndInsertComposer(albumArtistId: Long, albumArtistName: String)
+}
+
 class ComposerRepository(
     private val composerDao: ComposerDao,
     private val openOpusRepository: OpenOpusRepository,
     private val artworkDownloader: ArtworkDownloader,
-) {
+) : IComposerRepository {
     suspend fun insert(composer: Composer): Int {
         return composerDao.insert(composer).toInt()
     }
 
-    suspend fun fetchAndInsertComposer(
+    override suspend fun fetchAndInsertComposer(
         albumArtistId: Long,
         albumArtistName: String,
     ) {
