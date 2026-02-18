@@ -156,16 +156,21 @@ class EntityHeaderStateHolder(
         numberOfPerformances: Int,
         albumDurationMs: Long,
     ): String {
-        var subtitle = album.year
+        val isClassical = genreId == viewModel.classicalGenreId
+
+        var items: List<String> = listOf()
+        if (!isClassical) {
+            items = items.plus(album.year)
+        }
         if (genreId == viewModel.classicalGenreId) {
-            subtitle += " - $numberOfPerformances performances"
+            items = items.plus("$numberOfPerformances performances")
         } else {
-            subtitle += " - $numberOfTracks tracks"
+            items = items.plus("$numberOfTracks tracks")
         }
         if (genreId != viewModel.classicalGenreId) {
-            subtitle += " - ${formatMillisecondsIntoMinutesAndSeconds(albumDurationMs)}"
+            items = items.plus("${formatMillisecondsIntoMinutesAndSeconds(albumDurationMs)}")
         }
-        return subtitle
+        return items.joinToString(" - ")
     }
 
     private fun getStateForGenre(): Flow<EntityHeaderState> {

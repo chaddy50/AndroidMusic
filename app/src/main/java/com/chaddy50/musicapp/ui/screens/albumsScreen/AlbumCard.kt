@@ -69,7 +69,9 @@ fun AlbumCard(
                 }
                 Column(modifier = Modifier.padding(10.dp, 0.dp)) {
                     Text(album.title, style = TextStyle(fontSize = 16.sp))
-                    Text(album.year, style = TextStyle(fontSize = 14.sp))
+                    if (selectedGenreId != viewModel.classicalGenreId) {
+                        Text(album.year, style = TextStyle(fontSize = 14.sp))
+                    }
                 }
             }
         }
