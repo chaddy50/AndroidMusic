@@ -44,9 +44,9 @@ fun QueueView(
     val listState = rememberLazyListState()
 
     LaunchedEffect(currentTrackIndex) {
-        if (queue.isNotEmpty()) {
-            listState.scrollToItem(currentTrackIndex)
-        }
+        if (queue.isEmpty()) return@LaunchedEffect
+
+        listState.animateScrollToItem(currentTrackIndex)
     }
 
     LazyColumn(
