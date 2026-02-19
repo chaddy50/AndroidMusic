@@ -106,6 +106,8 @@ fun QueueView(
                     Text(
                         text = item.mediaMetadata.title?.toString() ?: "",
                         style = MaterialTheme.typography.bodyLarge,
+                        color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurface,
                         fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -113,7 +115,8 @@ fun QueueView(
                     Text(
                         text = item.mediaMetadata.artist?.toString() ?: "",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         fontSize = 13.sp
@@ -125,7 +128,8 @@ fun QueueView(
                         Text(
                             text = formatDuration(durationMs),
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (isCurrent) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(start = 8.dp)
                         )
                     }

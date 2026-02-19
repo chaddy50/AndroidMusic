@@ -1,7 +1,6 @@
 package com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -13,11 +12,13 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.AlbumArtwork
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.PlaybackControls
@@ -48,67 +49,78 @@ fun NowPlayingSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val pagerState = rememberPagerState(pageCount = { 2 })
     val isShowingQueue = pagerState.currentPage == 1
+    val colorScheme = getColorSchemeForAlbumArtwork(
+        currentTrack?.mediaMetadata?.artworkUri?.let { "file://$it".toUri() },
+        MaterialTheme.colorScheme
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = null,
         windowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = colorScheme.surface,
         modifier = Modifier
             .fillMaxSize()
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .windowInsetsPadding(WindowInsets.statusBars)
-        ) {
-            TopBar(
-                onDismiss = {
-                    coroutineScope.launch {
-                        sheetState.hide()
-                        onDismiss()
-                    }
-                },
-                isShowingQueue = isShowingQueue,
-                onQueueToggled = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(if (isShowingQueue) 0 else 1)
-                    }
-                }
-            )
-
-            HorizontalPager(
-                state = pagerState,
+        MaterialTheme(colorScheme) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.fillMaxSize()
-            ) { page ->
-                if (page == 1) {
-                    QueueView(queue, currentTrackIndex, onSkipToTrack)
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        AlbumArtwork(currentTrack)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(WindowInsets.statusBars)
+                ) {
+                    TopBar(
+                        onDismiss = {
+                            coroutineScope.launch {
+                                sheetState.hide()
+                                onDismiss()
+                            }
+                        },
+                        isShowingQueue = isShowingQueue,
+                        onQueueToggled = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(if (isShowingQueue) 0 else 1)
+                            }
+                        }
+                    )
 
-                        TrackInfo(currentTrack)
+                    HorizontalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        if (page == 1) {
+                            QueueView(queue, currentTrackIndex, onSkipToTrack)
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                AlbumArtwork(currentTrack)
 
-                        ProgressBar(
-                            playbackPosition,
-                            durationMs
-                        )
+                                TrackInfo(currentTrack)
 
-                        PlaybackControls(
-                            isPlaying,
-                            isShuffleModeEnabled,
-                            onShuffleToggled,
-                            onPlayPause,
-                            onSkipToPreviousTrack,
-                            onSkipToNextTrack
-                        )
+                                ProgressBar(
+                                    playbackPosition,
+                                    durationMs
+                                )
+
+                                PlaybackControls(
+                                    isPlaying,
+                                    isShuffleModeEnabled,
+                                    onShuffleToggled,
+                                    onPlayPause,
+                                    onSkipToPreviousTrack,
+                                    onSkipToNextTrack
+                                )
+                            }
+                        }
                     }
                 }
             }
