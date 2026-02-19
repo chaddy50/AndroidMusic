@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,7 +46,7 @@ fun TrackCard(
             ) {
                 if (isCurrentlyPlaying) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = "Now playing",
                         tint = MaterialTheme.colorScheme.primary
                     )
