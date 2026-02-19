@@ -3,7 +3,6 @@ package com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -38,8 +37,7 @@ fun PlaybackControls(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 32.dp),
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
