@@ -14,6 +14,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,12 +24,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.ui.screens.MusicAppScreen
+import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
 import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import kotlinx.coroutines.flow.flowOf
 
 object TracksScreen: MusicAppScreen {
     override val route = "tracks_screen"
@@ -54,11 +60,17 @@ object TracksScreen: MusicAppScreen {
         val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
         val albumId by viewModel.selectedAlbumId.collectAsStateWithLifecycle()
         val performanceId by viewModel.selectedPerformanceId.collectAsStateWithLifecycle()
+        val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
         val stateHolder = rememberTracksScreenState(
             albumId,
             performanceId
         )
         val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+
+        var trackToAddToPlaylist by remember { mutableStateOf<Track?>(null) }
+        val playlistsThatTrackIsAlreadyIn by remember(trackToAddToPlaylist?.id) {
+            trackToAddToPlaylist?.let { viewModel.getPlaylistsThatTrackIsAlreadyIn(it.id) } ?: flowOf(emptySet())
+        }.collectAsStateWithLifecycle(emptySet())
 
         LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
             if (!uiState.isLoading) {
@@ -103,7 +115,8 @@ object TracksScreen: MusicAppScreen {
                             TrackCard(
                                 track,
                                 currentTrack?.mediaId == track.id.toString(),
-                                { viewModel.playTrack(track, uiState.tracks) }
+                                { viewModel.playTrack(track, uiState.tracks) },
+                                onTrackLongPressed = { trackToAddToPlaylist = it },
                             )
                         }
                      }
@@ -112,5 +125,15 @@ object TracksScreen: MusicAppScreen {
             onPlay = { viewModel.playCurrentEntity(EntityType.Album, false) },
             onShuffle = { viewModel.playCurrentEntity(EntityType.Album, true) },
         )
+
+        trackToAddToPlaylist?.let { track ->
+            AddToPlaylistSheet(
+                allPlaylists = allPlaylists,
+                playlistsThatEntityIsAlreadyIn = playlistsThatTrackIsAlreadyIn,
+                onAddToPlaylist = { playlistId -> viewModel.addTrackToPlaylist(playlistId, track) },
+                onCreateAndAdd = { name -> viewModel.createPlaylistAndAddTrack(name, track) },
+                onDismiss = { trackToAddToPlaylist = null },
+            )
+        }
     }
 }

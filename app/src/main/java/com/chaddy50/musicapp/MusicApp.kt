@@ -30,6 +30,7 @@ import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
+import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
@@ -118,6 +119,7 @@ class MusicApplication: Application() {
     val genreRepository by lazy { GenreRepository(database.genreDao()) }
     val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao(), audioDbRepository) }
     val performanceRepository by lazy { PerformanceRepository(database.performanceDao()) }
+    val playlistRepository by lazy { PlaylistRepository(database.playlistDao()) }
     val composerRepository by lazy { ComposerRepository(database.composerDao(), openOpusRepository, artworkDownloader) }
     val artworkDownloader by lazy { ArtworkDownloader(this) }
     val openOpusRepository = OpenOpusRepository(OpenOpusClient.service)

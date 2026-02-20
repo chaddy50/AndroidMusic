@@ -1,8 +1,9 @@
 package com.chaddy50.musicapp.ui.composables
 
 import android.graphics.Bitmap
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,10 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntityCard(
     title: String,
     onClick: ()->Unit = {},
+    onLongClick: (() -> Unit)? = null,
     image: Bitmap? = null
 ) {
     Box(
@@ -29,7 +32,7 @@ fun EntityCard(
             .fillMaxWidth()
             .height(100.dp)
             .padding(4.dp)
-            .clickable { onClick() }
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

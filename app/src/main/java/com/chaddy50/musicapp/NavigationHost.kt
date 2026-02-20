@@ -17,19 +17,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
 import com.chaddy50.musicapp.ui.composables.SubGenreFilterButton
 import com.chaddy50.musicapp.ui.composables.TopBar
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.NowPlayingSheet
+import com.chaddy50.musicapp.ui.screens.HomeScreen
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreen
 import com.chaddy50.musicapp.ui.screens.artistsScreen.ArtistsScreen
-import com.chaddy50.musicapp.ui.screens.genresScreen.GenresScreen
 import com.chaddy50.musicapp.ui.screens.performancesScreen.PerformancesScreen
+import com.chaddy50.musicapp.ui.screens.playlistTracksScreen.PlaylistTracksScreen
 import com.chaddy50.musicapp.ui.screens.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
@@ -40,12 +41,13 @@ fun NavigationHost(
     navController: NavHostController = rememberNavController(),
 ) {
     val screens = listOf(
-        GenresScreen,
+        HomeScreen,
         ArtistsScreen,
         AlbumsScreen,
         TracksScreen,
         SubGenresScreen,
         PerformancesScreen,
+        PlaylistTracksScreen,
     )
     var shouldShowNowPlayingSheet by remember { mutableStateOf(false) }
     var topBarTitle by remember { mutableStateOf("") }
@@ -110,7 +112,7 @@ fun NavigationHost(
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = GenresScreen.route,
+                startDestination = HomeScreen.route,
                 modifier = Modifier
                     .padding(innerPadding)
                     .imePadding()

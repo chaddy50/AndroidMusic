@@ -6,4 +6,5 @@ data class EntityHeaderState(
     val details: String? = null,
     val artworkPath: String? = null,
     val isLoading: Boolean = true,
+    val playlistsThatEntityIsAlreadyIn: Set<Long> = setOf(),
 )

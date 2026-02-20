@@ -1,6 +1,7 @@
 package com.chaddy50.musicapp.ui.screens.tracksScreen
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,17 +23,22 @@ import androidx.compose.ui.unit.dp
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TrackCard(
     track: Track,
     isCurrentlyPlaying: Boolean,
     onTrackClicked: (Track) -> Unit,
+    onTrackLongPressed: ((Track) -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(75.dp)
-            .clickable{ onTrackClicked(track) }
+            .combinedClickable(
+                onClick = { onTrackClicked(track) },
+                onLongClick = { onTrackLongPressed?.invoke(track) },
+            )
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),

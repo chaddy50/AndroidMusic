@@ -15,6 +15,7 @@ import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
+import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.data.util.ArtworkDownloader
@@ -44,6 +45,7 @@ class EntityHeaderStateHolder(
     private val trackRepository: TrackRepository,
     private val performanceRepository: PerformanceRepository,
     private val composerRepository: ComposerRepository,
+    private val playlistRepository: PlaylistRepository,
     private val openOpusRepository: OpenOpusRepository,
     private val audioDbRepository: AudioDbRepository,
     private val artworkDownloader: ArtworkDownloader,
@@ -57,7 +59,7 @@ class EntityHeaderStateHolder(
             EntityType.Genre -> getStateForGenre()
             EntityType.AlbumArtist -> getStateForAlbumArtist()
             EntityType.SubGenre -> getStateForSubGenre()
-            EntityType.All -> getStateForAllMusic()
+            EntityType.Playlist -> getStateForPlaylist()
             else -> flowOf(EntityHeaderState(isLoading = false))
         }
             uiState = stateFlow.stateIn(
@@ -66,34 +68,6 @@ class EntityHeaderStateHolder(
             EntityHeaderState()
         )
     }
-
-    private fun getStateForAllMusic(): Flow<EntityHeaderState> {
-        return combine(
-            genreRepository.getNumberOfTopLevelGenres(),
-            albumArtistRepository.getNumberOfAlbumArtists(),
-            albumRepository.getNumberOfAlbums(),
-            trackRepository.getNumberOfTracks(),
-        ) { numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks ->
-            AllMusicStats(numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks)
-        }.flatMapLatest { (numberOfTopLevelGenres, numberOfAlbumArtists, numberOfAlbums, numberOfTracks) ->
-            flowOf(
-                EntityHeaderState(
-                    "All Music",
-                    "$numberOfTopLevelGenres genres - $numberOfAlbumArtists artists - $numberOfAlbums albums - $numberOfTracks tracks",
-                    "",
-                    null,
-                    false
-                )
-            )
-        }
-    }
-
-    data class AllMusicStats(
-        val numberOfTopLevelGenres: Int,
-        val numberOfAlbumArtists : Int,
-        val numberOfAlbums: Int,
-        val numberOfTracks: Int,
-    )
 
     private fun getStateForAlbum(): Flow<EntityHeaderState> {
         return combine(
@@ -111,7 +85,7 @@ class EntityHeaderStateHolder(
                 combine(
                     albumRepository.getAlbumById(selectedAlbumId),
                     performanceRepository.getPerformanceById(selectedPerformanceId),
-                    trackRepository.getTracksForPerformance(selectedPerformanceId)
+                    trackRepository.getTracksForPerformance(selectedPerformanceId),
                 ) { album, performance, tracks ->
                     val tracksLabel = if (selectedGenreId == viewModel.classicalGenreId) "movements" else "tracks"
                     val performanceDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
@@ -133,15 +107,17 @@ class EntityHeaderStateHolder(
                     combine(
                         albumArtistRepository.getAlbumArtistById(album.artistId),
                         trackRepository.getTracksForAlbum(selectedAlbumId),
-                        performanceRepository.getNumberOfPerformancesForAlbum(selectedAlbumId)
-                    ) { albumArtist, tracks, numberOfPerformances ->
+                        performanceRepository.getNumberOfPerformancesForAlbum(selectedAlbumId),
+                        viewModel.getPlaylistsThatAlbumIsAlreadyIn(album.id)
+                    ) { albumArtist, tracks, numberOfPerformances, playlistsThatAlbumIsAlreadyIn ->
                         val albumDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
                         EntityHeaderState(
                             album.title,
                             albumArtist?.name ?: "Unknown Artist",
                             getDetailsForAlbumNoPerformance(selectedGenreId, album, tracks.size, numberOfPerformances, albumDurationMs),
                             if (selectedGenreId == viewModel.classicalGenreId) null else album.artworkPath,
-                            false
+                            false,
+                            playlistsThatAlbumIsAlreadyIn
                         )
                     }
                 }
@@ -180,15 +156,18 @@ class EntityHeaderStateHolder(
             }
             combine(
             genreRepository.getGenreById(selectedGenreId),
-                albumArtistRepository.getNumberOfAlbumArtistsForGenre(selectedGenreId)
-            ) { genre, numberOfAlbumArtists ->
+                albumArtistRepository.getNumberOfAlbumArtistsForGenre(selectedGenreId),
+                viewModel.getPlaylistsThatGenreIsAlreadyIn(selectedGenreId)
+
+            ) { genre, numberOfAlbumArtists, playlistsThatGenreIsAlreadyIn ->
                 val artistLabel = if (genre?.id == viewModel.classicalGenreId) "composers" else "artists"
                 EntityHeaderState(
                     genre?.name ?: "Genre",
                     "$numberOfAlbumArtists $artistLabel",
                     null,
                     null,
-                    false
+                    false,
+                    playlistsThatGenreIsAlreadyIn
                 )
             }
         }
@@ -213,7 +192,8 @@ class EntityHeaderStateHolder(
                 genreRepository.getGenreById(selectedGenreId),
                 albumRepository.getNumberOfAlbumsForAlbumArtist(selectedAlbumArtistId),
                 composerRepository.getComposerForAlbumArtist(selectedAlbumArtistId),
-            ) { albumArtist, genre, numberOfAlbums, composer ->
+                viewModel.getPlaylistsThatAlbumArtistIsAlreadyIn(selectedAlbumArtistId)
+            ) { albumArtist, genre, numberOfAlbums, composer, playlistsThatAlbumArtistIsAlreadyIn ->
                 val isClassical = genre?.id == viewModel.classicalGenreId
                 val albumsLabel = if (isClassical) "works" else "albums"
 
@@ -248,7 +228,8 @@ class EntityHeaderStateHolder(
                         subtitle,
                         "$numberOfAlbums $albumsLabel",
                         composer.portraitPath,
-                        false
+                        false,
+                        playlistsThatAlbumArtistIsAlreadyIn
                     )
                 } else {
                     EntityHeaderState(
@@ -256,7 +237,8 @@ class EntityHeaderStateHolder(
                         genre?.name ?: "Genre",
                         "$numberOfAlbums $albumsLabel",
                         albumArtist?.portraitPath,
-                        false
+                        false,
+                        playlistsThatAlbumArtistIsAlreadyIn
                     )
                 }
             }
@@ -289,6 +271,27 @@ class EntityHeaderStateHolder(
             }
         }
     }
+
+    private fun getStateForPlaylist(): Flow<EntityHeaderState> {
+        return viewModel.selectedPlaylistId.flatMapLatest { selectedPlaylistId ->
+            if (selectedPlaylistId == null) {
+                return@flatMapLatest flowOf(EntityHeaderState(isLoading = false))
+            }
+            combine(
+                playlistRepository.getPlaylistById(selectedPlaylistId),
+                playlistRepository.getTracksForPlaylist(selectedPlaylistId),
+            ) { playlist, tracks ->
+                val playlistDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
+                EntityHeaderState(
+                    playlist?.name ?: "Playlist",
+                    "${tracks.size} tracks - ${formatMillisecondsIntoMinutesAndSeconds(playlistDurationMs)}",
+                    null,
+                    null,
+                    false,
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -303,6 +306,7 @@ fun rememberEntityHeaderState(
     trackRepository: TrackRepository = app.trackRepository,
     performanceRepository: PerformanceRepository = app.performanceRepository,
     composerRepository: ComposerRepository = app.composerRepository,
+    playlistRepository: PlaylistRepository = app.playlistRepository,
     openOpusRepository: OpenOpusRepository = app.openOpusRepository,
     audioDbRepository: AudioDbRepository = app.audioDbRepository,
     artworkDownloader: ArtworkDownloader = app.artworkDownloader,
@@ -318,6 +322,7 @@ fun rememberEntityHeaderState(
         trackRepository,
         performanceRepository,
         composerRepository,
+        playlistRepository,
         openOpusRepository,
         audioDbRepository,
         artworkDownloader,
@@ -333,6 +338,7 @@ fun rememberEntityHeaderState(
             trackRepository,
             performanceRepository,
             composerRepository,
+            playlistRepository,
             openOpusRepository,
             audioDbRepository,
             artworkDownloader,

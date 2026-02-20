@@ -1,6 +1,7 @@
 package com.chaddy50.musicapp.ui.screens.albumsScreen
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,11 +27,13 @@ import com.chaddy50.musicapp.ui.screens.performancesScreen.PerformancesScreen
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AlbumCard(
     album: Album,
     viewModel: MusicAppViewModel,
-    navController: NavController
+    navController: NavController,
+    onLongPress: (() -> Unit)? = null,
 ) {
     val selectedGenreId by viewModel.selectedGenreId.collectAsStateWithLifecycle()
 
@@ -39,15 +42,17 @@ fun AlbumCard(
             .fillMaxWidth()
             .height(100.dp)
             .padding(4.dp)
-            .clickable {
-                viewModel.updateSelectedAlbum(album.id)
-
-                if (selectedGenreId == viewModel.classicalGenreId) {
-                    navController.navigate(PerformancesScreen.route)
-                } else {
-                    navController.navigate(TracksScreen.route)
-                }
-            }
+            .combinedClickable(
+                onClick = {
+                    viewModel.updateSelectedAlbum(album.id)
+                    if (selectedGenreId == viewModel.classicalGenreId) {
+                        navController.navigate(PerformancesScreen.route)
+                    } else {
+                        navController.navigate(TracksScreen.route)
+                    }
+                },
+                onLongClick = onLongPress,
+            )
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
