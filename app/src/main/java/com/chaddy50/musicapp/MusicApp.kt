@@ -66,7 +66,7 @@ class MusicApp : ComponentActivity() {
                 Manifest.permission.READ_MEDIA_AUDIO
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            //triggerLibraryScanIfNeeded()
+            triggerLibraryScanIfNeeded()
         } else {
             permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
         }
@@ -99,11 +99,7 @@ class MusicApp : ComponentActivity() {
 
     private fun triggerLibraryScanIfNeeded() {
         lifecycleScope.launch {
-            val trackCount = viewModel.getTrackCount()
-
-            if (trackCount == 0) {
-                viewModel.refreshLibrary()
-            }
+            viewModel.refreshLibrary()
         }
     }
 }

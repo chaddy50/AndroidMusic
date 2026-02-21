@@ -74,4 +74,10 @@ interface TrackDao {
 
     @Query("SELECT * FROM tracks WHERE genreId = :genreId OR parentGenreId = :genreId")
     fun getTracksForGenre(genreId: Long): Flow<List<Track>>
+
+    @Query("SELECT id FROM tracks")
+    suspend fun getAllTrackIds(): List<Long>
+
+    @Query("DELETE FROM tracks WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
 }

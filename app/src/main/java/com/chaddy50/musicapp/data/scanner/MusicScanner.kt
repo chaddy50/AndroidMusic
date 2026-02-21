@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicInteger
+import androidx.core.content.edit
 
 class MusicScanner(
     val context: Context,
@@ -45,6 +46,12 @@ class MusicScanner(
 
     suspend fun scan() {
         withContext(Dispatchers.IO) {
+            val prefs = context.getSharedPreferences("music_scanner_prefs", Context.MODE_PRIVATE)
+            val lastScanTime = prefs.getLong("last_scan_time", 0L)
+            val scanStartTime = System.currentTimeMillis() / 1000
+
+            deleteTracksThatAreNoLongerInFileSystem()
+
             val artworkSaver = ArtworkSaver(context)
 
             val projection = arrayOf(
@@ -60,13 +67,19 @@ class MusicScanner(
                 MediaStore.Audio.AudioColumns.DISC_NUMBER,
                 MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER,
                 MediaStore.Audio.AudioColumns.DURATION,
+                MediaStore.Audio.AudioColumns.DATE_MODIFIED,
             )
+
+            val selection = "${MediaStore.Audio.AudioColumns.IS_MUSIC} != 0 AND " +
+                "(${MediaStore.Audio.AudioColumns.DATE_MODIFIED} >= ? OR " +
+                "${MediaStore.Audio.AudioColumns.DATE_ADDED} >= ?)"
+            val selectionArgs = arrayOf(lastScanTime.toString(), lastScanTime.toString())
 
             context.contentResolver.query(
                 MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 projection,
-                "${MediaStore.Audio.AudioColumns.IS_MUSIC} != 0",
-                null,
+                selection,
+                selectionArgs,
                 null
             )?.use { cursor ->
                 val columns = ColumnIndices(cursor)
@@ -164,6 +177,31 @@ class MusicScanner(
                     }
                 }
             }
+
+            prefs.edit { putLong("last_scan_time", scanStartTime) }
+        }
+    }
+
+    private suspend fun deleteTracksThatAreNoLongerInFileSystem() {
+        // Lightweight query to get all current MediaStore track IDs for deletion detection
+        val mediaStoreIds = mutableSetOf<Long>()
+        context.contentResolver.query(
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            arrayOf(MediaStore.Audio.AudioColumns._ID),
+            "${MediaStore.Audio.AudioColumns.IS_MUSIC} != 0",
+            null,
+            null
+        )?.use { cursor ->
+            while (cursor.moveToNext()) {
+                mediaStoreIds.add(cursor.getLong(0))
+            }
+        }
+
+        // Remove tracks that no longer exist in MediaStore
+        val dbTrackIds = trackRepository.getAllTrackIds()
+        val deletedIds = dbTrackIds.filter { it !in mediaStoreIds }
+        if (deletedIds.isNotEmpty()) {
+            trackRepository.deleteByIds(deletedIds)
         }
     }
 }

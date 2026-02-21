@@ -18,7 +18,8 @@ data class CursorData(
     val albumArtistName: String?,
     val albumId: Long?,
     val albumName: String?,
-    val year: String?
+    val year: String?,
+    val lastModifiedAt: Long?
 )
 
 data class ColumnIndices(
@@ -33,7 +34,8 @@ data class ColumnIndices(
     val trackNumber: Int,
     val trackDuration: Int,
     val year: Int,
-    val genreName: Int
+    val genreName: Int,
+    val lastModifiedAt: Int
 ) {
     constructor(cursor: Cursor) : this(
         trackId = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns._ID),
@@ -47,7 +49,8 @@ data class ColumnIndices(
         trackNumber = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.CD_TRACK_NUMBER),
         trackDuration = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DURATION),
         year = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.YEAR),
-        genreName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.GENRE)
+        genreName = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.GENRE),
+        lastModifiedAt = cursor.getColumnIndexOrThrow(MediaStore.Audio.AudioColumns.DATE_MODIFIED)
     )
 }
 
@@ -64,6 +67,7 @@ fun getDataFromCursor(cursor: Cursor, columns: ColumnIndices): CursorData {
         cursor.getStringOrNull(columns.albumArtistName),
         cursor.getLongOrNull(columns.albumId),
         cursor.getStringOrNull(columns.albumName),
-        cursor.getStringOrNull(columns.year)
+        cursor.getStringOrNull(columns.year),
+        cursor.getLongOrNull(columns.lastModifiedAt)
     )
 }

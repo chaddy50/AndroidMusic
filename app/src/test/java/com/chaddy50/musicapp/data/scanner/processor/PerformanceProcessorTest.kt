@@ -26,6 +26,7 @@ class PerformanceProcessorTest {
         albumId = 100L,
         albumName = albumName,
         year = "1808",
+        0
     )
 
     @Test

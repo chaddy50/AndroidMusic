@@ -25,6 +25,7 @@ class ArtistProcessorTest {
         albumId = null,
         albumName = null,
         year = null,
+        0
     )
 
     @Test
