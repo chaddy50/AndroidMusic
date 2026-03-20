@@ -13,3 +13,14 @@
 .externalNativeBuild
 .cxx
 local.properties
+ARCHITECTURE.md
+CLAUDE.md
+TESTING.md
+.idea/.name
+.idea/AndroidProjectSystem.xml
+.idea/deploymentTargetSelector.xml
+.idea/deviceManager.xml
+.idea/emulatorDisplays.xml
+.idea/runConfigurations.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/codeStyles/Project.xml
