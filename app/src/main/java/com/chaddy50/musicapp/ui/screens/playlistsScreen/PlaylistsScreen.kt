@@ -21,89 +21,80 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Playlist
+import com.chaddy50.musicapp.navigation.PlaylistTracksRoute
 import com.chaddy50.musicapp.ui.composables.CreateNewPlaylistDialog
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
-import com.chaddy50.musicapp.ui.screens.MusicAppScreen
-import com.chaddy50.musicapp.ui.screens.playlistTracksScreen.PlaylistTracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
-object PlaylistsScreen : MusicAppScreen {
-    override val route = "playlists_screen"
+@Composable
+fun PlaylistsScreen(
+    viewModel: MusicAppViewModel,
+    navController: NavController,
+) {
+    val stateHolder = rememberPlaylistsScreenState()
+    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
-    @Composable
-    override fun Content(
-        viewModel: MusicAppViewModel,
-        navController: NavController,
-        backStackEntry: NavBackStackEntry,
-        onTitleChanged: (title: String) -> Unit,
-    ) {
-        val stateHolder = rememberPlaylistsScreenState()
-        val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+    var showCreateDialog by remember { mutableStateOf(false) }
+    var playlistToDelete by remember { mutableStateOf<Playlist?>(null) }
 
-        var showCreateDialog by remember { mutableStateOf(false) }
-        var playlistToDelete by remember { mutableStateOf<Playlist?>(null) }
-
-        EntityScreen(
-            isLoading = uiState.isLoading,
-            content = {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        items(uiState.playlists) { playlist ->
-                            EntityCard(
-                                title = playlist.name,
-                                onClick = {
-                                    viewModel.updateSelectedPlaylist(playlist.id)
-                                    navController.navigate(PlaylistTracksScreen.route)
-                                },
-                                onLongClick = {
-                                    playlistToDelete = playlist
-                                },
-                            )
-                        }
-                    }
-                    FloatingActionButton(
-                        onClick = { showCreateDialog = true },
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(16.dp),
-                    ) {
-                        Icon(Icons.Filled.Add, contentDescription = "Create playlist")
+    EntityScreen(
+        isLoading = uiState.isLoading,
+        content = {
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(uiState.playlists) { playlist ->
+                        EntityCard(
+                            title = playlist.name,
+                            onClick = {
+                                navController.navigate(PlaylistTracksRoute(playlistId = playlist.id))
+                            },
+                            onLongClick = {
+                                playlistToDelete = playlist
+                            },
+                        )
                     }
                 }
+                FloatingActionButton(
+                    onClick = { showCreateDialog = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = "Create playlist")
+                }
+            }
+        },
+    )
+
+    if (showCreateDialog) {
+        CreateNewPlaylistDialog(
+            onConfirm = { name ->
+                if (name.isNotBlank()) {
+                    viewModel.createPlaylist(name)
+                }
+                showCreateDialog = false
+            },
+            onDismiss = { showCreateDialog = false },
+        )
+    }
+
+    playlistToDelete?.let { playlist ->
+        AlertDialog(
+            onDismissRequest = { playlistToDelete = null },
+            title = { Text("Delete playlist") },
+            text = { Text("Delete \"${playlist.name}\"?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deletePlaylist(playlist)
+                    playlistToDelete = null
+                }) { Text("Delete") }
+            },
+            dismissButton = {
+                TextButton(onClick = { playlistToDelete = null }) { Text("Cancel") }
             },
         )
-
-        if (showCreateDialog) {
-            CreateNewPlaylistDialog(
-                onConfirm = { name ->
-                    if (name.isNotBlank()) {
-                        viewModel.createPlaylist(name)
-                    }
-                    showCreateDialog = false
-                },
-                onDismiss = { showCreateDialog = false },
-            )
-        }
-
-        playlistToDelete?.let { playlist ->
-            AlertDialog(
-                onDismissRequest = { playlistToDelete = null },
-                title = { Text("Delete playlist") },
-                text = { Text("Delete \"${playlist.name}\"?") },
-                confirmButton = {
-                    TextButton(onClick = {
-                        viewModel.deletePlaylist(playlist)
-                        playlistToDelete = null
-                    }) { Text("Delete") }
-                },
-                dismissButton = {
-                    TextButton(onClick = { playlistToDelete = null }) { Text("Cancel") }
-                },
-            )
-        }
     }
 }

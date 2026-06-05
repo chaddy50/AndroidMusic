@@ -12,17 +12,11 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
-fun MusicScannerProgressBar(viewModel: MusicAppViewModel) {
-    val isScanInProgress by viewModel.isScanInProgress.collectAsStateWithLifecycle()
-    val scanProgress by viewModel.scanProgress.collectAsStateWithLifecycle()
-
+fun MusicScannerProgressBar(isScanInProgress: Boolean, scanProgress: Float) {
     AnimatedVisibility(
         visible = isScanInProgress,
         enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(durationMillis = 300)),

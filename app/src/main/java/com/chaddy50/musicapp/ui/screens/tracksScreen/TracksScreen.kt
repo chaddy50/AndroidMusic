@@ -22,118 +22,103 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Track
-import com.chaddy50.musicapp.ui.screens.MusicAppScreen
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
-import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import kotlinx.coroutines.flow.flowOf
 
-object TracksScreen: MusicAppScreen {
-    override val route = "tracks_screen"
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TracksScreen(
+    genreId: Long,
+    albumId: Long,
+    performanceId: Long?,
+    viewModel: MusicAppViewModel,
+    onTitleChanged: (String) -> Unit,
+) {
+    val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
+    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
+    val stateHolder = rememberTracksScreenState(albumId, performanceId)
+    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
 
-    @OptIn(ExperimentalFoundationApi::class)
-    @Composable
-    override fun Content(
-        viewModel: MusicAppViewModel,
-        navController: NavController,
-        backStackEntry: NavBackStackEntry,
-        onTitleChanged: (title: String) -> Unit,
-    ) {
-        CleanUpWhenNavigatingBackEffect(
-            navController,
-            route,
-            {
-                if (viewModel.selectedPerformanceId.value != null) {
-                    viewModel.updateSelectedPerformance(null)
-                } else {
-                    viewModel.updateSelectedAlbum(null)
-                }
-            }
-        )
+    var trackToAddToPlaylist by remember { mutableStateOf<Track?>(null) }
+    val playlistsThatTrackIsAlreadyIn by remember(trackToAddToPlaylist?.id) {
+        trackToAddToPlaylist?.let { viewModel.getPlaylistsThatTrackIsAlreadyIn(it.id) } ?: flowOf(emptySet())
+    }.collectAsStateWithLifecycle(emptySet())
 
-        val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
-        val albumId by viewModel.selectedAlbumId.collectAsStateWithLifecycle()
-        val performanceId by viewModel.selectedPerformanceId.collectAsStateWithLifecycle()
-        val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
-        val stateHolder = rememberTracksScreenState(
-            albumId,
-            performanceId
-        )
-        val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-
-        var trackToAddToPlaylist by remember { mutableStateOf<Track?>(null) }
-        val playlistsThatTrackIsAlreadyIn by remember(trackToAddToPlaylist?.id) {
-            trackToAddToPlaylist?.let { viewModel.getPlaylistsThatTrackIsAlreadyIn(it.id) } ?: flowOf(emptySet())
-        }.collectAsStateWithLifecycle(emptySet())
-
-        LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-            if (!uiState.isLoading) {
-                onTitleChanged(uiState.screenTitle)
-            }
+    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
+        if (!uiState.isLoading) {
+            onTitleChanged(uiState.screenTitle)
         }
+    }
 
-        val groupedTracks = uiState.tracks.groupBy { it.discNumber }
-        val doesAlbumHaveMultipleDiscs = groupedTracks.size > 1
+    val groupedTracks = uiState.tracks.groupBy { it.discNumber }
+    val doesAlbumHaveMultipleDiscs = groupedTracks.size > 1
 
-        EntityScreen(
-            uiState.isLoading,
-            {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item {
-                        EntityHeader(viewModel, EntityType.Album)
-                    }
+    EntityScreen(
+        uiState.isLoading,
+        {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                item {
+                    EntityHeader(
+                        type = EntityType.Album,
+                        genreId = genreId,
+                        albumId = albumId,
+                        performanceId = performanceId,
+                        classicalGenreId = viewModel.classicalGenreId,
+                        allPlaylists = allPlaylists,
+                        onAddToPlaylist = { playlistId -> viewModel.addAlbumToPlaylist(playlistId, albumId) },
+                        onCreateAndAdd = { name -> viewModel.createPlaylistAndAddAlbum(name, albumId) },
+                    )
+                }
 
-                    groupedTracks.forEach { (discNumber, tracks) ->
-                        if (doesAlbumHaveMultipleDiscs && (discNumber > 0)) {
-                            stickyHeader {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface)
-                                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                                ) {
-                                    Text(
-                                        text = "Disc $discNumber",
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                HorizontalDivider(
-                                    thickness = 1.dp,
-                                    color = MaterialTheme.colorScheme.outlineVariant
+                groupedTracks.forEach { (discNumber, tracks) ->
+                    if (doesAlbumHaveMultipleDiscs && (discNumber > 0)) {
+                        stickyHeader {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                Text(
+                                    text = "Disc $discNumber",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
                             }
-                        }
-                        items(tracks) { track ->
-                            TrackCard(
-                                track,
-                                currentTrack?.mediaId == track.id.toString(),
-                                { viewModel.playTrack(track, uiState.tracks) },
-                                onTrackLongPressed = { trackToAddToPlaylist = it },
+                            HorizontalDivider(
+                                thickness = 1.dp,
+                                color = MaterialTheme.colorScheme.outlineVariant
                             )
                         }
-                     }
-                }
-            },
-            onPlay = { viewModel.playCurrentEntity(EntityType.Album, false) },
-            onShuffle = { viewModel.playCurrentEntity(EntityType.Album, true) },
-        )
+                    }
+                    items(tracks) { track ->
+                        TrackCard(
+                            track,
+                            currentTrack?.mediaId == track.id.toString(),
+                            { viewModel.playTrack(track, uiState.tracks) },
+                            onTrackLongPressed = { trackToAddToPlaylist = it },
+                        )
+                    }
+                 }
+            }
+        },
+        onPlay = { viewModel.playTracksForAlbum(albumId, performanceId, false) },
+        onShuffle = { viewModel.playTracksForAlbum(albumId, performanceId, true) },
+    )
 
-        trackToAddToPlaylist?.let { track ->
-            AddToPlaylistSheet(
-                allPlaylists = allPlaylists,
-                playlistsThatEntityIsAlreadyIn = playlistsThatTrackIsAlreadyIn,
-                onAddToPlaylist = { playlistId -> viewModel.addTrackToPlaylist(playlistId, track) },
-                onCreateAndAdd = { name -> viewModel.createPlaylistAndAddTrack(name, track) },
-                onDismiss = { trackToAddToPlaylist = null },
-            )
-        }
+    trackToAddToPlaylist?.let { track ->
+        AddToPlaylistSheet(
+            allPlaylists = allPlaylists,
+            playlistsThatEntityIsAlreadyIn = playlistsThatTrackIsAlreadyIn,
+            onAddToPlaylist = { playlistId -> viewModel.addTrackToPlaylist(playlistId, track) },
+            onCreateAndAdd = { name -> viewModel.createPlaylistAndAddTrack(name, track) },
+            onDismiss = { trackToAddToPlaylist = null },
+        )
     }
 }

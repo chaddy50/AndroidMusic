@@ -58,7 +58,7 @@ fun NowPlayingSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = null,
-        windowInsets = WindowInsets(0, 0, 0, 0),
+        contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
         containerColor = colorScheme.surface,
         modifier = Modifier
             .fillMaxSize()

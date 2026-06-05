@@ -31,12 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.chaddy50.musicapp.data.entity.Playlist
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 enum class EntityType {
     Genre,
-    SubGenre,
     AlbumArtist,
     Album,
     Artist,
@@ -50,22 +49,33 @@ private val addToPlaylistTypes = setOf(
     EntityType.Album,
     EntityType.AlbumArtist,
     EntityType.Genre,
-    EntityType.SubGenre,
     EntityType.Artist,
     EntityType.Performance,
 )
 
 @Composable
 fun EntityHeader(
-    viewModel: MusicAppViewModel,
     type: EntityType,
+    genreId: Long? = null,
+    albumArtistId: Long? = null,
+    albumId: Long? = null,
+    performanceId: Long? = null,
+    playlistId: Long? = null,
+    classicalGenreId: Long? = null,
+    allPlaylists: List<Playlist> = emptyList(),
+    onAddToPlaylist: (playlistId: Long) -> Unit = {},
+    onCreateAndAdd: (name: String) -> Unit = {},
 ) {
     val stateHolder = rememberEntityHeaderState(
-        type,
-        viewModel
+        type = type,
+        genreId = genreId,
+        albumArtistId = albumArtistId,
+        albumId = albumId,
+        performanceId = performanceId,
+        playlistId = playlistId,
+        classicalGenreId = classicalGenreId,
     )
     val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
 
     if (uiState.isLoading) {
@@ -135,8 +145,8 @@ fun EntityHeader(
         if (showAddToPlaylistSheet) {
             AddToPlaylistSheet(
                 allPlaylists = allPlaylists,
-                onAddToPlaylist = { playlistId -> viewModel.addCurrentEntityToPlaylist(playlistId, type) },
-                onCreateAndAdd = { name -> viewModel.createPlaylistAndAddCurrentEntity(name, type) },
+                onAddToPlaylist = { playlistId -> onAddToPlaylist(playlistId) },
+                onCreateAndAdd = { name -> onCreateAndAdd(name) },
                 onDismiss = { showAddToPlaylistSheet = false },
                 playlistsThatEntityIsAlreadyIn = uiState.playlistsThatEntityIsAlreadyIn
             )

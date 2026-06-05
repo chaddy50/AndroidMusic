@@ -8,69 +8,59 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
-import com.chaddy50.musicapp.ui.screens.MusicAppScreen
-import com.chaddy50.musicapp.ui.composables.CleanUpWhenNavigatingBackEffect
+import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
-object PerformancesScreen : MusicAppScreen {
-    override val route = "performances_screen"
+@Composable
+fun PerformancesScreen(
+    genreId: Long,
+    albumId: Long,
+    viewModel: MusicAppViewModel,
+    navController: NavController,
+    onTitleChanged: (String) -> Unit,
+) {
+    val stateHolder = rememberPerformancesScreenState(albumId, null)
+    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
 
-    @Composable
-    override fun Content(
-        viewModel: MusicAppViewModel,
-        navController: NavController,
-        backStackEntry: NavBackStackEntry,
-        onTitleChanged: (title: String) -> Unit,
-    ) {
-        CleanUpWhenNavigatingBackEffect(
-            navController,
-            route,
-            {
-                viewModel.updateSelectedAlbum(null)
-            }
-        )
-
-        val albumId by viewModel.selectedAlbumId.collectAsStateWithLifecycle()
-        val subGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
-
-        val stateHolder = rememberPerformancesScreenState(albumId, subGenreId)
-        val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-
-        LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-            if (!uiState.isLoading) {
-                onTitleChanged(uiState.screenTitle)
-            }
+    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
+        if (!uiState.isLoading) {
+            onTitleChanged(uiState.screenTitle)
         }
-
-        EntityScreen(
-            uiState.isLoading,
-            {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    item {
-                        EntityHeader(viewModel, EntityType.Album)
-                    }
-
-                    items(uiState.performances) { performance ->
-                        EntityCard(
-                            "${performance.year} - ${performance.artistName}",
-                            {
-                                viewModel.updateSelectedPerformance(performance.id)
-
-                                navController.navigate(TracksScreen.route)
-                            }
-                        )
-                    }
-                }
-            },
-            onPlay = { viewModel.playCurrentEntity(EntityType.Album, false) },
-            onShuffle = { viewModel.playCurrentEntity(EntityType.Album, true) },
-        )
     }
+
+    EntityScreen(
+        uiState.isLoading,
+        {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                item {
+                    EntityHeader(
+                        type = EntityType.Album,
+                        genreId = genreId,
+                        albumId = albumId,
+                        classicalGenreId = viewModel.classicalGenreId,
+                        allPlaylists = allPlaylists,
+                        onAddToPlaylist = { playlistId -> viewModel.addAlbumToPlaylist(playlistId, albumId) },
+                        onCreateAndAdd = { name -> viewModel.createPlaylistAndAddAlbum(name, albumId) },
+                    )
+                }
+
+                items(uiState.performances) { performance ->
+                    EntityCard(
+                        "${performance.year} - ${performance.artistName}",
+                        {
+                            navController.navigate(TracksRoute(genreId = genreId, albumId = albumId, performanceId = performance.id))
+                        }
+                    )
+                }
+            }
+        },
+        onPlay = { viewModel.playTracksForAlbum(albumId, null, false) },
+        onShuffle = { viewModel.playTracksForAlbum(albumId, null, true) },
+    )
 }

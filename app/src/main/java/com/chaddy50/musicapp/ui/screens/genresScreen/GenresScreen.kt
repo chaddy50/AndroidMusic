@@ -10,70 +10,60 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Genre
+import com.chaddy50.musicapp.navigation.ArtistsRoute
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
-import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
-import com.chaddy50.musicapp.ui.screens.MusicAppScreen
-import com.chaddy50.musicapp.ui.screens.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 import kotlinx.coroutines.flow.flowOf
 
-object GenresScreen : MusicAppScreen {
-    override val route = "genres_screen"
+@Composable
+fun GenresScreen(
+    viewModel: MusicAppViewModel,
+    navController: NavController,
+) {
+    val stateHolder = rememberGenresScreenState()
+    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
 
-    @Composable
-    override fun Content(
-        viewModel: MusicAppViewModel,
-        navController: NavController,
-        backStackEntry: NavBackStackEntry,
-        onTitleChanged: (title: String) -> Unit,
-    ) {
-        val stateHolder = rememberGenresScreenState()
-        val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-        val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
+    var genreToAddToPlaylist by remember { mutableStateOf<Genre?>(null) }
+    val playlistsThatGenreIsAlreadyIn by remember(genreToAddToPlaylist?.id) {
+        genreToAddToPlaylist?.let { viewModel.getPlaylistsThatGenreIsAlreadyIn(it.id) } ?: flowOf(emptySet())
+    }.collectAsStateWithLifecycle(emptySet())
 
-        var genreToAddToPlaylist by remember { mutableStateOf<Genre?>(null) }
-        val playlistsThatGenreIsAlreadyIn by remember(genreToAddToPlaylist?.id) {
-            genreToAddToPlaylist?.let { viewModel.getPlaylistsThatGenreIsAlreadyIn(it.id) } ?: flowOf(emptySet())
-        }.collectAsStateWithLifecycle(emptySet())
-
-        EntityScreen(
-            uiState.isLoading,
-            {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(uiState.genres) { genre ->
-                        EntityCard(
-                            genre.name,
-                            onClick = {
-                                viewModel.updateSelectedGenre(genre.id)
-                                navController.navigate(ArtistsScreen.route)
-                            },
-                            onLongClick = { genreToAddToPlaylist = genre },
-                        )
-                    }
+    EntityScreen(
+        uiState.isLoading,
+        {
+            LazyColumn(modifier = Modifier.fillMaxSize()) {
+                items(uiState.genres) { genre ->
+                    EntityCard(
+                        genre.name,
+                        onClick = {
+                            navController.navigate(ArtistsRoute(genreId = genre.id))
+                        },
+                        onLongClick = { genreToAddToPlaylist = genre },
+                    )
                 }
+            }
 
+        },
+        onPlay = { viewModel.playAllTracks(false) },
+        onShuffle = { viewModel.playAllTracks(true) },
+    )
+
+    genreToAddToPlaylist?.let { genre ->
+        AddToPlaylistSheet(
+            allPlaylists = allPlaylists,
+            playlistsThatEntityIsAlreadyIn = playlistsThatGenreIsAlreadyIn,
+            onAddToPlaylist = { playlistId ->
+                viewModel.addGenreToPlaylist(playlistId, genre.id)
             },
-            onPlay = { viewModel.playCurrentEntity(EntityType.All, false) },
-            onShuffle = { viewModel.playCurrentEntity(EntityType.All, true) },
+            onCreateAndAdd = { name ->
+                viewModel.createPlaylistAndAddGenre(name, genre.id)
+            },
+            onDismiss = { genreToAddToPlaylist = null },
         )
-
-        genreToAddToPlaylist?.let { genre ->
-            AddToPlaylistSheet(
-                allPlaylists = allPlaylists,
-                playlistsThatEntityIsAlreadyIn = playlistsThatGenreIsAlreadyIn,
-                onAddToPlaylist = { playlistId ->
-                    viewModel.addEntityToPlaylistById(playlistId, EntityType.Genre, genre.id)
-                },
-                onCreateAndAdd = { name ->
-                    viewModel.createPlaylistAndAddEntityById(name, EntityType.Genre, genre.id)
-                },
-                onDismiss = { genreToAddToPlaylist = null },
-            )
-        }
     }
 }

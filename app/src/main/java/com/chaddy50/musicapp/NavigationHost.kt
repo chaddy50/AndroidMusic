@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +22,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.chaddy50.musicapp.data.entity.Genre
+import com.chaddy50.musicapp.navigation.AlbumsRoute
+import com.chaddy50.musicapp.navigation.ArtistsRoute
+import com.chaddy50.musicapp.navigation.HomeRoute
+import com.chaddy50.musicapp.navigation.PerformancesRoute
+import com.chaddy50.musicapp.navigation.PlaylistTracksRoute
+import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
 import com.chaddy50.musicapp.ui.composables.SubGenreFilterButton
 import com.chaddy50.musicapp.ui.composables.TopBar
@@ -31,24 +40,15 @@ import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreen
 import com.chaddy50.musicapp.ui.screens.artistsScreen.ArtistsScreen
 import com.chaddy50.musicapp.ui.screens.performancesScreen.PerformancesScreen
 import com.chaddy50.musicapp.ui.screens.playlistTracksScreen.PlaylistTracksScreen
-import com.chaddy50.musicapp.ui.screens.subGenresScreen.SubGenresScreen
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun NavigationHost(
     viewModel: MusicAppViewModel,
     navController: NavHostController = rememberNavController(),
 ) {
-    val screens = listOf(
-        HomeScreen,
-        ArtistsScreen,
-        AlbumsScreen,
-        TracksScreen,
-        SubGenresScreen,
-        PerformancesScreen,
-        PlaylistTracksScreen,
-    )
     var shouldShowNowPlayingSheet by remember { mutableStateOf(false) }
     var topBarTitle by remember { mutableStateOf("") }
     val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
@@ -64,11 +64,34 @@ fun NavigationHost(
     val onSkipToNextTrack = viewModel.nowPlayingState.skipNext()
     val onShuffleToggled = { viewModel.nowPlayingState.toggleShuffleMode() }
 
-    val subGenres by viewModel.subGenresForAlbumArtist.collectAsStateWithLifecycle()
-    val selectedSubGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
+    val isScanInProgress by viewModel.isScanInProgress.collectAsStateWithLifecycle()
+    val scanProgress by viewModel.scanProgress.collectAsStateWithLifecycle()
+
+    // Sub-genre filter button: extract args from current back stack entry when on AlbumsRoute
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = currentBackStackEntry?.destination?.route
-    val showFilterButton = subGenres.size > 1 && currentRoute == AlbumsScreen.route
+    val isOnAlbumsRoute = currentRoute?.contains("AlbumsRoute") == true
+
+    val albumsRouteArgs = remember(currentBackStackEntry) {
+        if (isOnAlbumsRoute) {
+            try {
+                currentBackStackEntry?.toRoute<AlbumsRoute>()
+            } catch (_: Exception) {
+                null
+            }
+        } else null
+    }
+
+    val subGenres by remember(albumsRouteArgs) {
+        if (albumsRouteArgs != null) {
+            viewModel.getSubGenresForAlbumArtist(albumsRouteArgs.genreId, albumsRouteArgs.albumArtistId)
+        } else {
+            flowOf(emptyList<Genre>())
+        }
+    }.collectAsState(emptyList())
+
+    val selectedSubGenreId by viewModel.selectedSubGenreId.collectAsStateWithLifecycle()
+    val showFilterButton = subGenres.size > 1 && isOnAlbumsRoute
 
     Box(
         modifier = Modifier
@@ -92,7 +115,7 @@ fun NavigationHost(
             },
             bottomBar = {
                 Column {
-                    MusicScannerProgressBar(viewModel)
+                    MusicScannerProgressBar(isScanInProgress, scanProgress)
                     NowPlayingBar(
                         currentTrack,
                         isPlaying,
@@ -112,25 +135,64 @@ fun NavigationHost(
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = HomeScreen.route,
+                startDestination = HomeRoute,
                 modifier = Modifier
                     .padding(innerPadding)
                     .imePadding()
             ) {
-                screens.forEach { screen ->
-                    composable(
-                        route = screen.routeWithArgs,
-                        arguments = screen.arguments,
-                    ) { backStackEntry ->
-                        screen.Content(
-                            viewModel,
-                            navController,
-                            backStackEntry,
-                            { newTitle ->
-                                topBarTitle = newTitle
-                            }
-                        )
-                    }
+                composable<HomeRoute> {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        navController = navController,
+                        onTitleChanged = { topBarTitle = it },
+                    )
+                }
+                composable<ArtistsRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<ArtistsRoute>()
+                    ArtistsScreen(
+                        genreId = route.genreId,
+                        viewModel = viewModel,
+                        navController = navController,
+                        onTitleChanged = { topBarTitle = it },
+                    )
+                }
+                composable<AlbumsRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<AlbumsRoute>()
+                    AlbumsScreen(
+                        genreId = route.genreId,
+                        albumArtistId = route.albumArtistId,
+                        viewModel = viewModel,
+                        navController = navController,
+                        onTitleChanged = { topBarTitle = it },
+                    )
+                }
+                composable<PerformancesRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<PerformancesRoute>()
+                    PerformancesScreen(
+                        genreId = route.genreId,
+                        albumId = route.albumId,
+                        viewModel = viewModel,
+                        navController = navController,
+                        onTitleChanged = { topBarTitle = it },
+                    )
+                }
+                composable<TracksRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<TracksRoute>()
+                    TracksScreen(
+                        genreId = route.genreId,
+                        albumId = route.albumId,
+                        performanceId = if (route.performanceId == -1L) null else route.performanceId,
+                        viewModel = viewModel,
+                        onTitleChanged = { topBarTitle = it },
+                    )
+                }
+                composable<PlaylistTracksRoute> { backStackEntry ->
+                    val route = backStackEntry.toRoute<PlaylistTracksRoute>()
+                    PlaylistTracksScreen(
+                        playlistId = route.playlistId,
+                        viewModel = viewModel,
+                        onTitleChanged = { topBarTitle = it },
+                    )
                 }
             }
         }

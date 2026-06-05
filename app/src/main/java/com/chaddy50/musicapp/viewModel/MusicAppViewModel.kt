@@ -14,7 +14,6 @@ import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.NowPlayingState
-import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.data.entity.Genre
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -22,9 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -39,20 +36,9 @@ class MusicAppViewModel(
     val nowPlayingState = NowPlayingState(application, viewModelScope)
     private val controller: MediaController? get() = nowPlayingState.controller
 
-    private val _selectedGenreId = MutableStateFlow<Long?>(null)
-    val selectedGenreId = _selectedGenreId.asStateFlow()
-
+    // In-screen filter for AlbumsScreen sub-genre filter button (not navigation state)
     private val _selectedSubGenreId = MutableStateFlow<Long?>(null)
     val selectedSubGenreId = _selectedSubGenreId.asStateFlow()
-
-    private val _selectedAlbumArtistId = MutableStateFlow<Long?>(null)
-    val selectedAlbumArtistId = _selectedAlbumArtistId.asStateFlow()
-
-    private val _selectedAlbumId = MutableStateFlow<Long?>(null)
-    val selectedAlbumId = _selectedAlbumId.asStateFlow()
-
-    private val _selectedPerformanceId = MutableStateFlow<Long?>(null)
-    val selectedPerformanceId = _selectedPerformanceId.asStateFlow()
 
     private val _isScanInProgress = MutableStateFlow<Boolean>(false)
     val isScanInProgress = _isScanInProgress.asStateFlow()
@@ -60,27 +46,10 @@ class MusicAppViewModel(
     private val _scanProgress = MutableStateFlow(0f)
     val scanProgress = _scanProgress.asStateFlow()
 
-    private val _selectedPlaylistId = MutableStateFlow<Long?>(null)
-    val selectedPlaylistId = _selectedPlaylistId.asStateFlow()
-
     val allPlaylists: StateFlow<List<Playlist>> = playlistRepository.getAllPlaylists()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     var classicalGenreId: Long? = null
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val subGenresForAlbumArtist: StateFlow<List<Genre>> = combine(
-        _selectedGenreId,
-        _selectedAlbumArtistId
-    ) { genreId, albumArtistId ->
-        Pair(genreId, albumArtistId)
-    }.flatMapLatest { (genreId, albumArtistId) ->
-        if (genreId != null && genreId == classicalGenreId && albumArtistId != null) {
-            genreRepository.getSubGenresForAlbumArtist(genreId, albumArtistId)
-        } else {
-            flowOf(emptyList())
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     init {
         viewModelScope.launch {
@@ -92,29 +61,17 @@ class MusicAppViewModel(
         }
     }
 
-
-    fun updateSelectedGenre(genreId: Long?) {
-        _selectedGenreId.value = genreId
-    }
-
-    fun updateSelectedAlbumArtist(albumArtistId: Long?) {
-        _selectedAlbumArtistId.value = albumArtistId
-    }
-
     fun updateSelectedSubGenre(genreId: Long?) {
         _selectedSubGenreId.value = genreId
     }
 
-    fun updateSelectedAlbum(albumId: Long?) {
-        _selectedAlbumId.value = albumId
-    }
-
-    fun updateSelectedPerformance(performanceId: Long?) {
-        _selectedPerformanceId.value = performanceId
-    }
-
-    fun updateSelectedPlaylist(id: Long?) {
-        _selectedPlaylistId.value = id
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getSubGenresForAlbumArtist(genreId: Long, albumArtistId: Long): Flow<List<Genre>> {
+        return if (genreId == classicalGenreId) {
+            genreRepository.getSubGenresForAlbumArtist(genreId, albumArtistId)
+        } else {
+            flowOf(emptyList())
+        }
     }
 
     suspend fun getTrackCount(): Int {
@@ -132,21 +89,59 @@ class MusicAppViewModel(
         classicalGenreId = genreRepository.getGenreByName("Classical")?.id
     }
 
-    fun playCurrentEntity(type: EntityType, shouldPlayShuffled: Boolean) {
+    // --- Playback methods (explicit IDs instead of reading from selection state) ---
+
+    fun playAllTracks(shuffled: Boolean) {
         viewModelScope.launch {
-            val tracksToPlay = getTracksForCurrentEntity(type)
+            val tracks = trackRepository.getAllTracks().first()
+            playTracks(tracks, shuffled)
+        }
+    }
 
-            if (tracksToPlay.isNotEmpty()) {
-                val mediaItems = tracksToPlay.map { track ->
-                    buildMediaItem(track)
-                }
+    fun playTracksForGenre(genreId: Long, shuffled: Boolean) {
+        viewModelScope.launch {
+            val tracks = trackRepository.getTracksForGenre(genreId).first()
+            playTracks(tracks, shuffled)
+        }
+    }
 
-                controller?.let { controller ->
-                    controller.shuffleModeEnabled = shouldPlayShuffled
-                    controller.setMediaItems(mediaItems)
-                    controller.prepare()
-                    controller.play()
-                }
+    fun playTracksForAlbumArtist(albumArtistId: Long, subGenreId: Long?, shuffled: Boolean) {
+        viewModelScope.launch {
+            val tracks = if (subGenreId != null) {
+                trackRepository.getTracksForAlbumArtistInGenre(albumArtistId, subGenreId).first()
+            } else {
+                trackRepository.getTracksForAlbumArtist(albumArtistId).first()
+            }
+            playTracks(tracks, shuffled)
+        }
+    }
+
+    fun playTracksForAlbum(albumId: Long, performanceId: Long?, shuffled: Boolean) {
+        viewModelScope.launch {
+            val tracks = if (performanceId != null) {
+                trackRepository.getTracksForPerformance(performanceId).first()
+            } else {
+                trackRepository.getTracksForAlbum(albumId).first()
+            }
+            playTracks(tracks, shuffled)
+        }
+    }
+
+    fun playTracksForPlaylist(playlistId: Long, shuffled: Boolean) {
+        viewModelScope.launch {
+            val tracks = playlistRepository.getTracksForPlaylist(playlistId).first()
+            playTracks(tracks, shuffled)
+        }
+    }
+
+    private fun playTracks(tracks: List<Track>, shuffled: Boolean) {
+        if (tracks.isNotEmpty()) {
+            val mediaItems = tracks.map { buildMediaItem(it) }
+            controller?.let { controller ->
+                controller.shuffleModeEnabled = shuffled
+                controller.setMediaItems(mediaItems)
+                controller.prepare()
+                controller.play()
             }
         }
     }
@@ -185,6 +180,8 @@ class MusicAppViewModel(
             .build()
     }
 
+    // --- Playlist query methods ---
+
     fun getPlaylistsThatTrackIsAlreadyIn(trackId: Long): Flow<Set<Long>> =
         playlistRepository.getPlaylistIdsContainingTrack(trackId)
 
@@ -197,17 +194,56 @@ class MusicAppViewModel(
     fun getPlaylistsThatGenreIsAlreadyIn(genreId: Long): Flow<Set<Long>> =
         playlistRepository.getPlaylistIdsContainingGenre(genreId)
 
-    fun addEntityToPlaylistById(playlistId: Long, type: EntityType, entityId: Long) {
+    // --- Playlist mutation methods (explicit IDs) ---
+
+    fun addGenreToPlaylist(playlistId: Long, genreId: Long) {
         viewModelScope.launch {
-            val tracks = getTracksForGivenEntity(type, entityId)
+            val tracks = trackRepository.getTracksForGenre(genreId).first()
             tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
         }
     }
 
-    fun createPlaylistAndAddEntityById(name: String, type: EntityType, entityId: Long) {
+    fun addAlbumArtistToPlaylist(playlistId: Long, albumArtistId: Long) {
+        viewModelScope.launch {
+            val tracks = trackRepository.getTracksForAlbumArtist(albumArtistId).first()
+            tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
+        }
+    }
+
+    fun addAlbumToPlaylist(playlistId: Long, albumId: Long) {
+        viewModelScope.launch {
+            val tracks = trackRepository.getTracksForAlbum(albumId).first()
+            tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
+        }
+    }
+
+    fun addPlaylistTracksToPlaylist(targetPlaylistId: Long, sourcePlaylistId: Long) {
+        viewModelScope.launch {
+            val tracks = playlistRepository.getTracksForPlaylist(sourcePlaylistId).first()
+            tracks.forEach { track -> playlistRepository.addTrackToPlaylist(targetPlaylistId, track.id) }
+        }
+    }
+
+    fun createPlaylistAndAddGenre(name: String, genreId: Long) {
         viewModelScope.launch {
             val playlistId = playlistRepository.createPlaylist(name)
-            val tracks = getTracksForGivenEntity(type, entityId)
+            val tracks = trackRepository.getTracksForGenre(genreId).first()
+            tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
+        }
+    }
+
+    fun createPlaylistAndAddAlbumArtist(name: String, albumArtistId: Long) {
+        viewModelScope.launch {
+            val playlistId = playlistRepository.createPlaylist(name)
+            val tracks = trackRepository.getTracksForAlbumArtist(albumArtistId).first()
+            tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
+        }
+    }
+
+    fun createPlaylistAndAddAlbum(name: String, albumId: Long) {
+        viewModelScope.launch {
+            val playlistId = playlistRepository.createPlaylist(name)
+            val tracks = trackRepository.getTracksForAlbum(albumId).first()
             tracks.forEach { track -> playlistRepository.addTrackToPlaylist(playlistId, track.id) }
         }
     }
@@ -223,16 +259,6 @@ class MusicAppViewModel(
         }
     }
 
-    fun createPlaylistAndAddCurrentEntity(name: String, type: EntityType) {
-        viewModelScope.launch {
-            val playlistId = playlistRepository.createPlaylist(name)
-            val tracksToAdd = getTracksForCurrentEntity(type)
-            tracksToAdd.forEach { track ->
-                playlistRepository.addTrackToPlaylist(playlistId, track.id)
-            }
-        }
-    }
-
     fun deletePlaylist(playlist: Playlist) {
         viewModelScope.launch { playlistRepository.deletePlaylist(playlist) }
     }
@@ -243,71 +269,6 @@ class MusicAppViewModel(
 
     fun removeTrackFromPlaylist(playlistId: Long, trackId: Long) {
         viewModelScope.launch { playlistRepository.removeTrackFromPlaylist(playlistId, trackId) }
-    }
-
-    fun addCurrentEntityToPlaylist(playlistId: Long, type: EntityType) {
-        viewModelScope.launch {
-            val tracksToAdd = getTracksForCurrentEntity(type)
-            tracksToAdd.forEach { track ->
-                playlistRepository.addTrackToPlaylist(playlistId, track.id)
-            }
-        }
-    }
-
-    private suspend fun getTracksForCurrentEntity(type: EntityType) : List<Track> {
-        return when(type) {
-            EntityType.All -> {
-                trackRepository.getAllTracks().first()
-            }
-
-            EntityType.Genre -> {
-                val genreId = _selectedGenreId.value
-                if (genreId != null) trackRepository.getTracksForGenre(genreId)
-                    .first() else emptyList()
-            }
-
-            EntityType.AlbumArtist -> {
-                val albumArtistId = _selectedAlbumArtistId.value
-                val subGenreId = _selectedSubGenreId.value
-                if (albumArtistId != null) {
-                    if (subGenreId != null) {
-                        trackRepository.getTracksForAlbumArtistInGenre(albumArtistId, subGenreId)
-                            .first()
-                    } else {
-                        trackRepository.getTracksForAlbumArtist(albumArtistId).first()
-                    }
-                } else emptyList()
-            }
-
-            EntityType.Album -> {
-                val albumId = _selectedAlbumId.value
-                val performanceId = _selectedPerformanceId.value
-                if (albumId != null) {
-                    if (performanceId != null) {
-                        trackRepository.getTracksForPerformance(performanceId).first()
-                    } else {
-                        trackRepository.getTracksForAlbum(albumId).first()
-                    }
-                } else emptyList()
-            }
-
-            EntityType.Playlist -> {
-                val playlistId = _selectedPlaylistId.value
-                if (playlistId != null) playlistRepository.getTracksForPlaylist(playlistId)
-                    .first() else emptyList()
-            }
-
-            else -> emptyList()
-        }
-    }
-
-    private suspend fun getTracksForGivenEntity(type: EntityType, entityId: Long): List<Track> {
-        return when (type) {
-            EntityType.Album -> trackRepository.getTracksForAlbum(entityId).first()
-            EntityType.AlbumArtist -> trackRepository.getTracksForAlbumArtist(entityId).first()
-            EntityType.Genre -> trackRepository.getTracksForGenre(entityId).first()
-            else -> emptyList()
-        }
     }
 
     override fun onCleared() {

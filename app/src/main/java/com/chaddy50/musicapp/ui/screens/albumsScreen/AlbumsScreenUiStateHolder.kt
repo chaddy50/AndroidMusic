@@ -23,6 +23,9 @@ import kotlinx.coroutines.flow.stateIn
 @OptIn(ExperimentalCoroutinesApi::class)
 @Stable
 class AlbumsScreenUiStateHolder(
+    genreId: Long,
+    albumArtistId: Long,
+    classicalGenreId: Long?,
     viewModel: MusicAppViewModel,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
@@ -32,33 +35,20 @@ class AlbumsScreenUiStateHolder(
     var uiState: StateFlow<AlbumsScreenUiState>
 
     init {
-        val albums: StateFlow<List<Album>> = combine(
-            viewModel.selectedGenreId,
-            viewModel.selectedAlbumArtistId,
-            viewModel.selectedSubGenreId
-        ) { selectedGenreId, selectedAlbumArtistId, selectedSubGenreId ->
-            Triple(selectedGenreId, selectedAlbumArtistId, selectedSubGenreId)
-        }.flatMapLatest { (selectedGenreId, selectedAlbumArtistId, selectedSubGenreId) ->
-            if (selectedAlbumArtistId != null) {
+        val isClassical = genreId == classicalGenreId
+
+        val albums: StateFlow<List<Album>> = viewModel.selectedSubGenreId
+            .flatMapLatest { selectedSubGenreId ->
                 if (selectedSubGenreId != null) {
-                    albumRepository.getAlbumsForArtistInGenre(selectedAlbumArtistId, selectedSubGenreId, selectedGenreId == viewModel.classicalGenreId)
+                    albumRepository.getAlbumsForArtistInGenre(albumArtistId, selectedSubGenreId, isClassical)
                 } else {
-                    albumRepository.getAlbumsForArtist(selectedAlbumArtistId, selectedGenreId == viewModel.classicalGenreId)
+                    albumRepository.getAlbumsForArtist(albumArtistId, isClassical)
                 }
-            } else {
-                albumRepository.getAllAlbums()
-            }
-        }.stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+            }.stateIn(coroutineScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-        val artistName = viewModel.selectedAlbumArtistId.flatMapLatest { selectedAlbumArtistId ->
-            if (selectedAlbumArtistId != null) {
-                albumArtistRepository.getAlbumArtistName(selectedAlbumArtistId)
-            } else {
-                flowOf(null)
-            }
-        }
+        val artistName = albumArtistRepository.getAlbumArtistName(albumArtistId)
 
-        var subGenreName = viewModel.selectedSubGenreId.flatMapLatest { selectedSubGenreId ->
+        val subGenreName = viewModel.selectedSubGenreId.flatMapLatest { selectedSubGenreId ->
             if (selectedSubGenreId != null) {
                 genreRepository.getGenreName(selectedSubGenreId)
             } else {
@@ -84,6 +74,8 @@ class AlbumsScreenUiStateHolder(
 
 @Composable
 fun rememberAlbumsScreenState(
+    genreId: Long,
+    albumArtistId: Long,
     viewModel: MusicAppViewModel,
     app: MusicApplication = LocalContext.current.applicationContext as MusicApplication,
     albumRepository: AlbumRepository = app.albumRepository,
@@ -91,8 +83,11 @@ fun rememberAlbumsScreenState(
     genreRepository: GenreRepository = app.genreRepository,
     coroutineScope: CoroutineScope = rememberCoroutineScope(),
 ): AlbumsScreenUiStateHolder {
-    return remember(viewModel, albumRepository, albumArtistRepository, genreRepository, coroutineScope) {
+    return remember(genreId, albumArtistId, viewModel, albumRepository, albumArtistRepository, genreRepository, coroutineScope) {
         AlbumsScreenUiStateHolder(
+            genreId,
+            albumArtistId,
+            viewModel.classicalGenreId,
             viewModel,
             albumRepository,
             albumArtistRepository,
