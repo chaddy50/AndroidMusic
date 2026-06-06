@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Genre
@@ -16,21 +17,23 @@ import com.chaddy50.musicapp.navigation.ArtistsRoute
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun GenresScreen(
-    viewModel: MusicAppViewModel,
+    playbackViewModel: PlaybackViewModel,
+    playlistViewModel: PlaylistViewModel,
     navController: NavController,
+    screenViewModel: GenresScreenViewModel = hiltViewModel(),
 ) {
-    val stateHolder = rememberGenresScreenState()
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
+    val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
 
     var genreToAddToPlaylist by remember { mutableStateOf<Genre?>(null) }
     val playlistsThatGenreIsAlreadyIn by remember(genreToAddToPlaylist?.id) {
-        genreToAddToPlaylist?.let { viewModel.getPlaylistsThatGenreIsAlreadyIn(it.id) } ?: flowOf(emptySet())
+        genreToAddToPlaylist?.let { playlistViewModel.getPlaylistsThatGenreIsAlreadyIn(it.id) } ?: flowOf(emptySet())
     }.collectAsStateWithLifecycle(emptySet())
 
     EntityScreen(
@@ -49,8 +52,8 @@ fun GenresScreen(
             }
 
         },
-        onPlay = { viewModel.playAllTracks(false) },
-        onShuffle = { viewModel.playAllTracks(true) },
+        onPlay = { playbackViewModel.playAllTracks(false) },
+        onShuffle = { playbackViewModel.playAllTracks(true) },
     )
 
     genreToAddToPlaylist?.let { genre ->
@@ -58,10 +61,10 @@ fun GenresScreen(
             allPlaylists = allPlaylists,
             playlistsThatEntityIsAlreadyIn = playlistsThatGenreIsAlreadyIn,
             onAddToPlaylist = { playlistId ->
-                viewModel.addGenreToPlaylist(playlistId, genre.id)
+                playlistViewModel.addGenreToPlaylist(playlistId, genre.id)
             },
             onCreateAndAdd = { name ->
-                viewModel.createPlaylistAndAddGenre(name, genre.id)
+                playlistViewModel.createPlaylistAndAddGenre(name, genre.id)
             },
             onDismiss = { genreToAddToPlaylist = null },
         )

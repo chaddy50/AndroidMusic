@@ -1,9 +1,0 @@
-package com.chaddy50.musicapp.ui.screens.genresScreen
-
-import com.chaddy50.musicapp.data.entity.Genre
-
-data class GenresScreenUiState(
-    val screenTitle: String = "Genres",
-    val genres: List<Genre> = emptyList(),
-    val isLoading: Boolean = true
-)

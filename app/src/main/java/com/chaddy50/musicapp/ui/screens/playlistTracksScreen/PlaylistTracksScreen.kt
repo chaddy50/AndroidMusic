@@ -14,23 +14,29 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TrackCard
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 
 @Composable
 fun PlaylistTracksScreen(
     playlistId: Long,
-    viewModel: MusicAppViewModel,
+    playbackViewModel: PlaybackViewModel,
+    playlistViewModel: PlaylistViewModel,
     onTitleChanged: (String) -> Unit,
+    screenViewModel: PlaylistTracksScreenViewModel = hiltViewModel(),
 ) {
-    val stateHolder = rememberPlaylistTracksScreenState(playlistId)
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-    val currentTrack by viewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
+    val app = LocalContext.current.applicationContext as MusicApplication
+    val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.playlist, uiState.isLoading) {
         if (!uiState.isLoading) {
@@ -48,7 +54,7 @@ fun PlaylistTracksScreen(
                     EntityHeader(
                         type = EntityType.Playlist,
                         playlistId = playlistId,
-                        classicalGenreId = viewModel.classicalGenreId,
+                        classicalGenreId = app.classicalGenreId,
                     )
                 }
                 items(uiState.tracks) { track ->
@@ -56,7 +62,7 @@ fun PlaylistTracksScreen(
                         TrackCard(
                             track = track,
                             isCurrentlyPlaying = currentTrack?.mediaId == track.id.toString(),
-                            onTrackClicked = { viewModel.playTrack(track, uiState.tracks) },
+                            onTrackClicked = { playbackViewModel.playTrack(track, uiState.tracks) },
                             onTrackLongPressed = { trackWithMenu = track },
                         )
                         DropdownMenu(
@@ -66,7 +72,7 @@ fun PlaylistTracksScreen(
                             DropdownMenuItem(
                                 text = { Text("Remove from playlist") },
                                 onClick = {
-                                    viewModel.removeTrackFromPlaylist(playlistId, track.id)
+                                    playlistViewModel.removeTrackFromPlaylist(playlistId, track.id)
                                     trackWithMenu = null
                                 },
                             )
@@ -75,7 +81,7 @@ fun PlaylistTracksScreen(
                 }
             }
         },
-        onPlay = { viewModel.playTracksForPlaylist(playlistId, false) },
-        onShuffle = { viewModel.playTracksForPlaylist(playlistId, true) },
+        onPlay = { playbackViewModel.playTracksForPlaylist(playlistId, false) },
+        onShuffle = { playbackViewModel.playTracksForPlaylist(playlistId, true) },
     )
 }

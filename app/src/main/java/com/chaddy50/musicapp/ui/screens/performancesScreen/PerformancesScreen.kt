@@ -7,26 +7,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 
 @Composable
 fun PerformancesScreen(
     genreId: Long,
     albumId: Long,
-    viewModel: MusicAppViewModel,
+    playbackViewModel: PlaybackViewModel,
+    playlistViewModel: PlaylistViewModel,
     navController: NavController,
     onTitleChanged: (String) -> Unit,
+    screenViewModel: PerformancesScreenViewModel = hiltViewModel(),
 ) {
-    val stateHolder = rememberPerformancesScreenState(albumId, null)
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
-    val allPlaylists by viewModel.allPlaylists.collectAsStateWithLifecycle()
+    val app = LocalContext.current.applicationContext as MusicApplication
+    val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
         if (!uiState.isLoading) {
@@ -43,10 +49,10 @@ fun PerformancesScreen(
                         type = EntityType.Album,
                         genreId = genreId,
                         albumId = albumId,
-                        classicalGenreId = viewModel.classicalGenreId,
+                        classicalGenreId = app.classicalGenreId,
                         allPlaylists = allPlaylists,
-                        onAddToPlaylist = { playlistId -> viewModel.addAlbumToPlaylist(playlistId, albumId) },
-                        onCreateAndAdd = { name -> viewModel.createPlaylistAndAddAlbum(name, albumId) },
+                        onAddToPlaylist = { playlistId -> playlistViewModel.addAlbumToPlaylist(playlistId, albumId) },
+                        onCreateAndAdd = { name -> playlistViewModel.createPlaylistAndAddAlbum(name, albumId) },
                     )
                 }
 
@@ -60,7 +66,7 @@ fun PerformancesScreen(
                 }
             }
         },
-        onPlay = { viewModel.playTracksForAlbum(albumId, null, false) },
-        onShuffle = { viewModel.playTracksForAlbum(albumId, null, true) },
+        onPlay = { playbackViewModel.playTracksForAlbum(albumId, null, false) },
+        onShuffle = { playbackViewModel.playTracksForAlbum(albumId, null, true) },
     )
 }

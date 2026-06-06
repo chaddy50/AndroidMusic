@@ -18,12 +18,14 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.ui.screens.genresScreen.GenresScreen
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistsScreen
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
-    viewModel: MusicAppViewModel,
+    playbackViewModel: PlaybackViewModel,
+    playlistViewModel: PlaylistViewModel,
     navController: NavController,
     onTitleChanged: (String) -> Unit,
 ) {
@@ -60,8 +62,8 @@ fun HomeScreen(
                 .imePadding(),
         ) { page ->
             when (page) {
-                0 -> GenresScreen(viewModel, navController)
-                1 -> PlaylistsScreen(viewModel, navController)
+                0 -> GenresScreen(playbackViewModel, playlistViewModel, navController)
+                1 -> PlaylistsScreen(playlistViewModel, navController)
             }
         }
     }

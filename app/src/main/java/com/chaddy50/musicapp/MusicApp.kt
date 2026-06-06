@@ -17,30 +17,28 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import com.chaddy50.musicapp.data.MusicDatabase
-import com.chaddy50.musicapp.data.scanner.MusicScanner
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbClient
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusClient
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
-import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
+import com.chaddy50.musicapp.data.scanner.LibraryScanViewModel
+import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
-import com.chaddy50.musicapp.viewModel.MusicAppViewModelFactory
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class MusicApp : ComponentActivity() {
-    private val viewModel: MusicAppViewModel by viewModels {
-        MusicAppViewModelFactory(application as MusicApplication)
-    }
+    private val playbackViewModel: PlaybackViewModel by viewModels()
+    private val playlistViewModel: PlaylistViewModel by viewModels()
+    private val libraryScanViewModel: LibraryScanViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,7 +50,7 @@ class MusicApp : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NavigationHost(viewModel)
+                    NavigationHost(playbackViewModel, playlistViewModel, libraryScanViewModel)
                 }
             }
         }
@@ -99,38 +97,21 @@ class MusicApp : ComponentActivity() {
 
     private fun triggerLibraryScanIfNeeded() {
         lifecycleScope.launch {
-            viewModel.refreshLibrary()
+            libraryScanViewModel.refreshLibrary()
         }
     }
 }
 
+@HiltAndroidApp
 class MusicApplication: Application() {
-    val database: MusicDatabase by lazy {
-        MusicDatabase.getDatabase(this)
-    }
+    var classicalGenreId: Long? = null
 
-    val trackRepository by lazy { TrackRepository(database.trackDao()) }
-    val albumRepository by lazy { AlbumRepository(database.albumDao()) }
-    val artistRepository by lazy { ArtistRepository(database.artistDao()) }
-    val genreRepository by lazy { GenreRepository(database.genreDao()) }
-    val albumArtistRepository by lazy { AlbumArtistRepository(database.albumArtistDao(), database.genreDao(), audioDbRepository) }
-    val performanceRepository by lazy { PerformanceRepository(database.performanceDao()) }
-    val playlistRepository by lazy { PlaylistRepository(database.playlistDao()) }
-    val composerRepository by lazy { ComposerRepository(database.composerDao(), openOpusRepository, artworkDownloader) }
-    val artworkDownloader by lazy { ArtworkDownloader(this) }
-    val openOpusRepository = OpenOpusRepository(OpenOpusClient.service)
-    val audioDbRepository = AudioDbRepository(AudioDbClient.service, artworkDownloader)
-
-    val musicScanner by lazy {
-        MusicScanner(
-            this,
-            genreRepository,
-            artistRepository,
-            albumArtistRepository,
-            albumRepository,
-            trackRepository,
-            performanceRepository,
-        )
-    }
-
+    @Inject lateinit var trackRepository: TrackRepository
+    @Inject lateinit var albumRepository: AlbumRepository
+    @Inject lateinit var artistRepository: ArtistRepository
+    @Inject lateinit var genreRepository: GenreRepository
+    @Inject lateinit var albumArtistRepository: AlbumArtistRepository
+    @Inject lateinit var performanceRepository: PerformanceRepository
+    @Inject lateinit var playlistRepository: PlaylistRepository
+    @Inject lateinit var composerRepository: ComposerRepository
 }

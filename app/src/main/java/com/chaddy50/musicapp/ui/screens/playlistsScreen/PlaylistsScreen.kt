@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Playlist
@@ -27,15 +28,14 @@ import com.chaddy50.musicapp.navigation.PlaylistTracksRoute
 import com.chaddy50.musicapp.ui.composables.CreateNewPlaylistDialog
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
-import com.chaddy50.musicapp.viewModel.MusicAppViewModel
 
 @Composable
 fun PlaylistsScreen(
-    viewModel: MusicAppViewModel,
+    playlistViewModel: PlaylistViewModel,
     navController: NavController,
+    screenViewModel: PlaylistsScreenViewModel = hiltViewModel(),
 ) {
-    val stateHolder = rememberPlaylistsScreenState()
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
+    val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var playlistToDelete by remember { mutableStateOf<Playlist?>(null) }
@@ -73,7 +73,7 @@ fun PlaylistsScreen(
         CreateNewPlaylistDialog(
             onConfirm = { name ->
                 if (name.isNotBlank()) {
-                    viewModel.createPlaylist(name)
+                    playlistViewModel.createPlaylist(name)
                 }
                 showCreateDialog = false
             },
@@ -88,7 +88,7 @@ fun PlaylistsScreen(
             text = { Text("Delete \"${playlist.name}\"?") },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel.deletePlaylist(playlist)
+                    playlistViewModel.deletePlaylist(playlist)
                     playlistToDelete = null
                 }) { Text("Delete") }
             },
