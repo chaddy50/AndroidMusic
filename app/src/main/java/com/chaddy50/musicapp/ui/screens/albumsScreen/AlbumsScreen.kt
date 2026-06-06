@@ -38,6 +38,7 @@ fun AlbumsScreen(
 ) {
     val app = LocalContext.current.applicationContext as MusicApplication
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     val isClassical = genreId == app.classicalGenreId
     val selectedSubGenreId by screenViewModel.selectedSubGenreId.collectAsStateWithLifecycle()
@@ -61,10 +62,8 @@ fun AlbumsScreen(
             ) {
                 item {
                     EntityHeader(
+                        uiState = entityHeaderState,
                         type = EntityType.AlbumArtist,
-                        genreId = genreId,
-                        albumArtistId = albumArtistId,
-                        classicalGenreId = app.classicalGenreId,
                         allPlaylists = allPlaylists,
                         onAddToPlaylist = { playlistId -> playlistViewModel.addAlbumArtistToPlaylist(playlistId, albumArtistId) },
                         onCreateAndAdd = { name -> playlistViewModel.createPlaylistAndAddAlbumArtist(name, albumArtistId) },

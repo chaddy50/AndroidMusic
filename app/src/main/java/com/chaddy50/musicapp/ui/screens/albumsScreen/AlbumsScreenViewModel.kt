@@ -10,18 +10,25 @@ import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
+import com.chaddy50.musicapp.data.repository.PlaylistRepository
+import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.navigation.AlbumsRoute
+import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class AlbumsScreenUiState(
@@ -38,12 +45,15 @@ class AlbumsScreenViewModel @Inject constructor(
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
+    playlistRepository: PlaylistRepository,
+    composerRepository: ComposerRepository,
 ) : ViewModel() {
     private val _selectedSubGenreId = MutableStateFlow<Long?>(null)
     val selectedSubGenreId = _selectedSubGenreId.asStateFlow()
 
     val subGenres: StateFlow<List<Genre>>
     val uiState: StateFlow<AlbumsScreenUiState>
+    val entityHeaderState: StateFlow<EntityHeaderState>
 
     init {
         val route = savedStateHandle.toRoute<AlbumsRoute>()
@@ -91,6 +101,71 @@ class AlbumsScreenViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5_000),
             AlbumsScreenUiState(isLoading = true),
         )
+
+        entityHeaderState = combine(
+            albumArtistRepository.getAlbumArtistById(albumArtistId),
+            genreRepository.getGenreById(genreId),
+            albumRepository.getNumberOfAlbumsForAlbumArtist(albumArtistId),
+            composerRepository.getComposerForAlbumArtist(albumArtistId),
+            playlistRepository.getPlaylistIdsContainingAlbumArtist(albumArtistId),
+        ) { albumArtist, genre, numberOfAlbums, composer, playlistsThatAlbumArtistIsAlreadyIn ->
+            val albumsLabel = if (isClassical) "works" else "albums"
+
+            if (composer != null) {
+                val lifespan = listOfNotNull(composer.birthYear, composer.deathYear)
+                    .joinToString("–")
+                val subtitle = listOfNotNull(composer.epoch, lifespan.ifEmpty { null })
+                    .joinToString(" - ")
+
+                EntityHeaderState(
+                    composer.completeName,
+                    subtitle,
+                    "$numberOfAlbums $albumsLabel",
+                    composer.portraitPath,
+                    false,
+                    playlistsThatAlbumArtistIsAlreadyIn,
+                )
+            } else {
+                EntityHeaderState(
+                    albumArtist?.name ?: "Artist",
+                    genre?.name ?: "Genre",
+                    "$numberOfAlbums $albumsLabel",
+                    albumArtist?.portraitPath,
+                    false,
+                    playlistsThatAlbumArtistIsAlreadyIn,
+                )
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            EntityHeaderState(),
+        )
+
+        // One-shot fetch: composer info for classical artists
+        if (isClassical) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val albumArtist = albumArtistRepository.getAlbumArtistById(albumArtistId).first()
+                val composer = composerRepository.getComposerForAlbumArtist(albumArtistId).first()
+                if (albumArtist != null && composer == null) {
+                    composerRepository.fetchAndInsertComposer(albumArtistId, albumArtist.name)
+                }
+            }
+        }
+
+        // One-shot fetch: portrait for non-classical artists
+        if (!isClassical) {
+            viewModelScope.launch(Dispatchers.IO) {
+                val albumArtist = albumArtistRepository.getAlbumArtistById(albumArtistId).first()
+                val genre = genreRepository.getGenreById(genreId).first()
+                if (albumArtist != null && albumArtist.portraitPath == null && shouldFetchArtistArtworkForGenre(genre?.name)) {
+                    try {
+                        albumArtistRepository.fetchAndUpdatePortrait(albumArtist)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        }
     }
 
     fun updateSelectedSubGenreId(subGenreId: Long?) {

@@ -14,10 +14,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
@@ -34,8 +32,8 @@ fun PlaylistTracksScreen(
     onTitleChanged: (String) -> Unit,
     screenViewModel: PlaylistTracksScreenViewModel = hiltViewModel(),
 ) {
-    val app = LocalContext.current.applicationContext as MusicApplication
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.playlist, uiState.isLoading) {
@@ -52,9 +50,8 @@ fun PlaylistTracksScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     EntityHeader(
+                        uiState = entityHeaderState,
                         type = EntityType.Playlist,
-                        playlistId = playlistId,
-                        classicalGenreId = app.classicalGenreId,
                     )
                 }
                 items(uiState.tracks) { track ->

@@ -1,19 +1,29 @@
 package com.chaddy50.musicapp.ui.screens.performancesScreen
 
+import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Performance
+import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
+import com.chaddy50.musicapp.data.repository.PlaylistRepository
+import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.navigation.PerformancesRoute
+import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
+import com.chaddy50.musicapp.utilities.formatMillisecondsIntoMinutesAndSeconds
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -24,17 +34,26 @@ data class PerformanceScreenUiState(
     val isLoading: Boolean = true
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class PerformancesScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    application: Application,
     performanceRepository: PerformanceRepository,
     albumRepository: AlbumRepository,
+    albumArtistRepository: AlbumArtistRepository,
+    trackRepository: TrackRepository,
+    playlistRepository: PlaylistRepository,
 ) : ViewModel() {
     val uiState: StateFlow<PerformanceScreenUiState>
+    val entityHeaderState: StateFlow<EntityHeaderState>
 
     init {
         val route = savedStateHandle.toRoute<PerformancesRoute>()
         val albumId = route.albumId
+        val genreId = route.genreId
+        val classicalGenreId = (application as MusicApplication).classicalGenreId
+        val isClassical = genreId == classicalGenreId
 
         val albumTitle: Flow<String> = albumRepository.getAlbumById(albumId)
             .filterNotNull()
@@ -49,6 +68,45 @@ class PerformancesScreenViewModel @Inject constructor(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
             PerformanceScreenUiState(isLoading = true),
+        )
+
+        entityHeaderState = albumRepository.getAlbumById(albumId).flatMapLatest { album ->
+            if (album == null) {
+                return@flatMapLatest flowOf(EntityHeaderState(isLoading = false))
+            }
+
+            combine(
+                albumArtistRepository.getAlbumArtistById(album.artistId),
+                trackRepository.getTracksForAlbum(albumId),
+                performanceRepository.getNumberOfPerformancesForAlbum(albumId),
+                playlistRepository.getPlaylistIdsContainingAlbum(album.id),
+            ) { albumArtist, tracks, numberOfPerformances, playlistsThatAlbumIsAlreadyIn ->
+                val albumDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
+                var items: List<String> = listOf()
+                if (!isClassical) {
+                    items = items.plus(album.year)
+                }
+                if (isClassical) {
+                    items = items.plus("$numberOfPerformances performances")
+                } else {
+                    items = items.plus("${tracks.size} tracks")
+                }
+                if (!isClassical) {
+                    items = items.plus(formatMillisecondsIntoMinutesAndSeconds(albumDurationMs))
+                }
+                EntityHeaderState(
+                    album.title,
+                    albumArtist?.name ?: "Unknown Artist",
+                    items.joinToString(" - "),
+                    if (isClassical) null else album.artworkPath,
+                    false,
+                    playlistsThatAlbumIsAlreadyIn,
+                )
+            }
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            EntityHeaderState(),
         )
     }
 }

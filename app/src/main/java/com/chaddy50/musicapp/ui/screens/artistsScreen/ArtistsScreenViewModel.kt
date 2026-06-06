@@ -1,13 +1,17 @@
 package com.chaddy50.musicapp.ui.screens.artistsScreen
 
+import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
+import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.navigation.ArtistsRoute
+import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,14 +29,18 @@ data class ArtistsScreenUiState(
 @HiltViewModel
 class ArtistsScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
+    application: Application,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
+    playlistRepository: PlaylistRepository,
 ) : ViewModel() {
     val uiState: StateFlow<ArtistsScreenUiState>
+    val entityHeaderState: StateFlow<EntityHeaderState>
 
     init {
         val route = savedStateHandle.toRoute<ArtistsRoute>()
         val genreId = route.genreId
+        val classicalGenreId = (application as MusicApplication).classicalGenreId
 
         val artistsToShow: Flow<List<AlbumArtist>> =
             albumArtistRepository.getAlbumArtistsForGenre(genreId)
@@ -49,6 +57,26 @@ class ArtistsScreenViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = ArtistsScreenUiState(isLoading = true),
+        )
+
+        entityHeaderState = combine(
+            genreRepository.getGenreById(genreId),
+            albumArtistRepository.getNumberOfAlbumArtistsForGenre(genreId),
+            playlistRepository.getPlaylistIdsContainingGenre(genreId),
+        ) { genre, numberOfAlbumArtists, playlistsThatGenreIsAlreadyIn ->
+            val artistLabel = if (genre?.id == classicalGenreId) "composers" else "artists"
+            EntityHeaderState(
+                genre?.name ?: "Genre",
+                "$numberOfAlbumArtists $artistLabel",
+                null,
+                null,
+                false,
+                playlistsThatGenreIsAlreadyIn,
+            )
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            EntityHeaderState(),
         )
     }
 }

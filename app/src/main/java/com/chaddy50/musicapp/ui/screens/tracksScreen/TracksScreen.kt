@@ -18,13 +18,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
 import com.chaddy50.musicapp.ui.composables.EntityScreen
@@ -45,8 +43,8 @@ fun TracksScreen(
     onTitleChanged: (String) -> Unit,
     screenViewModel: TracksScreenViewModel = hiltViewModel(),
 ) {
-    val app = LocalContext.current.applicationContext as MusicApplication
     val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
+    val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -70,11 +68,8 @@ fun TracksScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     EntityHeader(
+                        uiState = entityHeaderState,
                         type = EntityType.Album,
-                        genreId = genreId,
-                        albumId = albumId,
-                        performanceId = performanceId,
-                        classicalGenreId = app.classicalGenreId,
                         allPlaylists = allPlaylists,
                         onAddToPlaylist = { playlistId -> playlistViewModel.addAlbumToPlaylist(playlistId, albumId) },
                         onCreateAndAdd = { name -> playlistViewModel.createPlaylistAndAddAlbum(name, albumId) },

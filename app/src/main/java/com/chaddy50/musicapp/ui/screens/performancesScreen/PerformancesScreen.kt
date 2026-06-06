@@ -7,11 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
@@ -30,8 +28,8 @@ fun PerformancesScreen(
     onTitleChanged: (String) -> Unit,
     screenViewModel: PerformancesScreenViewModel = hiltViewModel(),
 ) {
-    val app = LocalContext.current.applicationContext as MusicApplication
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
 
     LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
@@ -46,10 +44,8 @@ fun PerformancesScreen(
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     EntityHeader(
+                        uiState = entityHeaderState,
                         type = EntityType.Album,
-                        genreId = genreId,
-                        albumId = albumId,
-                        classicalGenreId = app.classicalGenreId,
                         allPlaylists = allPlaylists,
                         onAddToPlaylist = { playlistId -> playlistViewModel.addAlbumToPlaylist(playlistId, albumId) },
                         onCreateAndAdd = { name -> playlistViewModel.createPlaylistAndAddAlbum(name, albumId) },

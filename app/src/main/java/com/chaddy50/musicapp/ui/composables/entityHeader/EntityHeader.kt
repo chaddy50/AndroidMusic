@@ -29,7 +29,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.chaddy50.musicapp.data.entity.Playlist
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
@@ -55,27 +54,12 @@ private val addToPlaylistTypes = setOf(
 
 @Composable
 fun EntityHeader(
+    uiState: EntityHeaderState,
     type: EntityType,
-    genreId: Long? = null,
-    albumArtistId: Long? = null,
-    albumId: Long? = null,
-    performanceId: Long? = null,
-    playlistId: Long? = null,
-    classicalGenreId: Long? = null,
     allPlaylists: List<Playlist> = emptyList(),
     onAddToPlaylist: (playlistId: Long) -> Unit = {},
     onCreateAndAdd: (name: String) -> Unit = {},
 ) {
-    val stateHolder = rememberEntityHeaderState(
-        type = type,
-        genreId = genreId,
-        albumArtistId = albumArtistId,
-        albumId = albumId,
-        performanceId = performanceId,
-        playlistId = playlistId,
-        classicalGenreId = classicalGenreId,
-    )
-    val uiState by stateHolder.uiState.collectAsStateWithLifecycle()
     var showAddToPlaylistSheet by remember { mutableStateOf(false) }
 
     if (uiState.isLoading) {
