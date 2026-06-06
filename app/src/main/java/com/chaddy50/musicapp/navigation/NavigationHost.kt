@@ -1,4 +1,4 @@
-package com.chaddy50.musicapp
+package com.chaddy50.musicapp.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,12 +23,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.chaddy50.musicapp.navigation.AlbumsRoute
-import com.chaddy50.musicapp.navigation.ArtistsRoute
-import com.chaddy50.musicapp.navigation.HomeRoute
-import com.chaddy50.musicapp.navigation.PerformancesRoute
-import com.chaddy50.musicapp.navigation.PlaylistTracksRoute
-import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.MusicScannerProgressBar
 import com.chaddy50.musicapp.ui.composables.SubGenreFilterButton
 import com.chaddy50.musicapp.ui.composables.TopBar

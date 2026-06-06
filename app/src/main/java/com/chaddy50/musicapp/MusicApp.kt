@@ -26,6 +26,7 @@ import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.data.scanner.LibraryScanViewModel
+import com.chaddy50.musicapp.navigation.NavigationHost
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import com.chaddy50.musicapp.ui.theme.MusicAppTheme
