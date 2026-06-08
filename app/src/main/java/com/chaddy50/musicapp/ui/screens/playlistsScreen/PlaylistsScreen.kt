@@ -49,7 +49,7 @@ fun PlaylistsScreen(
                         EntityCard(
                             title = playlist.name,
                             onClick = {
-                                navController.navigate(PlaylistTracksRoute(playlistId = playlist.id))
+                                navController.navigate(PlaylistTracksRoute(playlistId = playlist.id, title = playlist.name))
                             },
                             onLongClick = {
                                 playlistToDelete = playlist

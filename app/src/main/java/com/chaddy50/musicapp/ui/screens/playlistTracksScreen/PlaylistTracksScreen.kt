@@ -8,7 +8,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,18 +28,11 @@ fun PlaylistTracksScreen(
     playlistId: Long,
     playbackViewModel: PlaybackViewModel,
     playlistViewModel: PlaylistViewModel,
-    onTitleChanged: (String) -> Unit,
     screenViewModel: PlaylistTracksScreenViewModel = hiltViewModel(),
 ) {
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
     val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.playlist, uiState.isLoading) {
-        if (!uiState.isLoading) {
-            onTitleChanged(uiState.playlist?.name ?: "Playlist")
-        }
-    }
 
     var trackWithMenu by remember { mutableStateOf<Track?>(null) }
 

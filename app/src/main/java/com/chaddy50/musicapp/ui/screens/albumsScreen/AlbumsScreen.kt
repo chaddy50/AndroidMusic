@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +32,6 @@ fun AlbumsScreen(
     playbackViewModel: PlaybackViewModel,
     playlistViewModel: PlaylistViewModel,
     navController: NavController,
-    onTitleChanged: (String) -> Unit,
     screenViewModel: AlbumsScreenViewModel = hiltViewModel(),
 ) {
     val app = LocalContext.current.applicationContext as MusicApplication
@@ -42,12 +40,6 @@ fun AlbumsScreen(
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     val isClassical = genreId == app.classicalGenreId
     val selectedSubGenreId by screenViewModel.selectedSubGenreId.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-        if (!uiState.isLoading) {
-            onTitleChanged(uiState.screenTitle)
-        }
-    }
 
     var albumToAddToPlaylist by remember { mutableStateOf<Album?>(null) }
     val playlistsThatAlbumIsAlreadyIn by remember(albumToAddToPlaylist?.id) {
@@ -76,9 +68,9 @@ fun AlbumsScreen(
                         isClassical = isClassical,
                         onAlbumClick = {
                             if (isClassical) {
-                                navController.navigate(PerformancesRoute(genreId = genreId, albumId = album.id))
+                                navController.navigate(PerformancesRoute(genreId = genreId, albumId = album.id, title = album.title))
                             } else {
-                                navController.navigate(TracksRoute(genreId = genreId, albumId = album.id))
+                                navController.navigate(TracksRoute(genreId = genreId, albumId = album.id, title = album.title))
                             }
                         },
                         onLongPress = { albumToAddToPlaylist = album },

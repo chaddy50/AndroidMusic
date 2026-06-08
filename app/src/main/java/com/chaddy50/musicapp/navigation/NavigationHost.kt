@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,6 +37,7 @@ import com.chaddy50.musicapp.ui.screens.playlistTracksScreen.PlaylistTracksScree
 import com.chaddy50.musicapp.ui.screens.tracksScreen.TracksScreen
 import com.chaddy50.musicapp.data.scanner.LibraryScanViewModel
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenUiState
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenViewModel
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 
@@ -47,7 +49,7 @@ fun NavigationHost(
     navController: NavHostController = rememberNavController(),
 ) {
     var shouldShowNowPlayingSheet by remember { mutableStateOf(false) }
-    var topBarTitle by remember { mutableStateOf("") }
+    var homeScreenTitle by remember { mutableStateOf("Library") }
     val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
     val isPlaying by playbackViewModel.nowPlayingState.isPlaying.collectAsStateWithLifecycle()
     val playbackPosition by playbackViewModel.nowPlayingState.playbackPosition.collectAsStateWithLifecycle()
@@ -64,20 +66,33 @@ fun NavigationHost(
     val isScanInProgress by libraryScanViewModel.isScanInProgress.collectAsStateWithLifecycle()
     val scanProgress by libraryScanViewModel.scanProgress.collectAsStateWithLifecycle()
 
-    // Sub-genre filter button: access AlbumsScreenViewModel when on AlbumsRoute
+    // Derive top bar title and sub-genre filter state from current route
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = currentBackStackEntry?.destination?.route
-    val isOnAlbumsRoute = currentRoute?.contains("AlbumsRoute") == true
+    val destination = currentBackStackEntry?.destination
+    val isOnAlbumsRoute = destination?.hasRoute<AlbumsRoute>() == true
 
     val albumsScreenViewModel: AlbumsScreenViewModel? = if (isOnAlbumsRoute && currentBackStackEntry != null) {
         hiltViewModel(currentBackStackEntry!!)
     } else null
 
+    val albumsUiState by albumsScreenViewModel?.uiState?.collectAsStateWithLifecycle()
+        ?: remember { mutableStateOf(AlbumsScreenUiState()) }
     val subGenres by albumsScreenViewModel?.subGenres?.collectAsStateWithLifecycle()
         ?: remember { mutableStateOf(emptyList()) }
     val selectedSubGenreId by albumsScreenViewModel?.selectedSubGenreId?.collectAsStateWithLifecycle()
         ?: remember { mutableStateOf(null) }
     val showFilterButton = subGenres.size > 1 && isOnAlbumsRoute
+
+    val topBarTitle = when {
+        destination == null -> ""
+        destination.hasRoute<HomeRoute>() -> homeScreenTitle
+        destination.hasRoute<AlbumsRoute>() -> albumsUiState.screenTitle
+        destination.hasRoute<ArtistsRoute>() -> currentBackStackEntry?.toRoute<ArtistsRoute>()?.title ?: ""
+        destination.hasRoute<PerformancesRoute>() -> currentBackStackEntry?.toRoute<PerformancesRoute>()?.title ?: ""
+        destination.hasRoute<PlaylistTracksRoute>() -> currentBackStackEntry?.toRoute<PlaylistTracksRoute>()?.title ?: ""
+        destination.hasRoute<TracksRoute>() -> currentBackStackEntry?.toRoute<TracksRoute>()?.title ?: ""
+        else -> ""
+    }
 
     Box(
         modifier = Modifier
@@ -131,7 +146,7 @@ fun NavigationHost(
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
                         navController = navController,
-                        onTitleChanged = { topBarTitle = it },
+                        onTitleChanged = { homeScreenTitle = it },
                     )
                 }
                 composable<ArtistsRoute> { backStackEntry ->
@@ -141,7 +156,6 @@ fun NavigationHost(
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
                         navController = navController,
-                        onTitleChanged = { topBarTitle = it },
                     )
                 }
                 composable<AlbumsRoute> { backStackEntry ->
@@ -152,7 +166,6 @@ fun NavigationHost(
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
                         navController = navController,
-                        onTitleChanged = { topBarTitle = it },
                     )
                 }
                 composable<PerformancesRoute> { backStackEntry ->
@@ -163,7 +176,6 @@ fun NavigationHost(
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
                         navController = navController,
-                        onTitleChanged = { topBarTitle = it },
                     )
                 }
                 composable<TracksRoute> { backStackEntry ->
@@ -174,7 +186,6 @@ fun NavigationHost(
                         performanceId = if (route.performanceId == -1L) null else route.performanceId,
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
-                        onTitleChanged = { topBarTitle = it },
                     )
                 }
                 composable<PlaylistTracksRoute> { backStackEntry ->
@@ -183,7 +194,6 @@ fun NavigationHost(
                         playlistId = route.playlistId,
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
-                        onTitleChanged = { topBarTitle = it },
                     )
                 }
             }

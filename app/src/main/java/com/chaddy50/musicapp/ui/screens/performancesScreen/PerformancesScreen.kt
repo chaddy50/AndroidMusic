@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -25,18 +24,11 @@ fun PerformancesScreen(
     playbackViewModel: PlaybackViewModel,
     playlistViewModel: PlaylistViewModel,
     navController: NavController,
-    onTitleChanged: (String) -> Unit,
     screenViewModel: PerformancesScreenViewModel = hiltViewModel(),
 ) {
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
     val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-        if (!uiState.isLoading) {
-            onTitleChanged(uiState.screenTitle)
-        }
-    }
 
     EntityScreen(
         uiState.isLoading,
@@ -56,7 +48,7 @@ fun PerformancesScreen(
                     EntityCard(
                         "${performance.year} - ${performance.artistName}",
                         {
-                            navController.navigate(TracksRoute(genreId = genreId, albumId = albumId, performanceId = performance.id))
+                            navController.navigate(TracksRoute(genreId = genreId, albumId = albumId, performanceId = performance.id, title = uiState.screenTitle))
                         }
                     )
                 }

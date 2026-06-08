@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,18 +29,11 @@ fun ArtistsScreen(
     playbackViewModel: PlaybackViewModel,
     playlistViewModel: PlaylistViewModel,
     navController: NavController,
-    onTitleChanged: (String) -> Unit,
     screenViewModel: ArtistsScreenViewModel = hiltViewModel(),
 ) {
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
     val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-
-    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-        if (!uiState.isLoading) {
-            onTitleChanged(uiState.screenTitle)
-        }
-    }
 
     var artistToAddToPlaylist by remember { mutableStateOf<AlbumArtist?>(null) }
     val playlistsThatArtistIsAlreadyIn by remember(artistToAddToPlaylist?.id) {
@@ -66,7 +58,7 @@ fun ArtistsScreen(
                     EntityCard(
                         artist.name,
                         onClick = {
-                            navController.navigate(AlbumsRoute(genreId = genreId, albumArtistId = artist.id))
+                            navController.navigate(AlbumsRoute(genreId = genreId, albumArtistId = artist.id, title = artist.name))
                         },
                         onLongClick = { artistToAddToPlaylist = artist },
                     )

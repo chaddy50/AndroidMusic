@@ -44,7 +44,7 @@ fun GenresScreen(
                     EntityCard(
                         genre.name,
                         onClick = {
-                            navController.navigate(ArtistsRoute(genreId = genre.id))
+                            navController.navigate(ArtistsRoute(genreId = genre.id, title = genre.name))
                         },
                         onLongClick = { genreToAddToPlaylist = genre },
                     )

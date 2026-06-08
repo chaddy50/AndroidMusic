@@ -12,7 +12,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,7 +39,6 @@ fun TracksScreen(
     performanceId: Long?,
     playbackViewModel: PlaybackViewModel,
     playlistViewModel: PlaylistViewModel,
-    onTitleChanged: (String) -> Unit,
     screenViewModel: TracksScreenViewModel = hiltViewModel(),
 ) {
     val currentTrack by playbackViewModel.nowPlayingState.currentTrack.collectAsStateWithLifecycle()
@@ -52,12 +50,6 @@ fun TracksScreen(
     val playlistsThatTrackIsAlreadyIn by remember(trackToAddToPlaylist?.id) {
         trackToAddToPlaylist?.let { playlistViewModel.getPlaylistsThatTrackIsAlreadyIn(it.id) } ?: flowOf(emptySet())
     }.collectAsStateWithLifecycle(emptySet())
-
-    LaunchedEffect(uiState.screenTitle, uiState.isLoading) {
-        if (!uiState.isLoading) {
-            onTitleChanged(uiState.screenTitle)
-        }
-    }
 
     val groupedTracks = uiState.tracks.groupBy { it.discNumber }
     val doesAlbumHaveMultipleDiscs = groupedTracks.size > 1
