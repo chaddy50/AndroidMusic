@@ -13,9 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,13 +20,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.chaddy50.musicapp.data.entity.Track
-import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
+import com.chaddy50.musicapp.ui.composables.AddToPlaylistHandler
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.composables.rememberAddToPlaylistState
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
-import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -46,10 +43,11 @@ fun TracksScreen(
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
 
-    var trackToAddToPlaylist by remember { mutableStateOf<Track?>(null) }
-    val playlistsThatTrackIsAlreadyIn by remember(trackToAddToPlaylist?.id) {
-        trackToAddToPlaylist?.let { playlistViewModel.getPlaylistsThatTrackIsAlreadyIn(it.id) } ?: flowOf(emptySet())
-    }.collectAsStateWithLifecycle(emptySet())
+    val addToPlaylistState = rememberAddToPlaylistState<Track>(
+        getPlaylistMembership = { track -> playlistViewModel.getPlaylistsThatTrackIsAlreadyIn(track.id) },
+        onAdd = { playlistId, track -> playlistViewModel.addTrackToPlaylist(playlistId, track) },
+        onCreateAndAdd = { name, track -> playlistViewModel.createPlaylistAndAddTrack(name, track) },
+    )
 
     val groupedTracks = uiState.tracks.groupBy { it.discNumber }
     val doesAlbumHaveMultipleDiscs = groupedTracks.size > 1
@@ -95,7 +93,7 @@ fun TracksScreen(
                             track,
                             currentTrack?.mediaId == track.id.toString(),
                             { playbackViewModel.playTrack(track, uiState.tracks) },
-                            onTrackLongPressed = { trackToAddToPlaylist = it },
+                            onTrackLongPressed = { addToPlaylistState.show(it) },
                         )
                     }
                  }
@@ -105,13 +103,5 @@ fun TracksScreen(
         onShuffle = { playbackViewModel.playTracksForAlbum(albumId, performanceId, true) },
     )
 
-    trackToAddToPlaylist?.let { track ->
-        AddToPlaylistSheet(
-            allPlaylists = allPlaylists,
-            playlistsThatEntityIsAlreadyIn = playlistsThatTrackIsAlreadyIn,
-            onAddToPlaylist = { playlistId -> playlistViewModel.addTrackToPlaylist(playlistId, track) },
-            onCreateAndAdd = { name -> playlistViewModel.createPlaylistAndAddTrack(name, track) },
-            onDismiss = { trackToAddToPlaylist = null },
-        )
-    }
+    AddToPlaylistHandler(state = addToPlaylistState, allPlaylists = allPlaylists)
 }

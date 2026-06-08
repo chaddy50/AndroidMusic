@@ -5,9 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -17,13 +14,13 @@ import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.navigation.PerformancesRoute
 import com.chaddy50.musicapp.navigation.TracksRoute
-import com.chaddy50.musicapp.ui.composables.AddToPlaylistSheet
+import com.chaddy50.musicapp.ui.composables.AddToPlaylistHandler
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
+import com.chaddy50.musicapp.ui.composables.rememberAddToPlaylistState
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
-import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun AlbumsScreen(
@@ -41,10 +38,11 @@ fun AlbumsScreen(
     val isClassical = genreId == app.classicalGenreId
     val selectedSubGenreId by screenViewModel.selectedSubGenreId.collectAsStateWithLifecycle()
 
-    var albumToAddToPlaylist by remember { mutableStateOf<Album?>(null) }
-    val playlistsThatAlbumIsAlreadyIn by remember(albumToAddToPlaylist?.id) {
-        albumToAddToPlaylist?.let { playlistViewModel.getPlaylistsThatAlbumIsAlreadyIn(it.id) } ?: flowOf(emptySet())
-    }.collectAsStateWithLifecycle(emptySet())
+    val addToPlaylistState = rememberAddToPlaylistState<Album>(
+        getPlaylistMembership = { album -> playlistViewModel.getPlaylistsThatAlbumIsAlreadyIn(album.id) },
+        onAdd = { playlistId, album -> playlistViewModel.addAlbumToPlaylist(playlistId, album.id) },
+        onCreateAndAdd = { name, album -> playlistViewModel.createPlaylistAndAddAlbum(name, album.id) },
+    )
 
     EntityScreen(
         uiState.isLoading,
@@ -73,7 +71,7 @@ fun AlbumsScreen(
                                 navController.navigate(TracksRoute(genreId = genreId, albumId = album.id, title = album.title))
                             }
                         },
-                        onLongPress = { albumToAddToPlaylist = album },
+                        onLongPress = { addToPlaylistState.show(album) },
                     )
                 }
             }
@@ -83,17 +81,5 @@ fun AlbumsScreen(
         onShuffle = { playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, true) },
     )
 
-    albumToAddToPlaylist?.let { album ->
-        AddToPlaylistSheet(
-            allPlaylists = allPlaylists,
-            playlistsThatEntityIsAlreadyIn = playlistsThatAlbumIsAlreadyIn,
-            onAddToPlaylist = { playlistId ->
-                playlistViewModel.addAlbumToPlaylist(playlistId, album.id)
-            },
-            onCreateAndAdd = { name ->
-                playlistViewModel.createPlaylistAndAddAlbum(name, album.id)
-            },
-            onDismiss = { albumToAddToPlaylist = null },
-        )
-    }
+    AddToPlaylistHandler(state = addToPlaylistState, allPlaylists = allPlaylists)
 }
