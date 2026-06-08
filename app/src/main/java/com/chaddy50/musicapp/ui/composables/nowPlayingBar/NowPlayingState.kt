@@ -88,8 +88,8 @@ class NowPlayingState(
 
     fun play() = controller?.play()
     fun pause() = controller?.pause()
-    fun skipNext(): () -> Unit = { controller?.seekToNext() }
-    fun skipPrevious(): () -> Unit = { controller?.seekToPrevious() }
+    fun skipNext() { controller?.seekToNext() }
+    fun skipPrevious() { controller?.seekToPrevious() }
 
     fun playOrPause() {
         if (_isPlaying.value) {
