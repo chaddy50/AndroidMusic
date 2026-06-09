@@ -9,11 +9,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakePlaylistDao(
     private val allPlaylistsFlow: MutableStateFlow<List<Playlist>> = MutableStateFlow(emptyList()),
+    private val playlistByIdFlow: MutableStateFlow<Playlist?> = MutableStateFlow(null),
+    private val tracksForPlaylistFlow: MutableStateFlow<List<Track>> = MutableStateFlow(emptyList()),
 ) : PlaylistDao {
     override fun getAllPlaylists(): Flow<List<Playlist>> = allPlaylistsFlow
+    override fun getPlaylistById(id: Long): Flow<Playlist?> = playlistByIdFlow
+    override fun getTracksForPlaylist(playlistId: Long): Flow<List<Track>> = tracksForPlaylistFlow
 
-    override fun getPlaylistById(id: Long): Flow<Playlist?> = TODO()
-    override fun getTracksForPlaylist(playlistId: Long): Flow<List<Track>> = TODO()
     override suspend fun getMaxPosition(playlistId: Long): Int? = TODO()
     override suspend fun insertPlaylist(playlist: Playlist): Long = TODO()
     override suspend fun deletePlaylist(playlist: Playlist) = TODO()
