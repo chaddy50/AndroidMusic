@@ -1,11 +1,10 @@
 package com.chaddy50.musicapp.ui.screens.tracksScreen
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Track
@@ -40,7 +39,7 @@ data class TracksScreenUiState(
 @HiltViewModel
 class TracksScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    application: Application,
+    classicalGenreConfig: ClassicalGenreConfig,
     trackRepository: TrackRepository,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
@@ -55,7 +54,7 @@ class TracksScreenViewModel @Inject constructor(
         val albumId = route.albumId
         val genreId = route.genreId
         val performanceId = if (route.performanceId == -1L) null else route.performanceId
-        val classicalGenreId = (application as MusicApplication).classicalGenreId
+        val classicalGenreId = classicalGenreConfig.classicalGenreId
         val isClassical = genreId == classicalGenreId
 
         val tracks: Flow<List<Track>> = if (performanceId != null) {

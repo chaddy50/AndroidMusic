@@ -4,10 +4,12 @@ import com.chaddy50.musicapp.data.entity.Playlist
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.fakes.FakePlaylistDao
+import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.fakes.FakeTrackDao
 import com.chaddy50.musicapp.fakes.MainDispatcherRule
 import com.chaddy50.musicapp.fakes.testTrack
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -20,7 +22,8 @@ class PlaylistViewModelTest {
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
-    private val trackDao = FakeTrackDao()
+    private val tracksFlow = MutableStateFlow<List<Track>>(emptyList())
+    private val trackDao = FakeTrackDao(tracksFlow)
     private val playlistDao = FakePlaylistDao()
 
     private fun createViewModel(): PlaylistViewModel {
@@ -34,11 +37,11 @@ class PlaylistViewModelTest {
 
     @Test
     fun addGenreToPlaylistAddsAllGenreTracks() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, genreId = 10),
             testTrack(id = 2, genreId = 10),
             testTrack(id = 3, genreId = 99),
-        ))
+        )
         val vm = createViewModel()
         vm.addGenreToPlaylist(playlistId = 5, genreId = 10)
         advanceUntilIdle()
@@ -50,11 +53,11 @@ class PlaylistViewModelTest {
 
     @Test
     fun addAlbumArtistToPlaylistAddsAllArtistTracks() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, albumArtistId = 20),
             testTrack(id = 2, albumArtistId = 20),
             testTrack(id = 3, albumArtistId = 99),
-        ))
+        )
         val vm = createViewModel()
         vm.addAlbumArtistToPlaylist(playlistId = 5, albumArtistId = 20)
         advanceUntilIdle()
@@ -65,11 +68,11 @@ class PlaylistViewModelTest {
 
     @Test
     fun addAlbumToPlaylistAddsAllAlbumTracks() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, albumId = 30),
             testTrack(id = 2, albumId = 30),
             testTrack(id = 3, albumId = 99),
-        ))
+        )
         val vm = createViewModel()
         vm.addAlbumToPlaylist(playlistId = 5, albumId = 30)
         advanceUntilIdle()
@@ -112,10 +115,10 @@ class PlaylistViewModelTest {
 
     @Test
     fun createPlaylistAndAddGenreCreatesAndAdds() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, genreId = 10),
             testTrack(id = 2, genreId = 10),
-        ))
+        )
         val vm = createViewModel()
         vm.createPlaylistAndAddGenre("My Genre Playlist", genreId = 10)
         advanceUntilIdle()
@@ -128,10 +131,10 @@ class PlaylistViewModelTest {
 
     @Test
     fun createPlaylistAndAddAlbumArtistCreatesAndAdds() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, albumArtistId = 20),
             testTrack(id = 2, albumArtistId = 20),
-        ))
+        )
         val vm = createViewModel()
         vm.createPlaylistAndAddAlbumArtist("Artist Playlist", albumArtistId = 20)
         advanceUntilIdle()
@@ -142,10 +145,10 @@ class PlaylistViewModelTest {
 
     @Test
     fun createPlaylistAndAddAlbumCreatesAndAdds() = runTest {
-        trackDao.tracks.addAll(listOf(
+        tracksFlow.value = listOf(
             testTrack(id = 1, albumId = 30),
             testTrack(id = 2, albumId = 30),
-        ))
+        )
         val vm = createViewModel()
         vm.createPlaylistAndAddAlbum("Album Playlist", albumId = 30)
         advanceUntilIdle()

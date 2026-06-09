@@ -105,8 +105,6 @@ class MusicApp : ComponentActivity() {
 
 @HiltAndroidApp
 class MusicApplication: Application() {
-    var classicalGenreId: Long? = null
-
     @Inject lateinit var trackRepository: TrackRepository
     @Inject lateinit var albumRepository: AlbumRepository
     @Inject lateinit var artistRepository: ArtistRepository

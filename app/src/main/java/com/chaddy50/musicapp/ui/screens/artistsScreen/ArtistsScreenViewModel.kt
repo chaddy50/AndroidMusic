@@ -1,11 +1,10 @@
 package com.chaddy50.musicapp.ui.screens.artistsScreen
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
@@ -29,7 +28,7 @@ data class ArtistsScreenUiState(
 @HiltViewModel
 class ArtistsScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    application: Application,
+    classicalGenreConfig: ClassicalGenreConfig,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
     playlistRepository: PlaylistRepository,
@@ -40,7 +39,7 @@ class ArtistsScreenViewModel @Inject constructor(
     init {
         val route = savedStateHandle.toRoute<ArtistsRoute>()
         val genreId = route.genreId
-        val classicalGenreId = (application as MusicApplication).classicalGenreId
+        val classicalGenreId = classicalGenreConfig.classicalGenreId
 
         val artistsToShow: Flow<List<AlbumArtist>> =
             albumArtistRepository.getAlbumArtistsForGenre(genreId)

@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.session.MediaController
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -19,13 +19,14 @@ import javax.inject.Inject
 @HiltViewModel
 class PlaybackViewModel @Inject constructor(
     private val application: Application,
+    private val classicalGenreConfig: ClassicalGenreConfig,
     private val trackRepository: TrackRepository,
     private val playlistRepository: PlaylistRepository,
 ) : ViewModel() {
     val nowPlayingState = NowPlayingState(application, viewModelScope)
     private val controller: MediaController? get() = nowPlayingState.controller
 
-    private val classicalGenreId: Long? get() = (application as MusicApplication).classicalGenreId
+    private val classicalGenreId: Long? get() = classicalGenreConfig.classicalGenreId
 
     fun playAllTracks(shuffled: Boolean) {
         viewModelScope.launch {

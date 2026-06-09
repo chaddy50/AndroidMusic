@@ -1,11 +1,10 @@
 package com.chaddy50.musicapp.ui.screens.albumsScreen
 
-import android.app.Application
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
@@ -41,7 +40,7 @@ data class AlbumsScreenUiState(
 @HiltViewModel
 class AlbumsScreenViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    application: Application,
+    classicalGenreConfig: ClassicalGenreConfig,
     albumRepository: AlbumRepository,
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
@@ -51,6 +50,7 @@ class AlbumsScreenViewModel @Inject constructor(
     private val _selectedSubGenreId = MutableStateFlow<Long?>(null)
     val selectedSubGenreId = _selectedSubGenreId.asStateFlow()
 
+    val isClassical: Boolean
     val subGenres: StateFlow<List<Genre>>
     val uiState: StateFlow<AlbumsScreenUiState>
     val entityHeaderState: StateFlow<EntityHeaderState>
@@ -59,8 +59,8 @@ class AlbumsScreenViewModel @Inject constructor(
         val route = savedStateHandle.toRoute<AlbumsRoute>()
         val genreId = route.genreId
         val albumArtistId = route.albumArtistId
-        val classicalGenreId = (application as MusicApplication).classicalGenreId
-        val isClassical = genreId == classicalGenreId
+        val classicalGenreId = classicalGenreConfig.classicalGenreId
+        isClassical = genreId == classicalGenreId
 
         subGenres = if (genreId == classicalGenreId) {
             genreRepository.getSubGenresForAlbumArtist(genreId, albumArtistId)

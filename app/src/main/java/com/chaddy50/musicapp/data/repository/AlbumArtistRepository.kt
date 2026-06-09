@@ -5,6 +5,7 @@ import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.utilities.stripArticles
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -19,6 +20,7 @@ class AlbumArtistRepository(
     private val albumArtistDao: AlbumArtistDao,
     private val genreDao: GenreDao,
     private val audioDbRepository: AudioDbRepository,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : IAlbumArtistRepository {
     suspend fun insert(albumArtist: AlbumArtist) {
         albumArtistDao.insert(albumArtist)
@@ -64,7 +66,7 @@ class AlbumArtistRepository(
             val genreIds = subGenreIds.ifEmpty { listOf(genreId) }
 
             emitAll(albumArtistDao.getAlbumArtistsForGenreIds(genreIds))
-        }.flowOn(Dispatchers.IO)
+        }.flowOn(ioDispatcher)
     }
 
     suspend fun fetchAndUpdatePortrait(

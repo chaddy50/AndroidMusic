@@ -6,11 +6,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.chaddy50.musicapp.MusicApplication
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.navigation.PerformancesRoute
 import com.chaddy50.musicapp.navigation.TracksRoute
@@ -31,11 +29,10 @@ fun AlbumsScreen(
     navController: NavController,
     screenViewModel: AlbumsScreenViewModel = hiltViewModel(),
 ) {
-    val app = LocalContext.current.applicationContext as MusicApplication
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
     val entityHeaderState by screenViewModel.entityHeaderState.collectAsStateWithLifecycle()
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
-    val isClassical = genreId == app.classicalGenreId
+    val isClassical = screenViewModel.isClassical
     val selectedSubGenreId by screenViewModel.selectedSubGenreId.collectAsStateWithLifecycle()
 
     val addToPlaylistState = rememberAddToPlaylistState<Album>(

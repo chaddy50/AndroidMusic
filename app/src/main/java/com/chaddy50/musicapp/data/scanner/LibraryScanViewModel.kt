@@ -1,9 +1,8 @@
 package com.chaddy50.musicapp.data.scanner
 
-import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +13,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryScanViewModel @Inject constructor(
-    private val application: Application,
+    private val classicalGenreConfig: ClassicalGenreConfig,
     private val musicScanner: MusicScanner,
     private val trackRepository: TrackRepository,
     private val genreRepository: GenreRepository,
@@ -47,7 +46,7 @@ class LibraryScanViewModel @Inject constructor(
     }
 
     private suspend fun initializeClassicalGenreId() {
-        (application as MusicApplication).classicalGenreId =
+        classicalGenreConfig.classicalGenreId =
             genreRepository.getGenreByName("Classical")?.id
     }
 }
