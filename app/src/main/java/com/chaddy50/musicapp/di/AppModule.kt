@@ -5,6 +5,8 @@ import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbClient
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbService
+import com.chaddy50.musicapp.data.api.audioDb.IAudioDbRepository
+import com.chaddy50.musicapp.data.api.openOpus.IOpenOpusRepository
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusClient
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusService
@@ -26,6 +28,7 @@ import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.data.scanner.MusicScanner
 import com.chaddy50.musicapp.data.util.ArtworkDownloader
+import com.chaddy50.musicapp.data.util.IArtworkDownloader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -67,7 +70,7 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideArtworkDownloader(@ApplicationContext context: Context): ArtworkDownloader =
+    fun provideArtworkDownloader(@ApplicationContext context: Context): IArtworkDownloader =
         ArtworkDownloader(context)
 
     // --- Repositories ---
@@ -97,7 +100,7 @@ object AppModule {
     fun provideAlbumArtistRepository(
         albumArtistDao: AlbumArtistDao,
         genreDao: GenreDao,
-        audioDbRepository: AudioDbRepository,
+        audioDbRepository: IAudioDbRepository,
     ): AlbumArtistRepository =
         AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository)
 
@@ -115,21 +118,21 @@ object AppModule {
     @Singleton
     fun provideAudioDbRepository(
         service: AudioDbService,
-        artworkDownloader: ArtworkDownloader,
-    ): AudioDbRepository =
+        artworkDownloader: IArtworkDownloader,
+    ): IAudioDbRepository =
         AudioDbRepository(service, artworkDownloader)
 
     @Provides
     @Singleton
-    fun provideOpenOpusRepository(service: OpenOpusService): OpenOpusRepository =
+    fun provideOpenOpusRepository(service: OpenOpusService): IOpenOpusRepository =
         OpenOpusRepository(service)
 
     @Provides
     @Singleton
     fun provideComposerRepository(
         composerDao: ComposerDao,
-        openOpusRepository: OpenOpusRepository,
-        artworkDownloader: ArtworkDownloader,
+        openOpusRepository: IOpenOpusRepository,
+        artworkDownloader: IArtworkDownloader,
     ): ComposerRepository =
         ComposerRepository(composerDao, openOpusRepository, artworkDownloader)
 

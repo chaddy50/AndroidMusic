@@ -9,6 +9,27 @@ import kotlinx.coroutines.flow.map
 class FakeAlbumArtistDao(
     private val albumArtists: MutableStateFlow<List<AlbumArtist>> = MutableStateFlow(emptyList()),
 ) : AlbumArtistDao {
+    val insertedArtists = mutableListOf<AlbumArtist>()
+    val updatedArtists = mutableListOf<AlbumArtist>()
+    var nextInsertId = 1L
+    var lookupAfterInsertReturnsNull = false
+
+    override suspend fun insert(albumArtist: AlbumArtist): Long {
+        insertedArtists.add(albumArtist)
+        val id = nextInsertId++
+        if (!lookupAfterInsertReturnsNull) {
+            albumArtists.value = albumArtists.value + albumArtist.copy(id = id)
+        }
+        return id
+    }
+
+    override suspend fun update(albumArtist: AlbumArtist) {
+        updatedArtists.add(albumArtist)
+    }
+
+    override fun getAlbumArtistByName(albumArtistName: String): AlbumArtist? =
+        albumArtists.value.find { it.name == albumArtistName }
+
     override fun getAlbumArtistsForGenreIds(genreIds: List<Long>): Flow<List<AlbumArtist>> =
         albumArtists.map { list -> list.filter { it.genreId in genreIds } }
 
@@ -21,11 +42,10 @@ class FakeAlbumArtistDao(
     override fun getNumberOfAlbumArtistsForGenre(genreId: Long): Flow<Int> =
         albumArtists.map { list -> list.count { it.genreId == genreId } }
 
-    override suspend fun insert(albumArtist: AlbumArtist): Long = TODO()
-    override suspend fun update(albumArtist: AlbumArtist) = TODO()
-    override suspend fun delete(albumArtist: AlbumArtist) = TODO()
-    override fun getNumberOfAlbumArtists(): Flow<Int> = TODO()
-    override fun getAlbumsForArtist(artistId: Long): Flow<List<AlbumArtist>> = TODO()
-    override fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = TODO()
-    override fun getAlbumArtistByName(albumArtistName: String): AlbumArtist? = TODO()
+    override suspend fun delete(albumArtist: AlbumArtist) = Unit
+    override fun getNumberOfAlbumArtists(): Flow<Int> =
+        albumArtists.map { it.size }
+    override fun getAlbumsForArtist(artistId: Long): Flow<List<AlbumArtist>> =
+        albumArtists.map { list -> list.filter { it.id == artistId } }
+    override fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = albumArtists
 }

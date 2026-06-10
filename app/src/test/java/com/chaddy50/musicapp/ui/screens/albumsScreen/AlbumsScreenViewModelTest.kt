@@ -2,8 +2,6 @@ package com.chaddy50.musicapp.ui.screens.albumsScreen
 
 import androidx.lifecycle.SavedStateHandle
 import com.chaddy50.musicapp.data.ClassicalGenreConfig
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Composer
@@ -13,16 +11,16 @@ import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
-import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import kotlinx.coroutines.Dispatchers
 import com.chaddy50.musicapp.fakes.FakeAlbumArtistDao
 import com.chaddy50.musicapp.fakes.FakeAlbumDao
+import com.chaddy50.musicapp.fakes.FakeArtworkDownloader
+import com.chaddy50.musicapp.fakes.FakeAudioDbRepository
 import com.chaddy50.musicapp.fakes.FakeComposerDao
 import com.chaddy50.musicapp.fakes.FakeGenreDao
+import com.chaddy50.musicapp.fakes.FakeOpenOpusRepository
 import com.chaddy50.musicapp.fakes.FakePlaylistDao
 import com.chaddy50.musicapp.fakes.MainDispatcherRule
-import com.chaddy50.musicapp.fakes.StubAudioDbService
-import com.chaddy50.musicapp.fakes.StubOpenOpusService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -31,13 +29,11 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -60,10 +56,9 @@ class AlbumsScreenViewModelTest {
         val albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow)
         val albumDao = FakeAlbumDao(albumsFlow)
         val composerDao = FakeComposerDao(composersFlow)
-        val context = RuntimeEnvironment.getApplication()
-        val artworkDownloader = ArtworkDownloader(context)
-        val audioDbRepository = AudioDbRepository(StubAudioDbService(), artworkDownloader)
-        val openOpusRepository = OpenOpusRepository(StubOpenOpusService())
+        val artworkDownloader = FakeArtworkDownloader()
+        val audioDbRepository = FakeAudioDbRepository()
+        val openOpusRepository = FakeOpenOpusRepository()
 
         val config = ClassicalGenreConfig().apply { this.classicalGenreId = classicalGenreId }
         val savedStateHandle = SavedStateHandle(

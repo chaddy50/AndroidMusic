@@ -1,9 +1,9 @@
 package com.chaddy50.musicapp.data.repository
 
-import com.chaddy50.musicapp.data.api.openOpus.OpenOpusRepository
+import com.chaddy50.musicapp.data.api.openOpus.IOpenOpusRepository
 import com.chaddy50.musicapp.data.dao.ComposerDao
 import com.chaddy50.musicapp.data.entity.Composer
-import com.chaddy50.musicapp.data.util.ArtworkDownloader
+import com.chaddy50.musicapp.data.util.IArtworkDownloader
 import kotlinx.coroutines.flow.Flow
 
 interface IComposerRepository {
@@ -12,8 +12,8 @@ interface IComposerRepository {
 
 class ComposerRepository(
     private val composerDao: ComposerDao,
-    private val openOpusRepository: OpenOpusRepository,
-    private val artworkDownloader: ArtworkDownloader,
+    private val openOpusRepository: IOpenOpusRepository,
+    private val artworkDownloader: IArtworkDownloader,
 ) : IComposerRepository {
     suspend fun insert(composer: Composer): Int {
         return composerDao.insert(composer).toInt()

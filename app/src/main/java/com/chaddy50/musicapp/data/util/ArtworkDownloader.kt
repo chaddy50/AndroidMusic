@@ -6,10 +6,14 @@ import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
-class ArtworkDownloader(private val context: Context) {
+interface IArtworkDownloader {
+    fun downloadArtwork(url: String?, directoryName: String, fileId: Long): String?
+}
+
+class ArtworkDownloader(private val context: Context) : IArtworkDownloader {
     private val client = OkHttpClient()
 
-    fun downloadArtwork(url: String?, directoryName: String, fileId: Long): String? {
+    override fun downloadArtwork(url: String?, directoryName: String, fileId: Long): String? {
         if (url == null) return null
         return try {
             val directory = File(context.filesDir, directoryName)

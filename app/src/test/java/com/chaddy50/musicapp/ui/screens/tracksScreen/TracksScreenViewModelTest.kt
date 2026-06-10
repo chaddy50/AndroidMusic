@@ -2,7 +2,6 @@ package com.chaddy50.musicapp.ui.screens.tracksScreen
 
 import androidx.lifecycle.SavedStateHandle
 import com.chaddy50.musicapp.data.ClassicalGenreConfig
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Performance
@@ -12,16 +11,15 @@ import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
-import com.chaddy50.musicapp.data.util.ArtworkDownloader
 import kotlinx.coroutines.Dispatchers
 import com.chaddy50.musicapp.fakes.FakeAlbumArtistDao
 import com.chaddy50.musicapp.fakes.FakeAlbumDao
+import com.chaddy50.musicapp.fakes.FakeAudioDbRepository
 import com.chaddy50.musicapp.fakes.FakeGenreDao
 import com.chaddy50.musicapp.fakes.FakePerformanceDao
 import com.chaddy50.musicapp.fakes.FakePlaylistDao
 import com.chaddy50.musicapp.fakes.FakeTrackDao
 import com.chaddy50.musicapp.fakes.MainDispatcherRule
-import com.chaddy50.musicapp.fakes.StubAudioDbService
 import com.chaddy50.musicapp.fakes.testTrack
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +35,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -62,9 +59,7 @@ class TracksScreenViewModelTest {
         val albumDao = FakeAlbumDao(albumsFlow)
         val trackDao = FakeTrackDao(tracksFlow)
         val performanceDao = FakePerformanceDao(performancesFlow)
-        val context = RuntimeEnvironment.getApplication()
-        val artworkDownloader = ArtworkDownloader(context)
-        val audioDbRepository = AudioDbRepository(StubAudioDbService(), artworkDownloader)
+        val audioDbRepository = FakeAudioDbRepository()
 
         val config = ClassicalGenreConfig().apply { this.classicalGenreId = classicalGenreId }
         val savedStateHandle = SavedStateHandle(

@@ -2,8 +2,12 @@ package com.chaddy50.musicapp.data.api.openOpus
 
 import com.chaddy50.musicapp.utilities.stripDiacritics
 
-class OpenOpusRepository(private val service: OpenOpusService) {
-    suspend fun findComposerByName(name: String): OpenOpusComposer? {
+interface IOpenOpusRepository {
+    suspend fun findComposerByName(name: String): OpenOpusComposer?
+}
+
+class OpenOpusRepository(private val service: OpenOpusService) : IOpenOpusRepository {
+    override suspend fun findComposerByName(name: String): OpenOpusComposer? {
         // Try the full name first
         val response = service.searchComposers(name)
         response.composers?.firstOrNull()?.let { return it }

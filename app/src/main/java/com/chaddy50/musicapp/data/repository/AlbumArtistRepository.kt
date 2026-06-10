@@ -1,6 +1,6 @@
 package com.chaddy50.musicapp.data.repository
 
-import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
+import com.chaddy50.musicapp.data.api.audioDb.IAudioDbRepository
 import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
@@ -19,7 +19,7 @@ interface IAlbumArtistRepository {
 class AlbumArtistRepository(
     private val albumArtistDao: AlbumArtistDao,
     private val genreDao: GenreDao,
-    private val audioDbRepository: AudioDbRepository,
+    private val audioDbRepository: IAudioDbRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : IAlbumArtistRepository {
     suspend fun insert(albumArtist: AlbumArtist) {
