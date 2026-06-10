@@ -195,5 +195,6 @@ private fun buildColorScheme(
     )
 }
 
-private fun getContrastingColor(background: Color): Color =
+@androidx.annotation.VisibleForTesting
+internal fun getContrastingColor(background: Color): Color =
     if (background.luminance() > 0.179f) Color.Black else Color.White
