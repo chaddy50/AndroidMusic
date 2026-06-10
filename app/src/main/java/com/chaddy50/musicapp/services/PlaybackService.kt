@@ -47,7 +47,7 @@ class PlaybackService : MediaLibraryService() {
                 Log.w(TAG, "sessionActivityPendingIntent is null — session will have no activity")
             }
 
-            val callback = MusicLibraryCallback(application as MusicApplication, serviceScope)
+            val callback = AutoLibraryCallback(application as MusicApplication, serviceScope)
 
             val sessionBuilder = MediaLibrarySession.Builder(this, player, callback)
             sessionActivityPendingIntent?.let { sessionBuilder.setSessionActivity(it) }
@@ -69,7 +69,7 @@ class PlaybackService : MediaLibraryService() {
 
     private fun buildShuffleButton(shuffleEnabled: Boolean): CommandButton =
         CommandButton.Builder(if (shuffleEnabled) CommandButton.ICON_SHUFFLE_ON else CommandButton.ICON_SHUFFLE_OFF)
-            .setSessionCommand(SessionCommand(MusicLibraryCallback.TOGGLE_SHUFFLE_ACTION, Bundle.EMPTY))
+            .setSessionCommand(SessionCommand(AutoLibraryCallback.TOGGLE_SHUFFLE_ACTION, Bundle.EMPTY))
             .setDisplayName(if (shuffleEnabled) "Shuffle on" else "Shuffle off")
             .build()
 

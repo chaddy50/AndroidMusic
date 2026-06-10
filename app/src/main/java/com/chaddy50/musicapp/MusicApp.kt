@@ -103,14 +103,25 @@ class MusicApp : ComponentActivity() {
     }
 }
 
+interface MusicRepositoryProvider {
+    val trackRepository: TrackRepository
+    val albumRepository: AlbumRepository
+    val genreRepository: GenreRepository
+    val albumArtistRepository: AlbumArtistRepository
+    val performanceRepository: PerformanceRepository
+    val playlistRepository: PlaylistRepository
+    val filesDirPath: String
+}
+
 @HiltAndroidApp
-class MusicApplication: Application() {
-    @Inject lateinit var trackRepository: TrackRepository
-    @Inject lateinit var albumRepository: AlbumRepository
+class MusicApplication: Application(), MusicRepositoryProvider {
+    override val filesDirPath: String get() = filesDir.absolutePath
+    @Inject override lateinit var trackRepository: TrackRepository
+    @Inject override lateinit var albumRepository: AlbumRepository
     @Inject lateinit var artistRepository: ArtistRepository
-    @Inject lateinit var genreRepository: GenreRepository
-    @Inject lateinit var albumArtistRepository: AlbumArtistRepository
-    @Inject lateinit var performanceRepository: PerformanceRepository
-    @Inject lateinit var playlistRepository: PlaylistRepository
+    @Inject override lateinit var genreRepository: GenreRepository
+    @Inject override lateinit var albumArtistRepository: AlbumArtistRepository
+    @Inject override lateinit var performanceRepository: PerformanceRepository
+    @Inject override lateinit var playlistRepository: PlaylistRepository
     @Inject lateinit var composerRepository: ComposerRepository
 }

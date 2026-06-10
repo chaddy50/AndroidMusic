@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -14,7 +15,7 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionError
 import androidx.media3.session.SessionResult
-import com.chaddy50.musicapp.MusicApplication
+import com.chaddy50.musicapp.MusicRepositoryProvider
 import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Genre
@@ -28,7 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.guava.future
 
-private const val TAG = "MusicLibraryCallback"
+private const val TAG = "AutoLibraryCallback"
 
 /**
  * Handles Android Auto / Automotive OS browse tree requests.
@@ -51,8 +52,8 @@ private const val TAG = "MusicLibraryCallback"
  * URI — MediaItem.localConfiguration is stripped when crossing the IPC boundary from Auto.
  */
 @OptIn(UnstableApi::class)
-class MusicLibraryCallback(
-    private val application: MusicApplication,
+class AutoLibraryCallback(
+    private val application: MusicRepositoryProvider,
     private val scope: CoroutineScope
 ) : MediaLibrarySession.Callback {
 
@@ -127,7 +128,8 @@ class MusicLibraryCallback(
         }
     }
 
-    private suspend fun getChildrenFor(parentId: String): List<MediaItem> {
+    @VisibleForTesting
+    internal suspend fun getChildrenFor(parentId: String): List<MediaItem> {
         // Home screen: Library and Playlists folders
         if (parentId == ROOT_ID) return getRootItems()
 
@@ -444,7 +446,7 @@ class MusicLibraryCallback(
      * we strip the filesDir prefix to get the relative path used in the URI.
      */
     private fun artworkUri(absolutePath: String): Uri {
-        val relativePath = absolutePath.removePrefix(application.filesDir.absolutePath)
+        val relativePath = absolutePath.removePrefix(application.filesDirPath)
         return Uri.parse("content://${ARTWORK_AUTHORITY}$relativePath")
     }
 
