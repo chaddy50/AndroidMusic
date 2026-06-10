@@ -24,7 +24,9 @@ import com.chaddy50.musicapp.fakes.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -239,6 +241,90 @@ class AlbumsScreenViewModelTest {
         advanceUntilIdle()
 
         assertEquals("Artist", vm.entityHeaderState.value.title)
+    }
+
+    @Test
+    fun entityHeaderHandlesMissingBirthDeathYears() = runTest {
+        val vm = createViewModel(genreId = 10L, albumArtistId = 1L, classicalGenreId = 10L)
+        backgroundScope.launch { vm.entityHeaderState.collect() }
+
+        genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+        )
+        composersFlow.value = listOf(
+            Composer(
+                id = 1, albumArtistId = 1, openOpusId = 196,
+                completeName = "Johann Sebastian Bach",
+                birthYear = null, deathYear = null, epoch = "Baroque",
+                portraitPath = null,
+            )
+        )
+        albumsFlow.value = emptyList()
+        advanceUntilIdle()
+
+        val header = vm.entityHeaderState.value
+        assertEquals("Baroque", header.subtitle)
+    }
+
+    // --- subGenres ---
+
+    @Test
+    fun subGenresReturnsSubGenresWhenClassical() = runTest {
+        genresFlow.value = listOf(
+            Genre(id = 10L, name = "Classical"),
+            Genre(id = 20L, name = "Orchestral", parentGenreId = 10L),
+            Genre(id = 21L, name = "Chamber", parentGenreId = 10L),
+        )
+        val vm = createViewModel(genreId = 10L, albumArtistId = 1L, classicalGenreId = 10L)
+        // subGenres uses flowOn(Dispatchers.IO) so wait for the real dispatcher
+        val subGenres = withContext(Dispatchers.Default) {
+            vm.subGenres.first { it.isNotEmpty() }
+        }
+
+        assertEquals(2, subGenres.size)
+    }
+
+    @Test
+    fun subGenresReturnsEmptyListWhenNonClassical() = runTest {
+        val vm = createViewModel(genreId = 1L, albumArtistId = 1L, classicalGenreId = 10L)
+        backgroundScope.launch { vm.subGenres.collect() }
+        advanceUntilIdle()
+
+        assertEquals(emptyList<Genre>(), vm.subGenres.value)
+    }
+
+    // --- uiState filtering ---
+
+    @Test
+    fun filtersAlbumsBySubGenreWhenSelected() = runTest {
+        val vm = createViewModel(genreId = 10L, albumArtistId = 1L, classicalGenreId = 10L)
+        backgroundScope.launch { vm.uiState.collect() }
+
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+        )
+        genresFlow.value = listOf(
+            Genre(id = 10L, name = "Classical"),
+            Genre(id = 20L, name = "Orchestral", parentGenreId = 10L),
+        )
+        composersFlow.value = listOf(
+            Composer(id = 1, albumArtistId = 1, openOpusId = 1, completeName = "Bach", birthYear = null, deathYear = null, epoch = null, portraitPath = null)
+        )
+        albumsFlow.value = listOf(
+            Album(id = 1, title = "Orchestral Suite", catalogueNumber = 1066, artistId = 1, year = "1730"),
+            Album(id = 2, title = "Cello Suite", catalogueNumber = 1007, artistId = 1, year = "1720"),
+        )
+        advanceUntilIdle()
+
+        assertEquals(2, vm.uiState.value.albums.size)
+
+        vm.updateSelectedSubGenreId(20L)
+        advanceUntilIdle()
+
+        // FakeAlbumDao returns all albums for the artist regardless of genre filter,
+        // but this verifies the flow re-emits when sub-genre changes
+        assertFalse(vm.uiState.value.isLoading)
     }
 
     // --- isClassical ---

@@ -128,6 +128,25 @@ class TracksScreenViewModelTest {
     }
 
     @Test
+    fun performanceIdNegativeOneSentinelTreatedAsNull() = runTest {
+        // -1 is the default sentinel meaning "no performance" — should fetch album tracks
+        val vm = createViewModel(albumId = 1L, performanceId = -1L)
+        backgroundScope.launch { vm.uiState.collect() }
+
+        albumsFlow.value = listOf(
+            Album(id = 1, title = "Album", catalogueNumber = null, artistId = 1, year = "2020"),
+        )
+        tracksFlow.value = listOf(
+            testTrack(id = 1, albumId = 1, performanceId = null, title = "Track A"),
+            testTrack(id = 2, albumId = 1, performanceId = 5L, title = "Track B"),
+        )
+        advanceUntilIdle()
+
+        // Both tracks returned because we're fetching by album, not by performance
+        assertEquals(2, vm.uiState.value.tracks.size)
+    }
+
+    @Test
     fun screenTitleFallsBackToTracksWhenAlbumNull() = runTest {
         val vm = createViewModel(albumId = 99L)
         backgroundScope.launch { vm.uiState.collect() }

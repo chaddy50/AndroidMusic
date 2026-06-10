@@ -40,6 +40,7 @@ class ArtistsScreenViewModelTest {
     private fun createViewModel(
         genreId: Long = 1L,
         classicalGenreId: Long? = null,
+        playlistDao: FakePlaylistDao = FakePlaylistDao(),
     ): ArtistsScreenViewModel {
         val genreDao = FakeGenreDao(allGenres = genresFlow)
         val albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow)
@@ -54,7 +55,7 @@ class ArtistsScreenViewModelTest {
             config,
             AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository, Dispatchers.Unconfined),
             GenreRepository(genreDao),
-            PlaylistRepository(FakePlaylistDao()),
+            PlaylistRepository(playlistDao),
         )
     }
 
@@ -131,5 +132,21 @@ class ArtistsScreenViewModelTest {
         advanceUntilIdle()
 
         assertEquals("Genre", vm.entityHeaderState.value.title)
+    }
+
+    @Test
+    fun entityHeaderIncludesPlaylistMembershipData() = runTest {
+        val playlistIdsFlow = MutableStateFlow(listOf(1L, 3L))
+        val playlistDao = FakePlaylistDao(playlistIdsContainingGenreFlow = playlistIdsFlow)
+        val vm = createViewModel(genreId = 5L, playlistDao = playlistDao)
+        backgroundScope.launch { vm.entityHeaderState.collect() }
+
+        genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
+        )
+        advanceUntilIdle()
+
+        assertEquals(setOf(1L, 3L), vm.entityHeaderState.value.playlistsThatEntityIsAlreadyIn)
     }
 }

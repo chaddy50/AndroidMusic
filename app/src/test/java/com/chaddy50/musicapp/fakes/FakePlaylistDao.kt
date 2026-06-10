@@ -11,6 +11,10 @@ class FakePlaylistDao(
     private val allPlaylistsFlow: MutableStateFlow<List<Playlist>> = MutableStateFlow(emptyList()),
     private val playlistByIdFlow: MutableStateFlow<Playlist?> = MutableStateFlow(null),
     private val tracksForPlaylistFlow: MutableStateFlow<List<Track>> = MutableStateFlow(emptyList()),
+    private val playlistIdsContainingTrackFlow: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList()),
+    private val playlistIdsContainingAlbumFlow: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList()),
+    private val playlistIdsContainingAlbumArtistFlow: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList()),
+    private val playlistIdsContainingGenreFlow: MutableStateFlow<List<Long>> = MutableStateFlow(emptyList()),
 ) : PlaylistDao {
     val insertedPlaylists = mutableListOf<Playlist>()
     val deletedPlaylists = mutableListOf<Playlist>()
@@ -46,14 +50,14 @@ class FakePlaylistDao(
     }
 
     override fun getPlaylistIdsContainingTrack(trackId: Long): Flow<List<Long>> =
-        MutableStateFlow(emptyList())
+        playlistIdsContainingTrackFlow
 
     override fun getPlaylistIdsContainingAlbum(albumId: Long): Flow<List<Long>> =
-        MutableStateFlow(emptyList())
+        playlistIdsContainingAlbumFlow
 
     override fun getPlaylistIdsContainingAlbumArtist(albumArtistId: Long): Flow<List<Long>> =
-        MutableStateFlow(emptyList())
+        playlistIdsContainingAlbumArtistFlow
 
     override fun getPlaylistIdsContainingGenre(genreId: Long): Flow<List<Long>> =
-        MutableStateFlow(emptyList())
+        playlistIdsContainingGenreFlow
 }
