@@ -7,16 +7,21 @@ import androidx.navigation.toRoute
 import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
+import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.navigation.ArtistsRoute
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ArtistsScreenUiState(
@@ -32,6 +37,7 @@ class ArtistsScreenViewModel @Inject constructor(
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
     playlistRepository: PlaylistRepository,
+    composerRepository: ComposerRepository,
 ) : ViewModel() {
     val uiState: StateFlow<ArtistsScreenUiState>
     val entityHeaderState: StateFlow<EntityHeaderState>
@@ -77,5 +83,27 @@ class ArtistsScreenViewModel @Inject constructor(
             SharingStarted.WhileSubscribed(5_000),
             EntityHeaderState(),
         )
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val artists = artistsToShow.first()
+            val genre = genreRepository.getGenreById(genreId).first()
+            val isClassical = genreId == classicalGenreId
+
+            for (artist in artists) {
+                if (artist.portraitPath != null) continue
+                try {
+                    if (isClassical) {
+                        val composer = composerRepository.getComposerForAlbumArtist(artist.id).first()
+                        if (composer == null) {
+                            composerRepository.fetchAndInsertComposer(artist.id, artist.name)
+                        }
+                    } else if (shouldFetchArtistArtworkForGenre(genre?.name)) {
+                        albumArtistRepository.fetchAndUpdatePortrait(artist)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
     }
 }

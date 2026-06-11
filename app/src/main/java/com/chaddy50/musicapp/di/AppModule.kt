@@ -147,8 +147,9 @@ object AppModule {
         composerDao: ComposerDao,
         openOpusRepository: IOpenOpusRepository,
         artworkDownloader: IArtworkDownloader,
+        albumArtistDao: AlbumArtistDao,
     ): ComposerRepository =
-        ComposerRepository(composerDao, openOpusRepository, artworkDownloader)
+        ComposerRepository(composerDao, openOpusRepository, artworkDownloader, albumArtistDao)
 
     // --- ListenBrainz ---
 

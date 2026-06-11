@@ -13,6 +13,7 @@ import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.navigation.PerformancesRoute
 import com.chaddy50.musicapp.navigation.TracksRoute
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistHandler
+import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeader
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityType
@@ -58,17 +59,18 @@ fun AlbumsScreen(
                 }
 
                 items(uiState.albums) { album ->
-                    AlbumCard(
-                        album = album,
-                        isClassical = isClassical,
-                        onAlbumClick = {
+                    EntityCard(
+                        title = album.title,
+                        onClick = {
                             if (isClassical) {
                                 navController.navigate(PerformancesRoute(genreId = genreId, albumId = album.id, title = album.title))
                             } else {
                                 navController.navigate(TracksRoute(genreId = genreId, albumId = album.id, title = album.title))
                             }
                         },
-                        onLongPress = { addToPlaylistState.show(album) },
+                        onLongClick = { addToPlaylistState.show(album) },
+                        artworkPath = if (!isClassical) album.artworkPath else null,
+                        subtitle = if (!isClassical) album.year else null,
                     )
                 }
             }

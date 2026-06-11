@@ -1,6 +1,7 @@
 package com.chaddy50.musicapp.data.repository
 
 import com.chaddy50.musicapp.data.api.openOpus.IOpenOpusRepository
+import com.chaddy50.musicapp.data.dao.AlbumArtistDao
 import com.chaddy50.musicapp.data.dao.ComposerDao
 import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.util.IArtworkDownloader
@@ -14,6 +15,7 @@ class ComposerRepository(
     private val composerDao: ComposerDao,
     private val openOpusRepository: IOpenOpusRepository,
     private val artworkDownloader: IArtworkDownloader,
+    private val albumArtistDao: AlbumArtistDao,
 ) : IComposerRepository {
     suspend fun insert(composer: Composer): Int {
         return composerDao.insert(composer).toInt()
@@ -40,6 +42,7 @@ class ComposerRepository(
                     portraitPath = portraitPath,
                 )
             )
+            albumArtistDao.updatePortraitPath(albumArtistId, portraitPath)
         } catch (e: Exception) {
             e.printStackTrace()
         }

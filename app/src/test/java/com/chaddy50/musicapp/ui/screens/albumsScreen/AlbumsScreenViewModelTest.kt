@@ -73,7 +73,7 @@ class AlbumsScreenViewModelTest {
             AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository, Dispatchers.Unconfined),
             GenreRepository(genreDao),
             PlaylistRepository(FakePlaylistDao()),
-            ComposerRepository(composerDao, openOpusRepository, artworkDownloader),
+            ComposerRepository(composerDao, openOpusRepository, artworkDownloader, albumArtistDao),
         )
     }
 

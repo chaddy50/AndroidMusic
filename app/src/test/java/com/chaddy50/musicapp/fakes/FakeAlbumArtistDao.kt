@@ -25,6 +25,9 @@ class FakeAlbumArtistDao(
 
     override suspend fun update(albumArtist: AlbumArtist) {
         updatedArtists.add(albumArtist)
+        albumArtists.value = albumArtists.value.map {
+            if (it.id == albumArtist.id) albumArtist else it
+        }
     }
 
     override fun getAlbumArtistByName(albumArtistName: String): AlbumArtist? =
@@ -41,6 +44,12 @@ class FakeAlbumArtistDao(
 
     override fun getNumberOfAlbumArtistsForGenre(genreId: Long): Flow<Int> =
         albumArtists.map { list -> list.count { it.genreId == genreId } }
+
+    override suspend fun updatePortraitPath(id: Long, portraitPath: String?) {
+        albumArtists.value = albumArtists.value.map {
+            if (it.id == id) it.copy(portraitPath = portraitPath) else it
+        }
+    }
 
     override suspend fun delete(albumArtist: AlbumArtist) = Unit
     override fun getNumberOfAlbumArtists(): Flow<Int> =

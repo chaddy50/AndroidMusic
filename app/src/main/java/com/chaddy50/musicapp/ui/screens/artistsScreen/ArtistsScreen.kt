@@ -59,6 +59,7 @@ fun ArtistsScreen(
                             navController.navigate(AlbumsRoute(genreId = genreId, albumArtistId = artist.id, title = artist.name))
                         },
                         onLongClick = { addToPlaylistState.show(artist) },
+                        artworkPath = artist.portraitPath,
                     )
                 }
             }

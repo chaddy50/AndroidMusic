@@ -12,22 +12,18 @@ import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
-import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.navigation.AlbumsRoute
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class AlbumsScreenUiState(
@@ -141,31 +137,6 @@ class AlbumsScreenViewModel @Inject constructor(
             EntityHeaderState(),
         )
 
-        // One-shot fetch: composer info for classical artists
-        if (isClassical) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val albumArtist = albumArtistRepository.getAlbumArtistById(albumArtistId).first()
-                val composer = composerRepository.getComposerForAlbumArtist(albumArtistId).first()
-                if (albumArtist != null && composer == null) {
-                    composerRepository.fetchAndInsertComposer(albumArtistId, albumArtist.name)
-                }
-            }
-        }
-
-        // One-shot fetch: portrait for non-classical artists
-        if (!isClassical) {
-            viewModelScope.launch(Dispatchers.IO) {
-                val albumArtist = albumArtistRepository.getAlbumArtistById(albumArtistId).first()
-                val genre = genreRepository.getGenreById(genreId).first()
-                if (albumArtist != null && albumArtist.portraitPath == null && shouldFetchArtistArtworkForGenre(genre?.name)) {
-                    try {
-                        albumArtistRepository.fetchAndUpdatePortrait(albumArtist)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
     }
 
     fun updateSelectedSubGenreId(subGenreId: Long?) {

@@ -43,9 +43,12 @@ interface AlbumArtistDao {
     fun getAlbumArtistName(albumArtistId: Long): Flow<String?>
 
     @Query("""
-        SELECT COUNT(*) FROM albumartists 
+        SELECT COUNT(*) FROM albumartists
         WHERE genreId = :genreId
         OR genreId IN (SELECT id FROM genres WHERE parentGenreId = :genreId)
     """)
     fun getNumberOfAlbumArtistsForGenre(genreId: Long): Flow<Int>
+
+    @Query("UPDATE albumArtists SET portraitPath = :portraitPath WHERE id = :id")
+    suspend fun updatePortraitPath(id: Long, portraitPath: String?)
 }

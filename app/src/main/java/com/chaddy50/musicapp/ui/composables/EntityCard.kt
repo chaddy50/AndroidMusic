@@ -1,13 +1,12 @@
 package com.chaddy50.musicapp.ui.composables
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,16 +15,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EntityCard(
     title: String,
-    onClick: ()->Unit = {},
+    onClick: () -> Unit = {},
     onLongClick: (() -> Unit)? = null,
-    image: Bitmap? = null
+    artworkPath: String? = null,
+    subtitle: String? = null,
 ) {
     Box(
         modifier = Modifier
@@ -39,13 +41,25 @@ fun EntityCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Row (
-                modifier = Modifier.fillMaxWidth(),
+            Row(
+                modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically
-            ){
-                image?.asImageBitmap()
-                    ?.let { Image(bitmap = it, contentDescription = "album artwork" ) }
-                Text(title)
+            ) {
+                if (artworkPath != null) {
+                    Column {
+                        AsyncImage(
+                            model = artworkPath,
+                            contentDescription = "$title Artwork",
+                            modifier = Modifier.aspectRatio(1f),
+                        )
+                    }
+                }
+                Column(modifier = Modifier.padding(10.dp, 0.dp)) {
+                    Text(title, style = TextStyle(fontSize = 16.sp))
+                    if (subtitle != null) {
+                        Text(subtitle, style = TextStyle(fontSize = 14.sp))
+                    }
+                }
             }
         }
     }
