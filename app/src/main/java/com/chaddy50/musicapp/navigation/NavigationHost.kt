@@ -8,6 +8,10 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,6 +44,7 @@ import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenUiState
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenViewModel
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
+import com.chaddy50.musicapp.ui.screens.settingsScreen.SettingsScreen
 
 @Composable
 fun NavigationHost(
@@ -83,6 +88,8 @@ fun NavigationHost(
         ?: remember { mutableStateOf(null) }
     val showFilterButton = subGenres.size > 1 && isOnAlbumsRoute
 
+    val isOnHomeRoute = destination?.hasRoute<HomeRoute>() == true
+
     val topBarTitle = when {
         destination == null -> ""
         destination.hasRoute<HomeRoute>() -> homeScreenTitle
@@ -91,6 +98,7 @@ fun NavigationHost(
         destination.hasRoute<PerformancesRoute>() -> currentBackStackEntry?.toRoute<PerformancesRoute>()?.title ?: ""
         destination.hasRoute<PlaylistTracksRoute>() -> currentBackStackEntry?.toRoute<PlaylistTracksRoute>()?.title ?: ""
         destination.hasRoute<TracksRoute>() -> currentBackStackEntry?.toRoute<TracksRoute>()?.title ?: ""
+        destination.hasRoute<SettingsRoute>() -> "Settings"
         else -> ""
     }
 
@@ -110,6 +118,14 @@ fun NavigationHost(
                                 selectedSubGenreId = selectedSubGenreId,
                                 onSubGenreSelected = { albumsScreenViewModel?.updateSelectedSubGenreId(it) }
                             )
+                        }
+                        if (isOnHomeRoute) {
+                            IconButton(onClick = { navController.navigate(SettingsRoute) }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = "Settings"
+                                )
+                            }
                         }
                     }
                 )
@@ -195,6 +211,9 @@ fun NavigationHost(
                         playbackViewModel = playbackViewModel,
                         playlistViewModel = playlistViewModel,
                     )
+                }
+                composable<SettingsRoute> {
+                    SettingsScreen()
                 }
             }
         }

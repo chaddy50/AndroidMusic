@@ -19,3 +19,6 @@ data class TracksRoute(val genreId: Long, val albumId: Long, val performanceId: 
 
 @Serializable
 data class PlaylistTracksRoute(val playlistId: Long, val title: String)
+
+@Serializable
+data object SettingsRoute

@@ -3,6 +3,13 @@ package com.chaddy50.musicapp.di
 import android.content.Context
 import com.chaddy50.musicapp.data.MusicDatabase
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbClient
+import com.chaddy50.musicapp.data.api.listenBrainz.ListenBrainzClient
+import com.chaddy50.musicapp.data.api.listenBrainz.ListenBrainzPreferences
+import com.chaddy50.musicapp.data.api.listenBrainz.IListenBrainzPreferences
+import com.chaddy50.musicapp.data.api.listenBrainz.ListenBrainzRepository
+import com.chaddy50.musicapp.data.api.listenBrainz.ListenBrainzService
+import com.chaddy50.musicapp.data.scrobbling.IScrobbleService
+import com.chaddy50.musicapp.data.scrobbling.ScrobbleManager
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbRepository
 import com.chaddy50.musicapp.data.api.audioDb.AudioDbService
 import com.chaddy50.musicapp.data.api.audioDb.IAudioDbRepository
@@ -34,6 +41,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import javax.inject.Singleton
 
 @Module
@@ -65,6 +75,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideOpenOpusService(): OpenOpusService = OpenOpusClient.service
+
+    @Provides
+    @Singleton
+    fun provideListenBrainzService(): ListenBrainzService = ListenBrainzClient.service
 
     // --- Utilities ---
 
@@ -135,6 +149,35 @@ object AppModule {
         artworkDownloader: IArtworkDownloader,
     ): ComposerRepository =
         ComposerRepository(composerDao, openOpusRepository, artworkDownloader)
+
+    // --- ListenBrainz ---
+
+    @Provides
+    @Singleton
+    fun provideListenBrainzPreferences(@ApplicationContext context: Context): IListenBrainzPreferences =
+        ListenBrainzPreferences(context)
+
+    @Provides
+    @Singleton
+    fun provideListenBrainzRepository(
+        service: ListenBrainzService,
+        preferences: IListenBrainzPreferences
+    ): ListenBrainzRepository =
+        ListenBrainzRepository(service, preferences, CoroutineScope(SupervisorJob() + Dispatchers.IO))
+
+    @Provides
+    @Singleton
+    fun provideScrobbleServices(
+        listenBrainzRepository: ListenBrainzRepository
+    ): List<IScrobbleService> =
+        listOf(listenBrainzRepository)
+
+    @Provides
+    @Singleton
+    fun provideScrobbleManager(
+        services: List<@JvmSuppressWildcards IScrobbleService>
+    ): ScrobbleManager =
+        ScrobbleManager(services)
 
     // --- Scanner ---
 
