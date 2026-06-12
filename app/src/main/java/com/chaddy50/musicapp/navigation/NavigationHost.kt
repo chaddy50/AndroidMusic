@@ -1,5 +1,6 @@
 package com.chaddy50.musicapp.navigation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -7,12 +8,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,6 +52,7 @@ import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenViewModel
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import com.chaddy50.musicapp.ui.screens.settingsScreen.SettingsScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavigationHost(
     playbackViewModel: PlaybackViewModel,
@@ -89,6 +96,7 @@ fun NavigationHost(
     val showFilterButton = subGenres.size > 1 && isOnAlbumsRoute
 
     val isOnHomeRoute = destination?.hasRoute<HomeRoute>() == true
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
     val topBarTitle = when {
         destination == null -> ""
@@ -105,12 +113,15 @@ fun NavigationHost(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .windowInsetsPadding(WindowInsets.statusBars)
     ) {
         Scaffold(
             topBar = {
                 TopBar(
                     topBarTitle,
                     navController,
+                    scrollBehavior = scrollBehavior,
                     actions = {
                         if (showFilterButton) {
                             SubGenreFilterButton(
@@ -148,6 +159,7 @@ fun NavigationHost(
             },
             modifier = Modifier
                 .fillMaxSize()
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) { innerPadding ->
             NavHost(
