@@ -192,6 +192,7 @@ object AppModule {
         albumRepository: AlbumRepository,
         trackRepository: TrackRepository,
         performanceRepository: PerformanceRepository,
+        composerRepository: ComposerRepository,
     ): MusicScanner =
-        MusicScanner(context, genreRepository, artistRepository, albumArtistRepository, albumRepository, trackRepository, performanceRepository)
+        MusicScanner(context, genreRepository, artistRepository, albumArtistRepository, albumRepository, trackRepository, performanceRepository, composerRepository)
 }

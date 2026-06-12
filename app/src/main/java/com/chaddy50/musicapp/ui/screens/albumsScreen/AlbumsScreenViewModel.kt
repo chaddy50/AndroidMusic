@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
@@ -75,11 +76,11 @@ class AlbumsScreenViewModel @Inject constructor(
 
         val artistName = albumArtistRepository.getAlbumArtistName(albumArtistId)
 
-        val subGenreName = _selectedSubGenreId.flatMapLatest { selectedSubGenreId ->
+        val subGenreName = _selectedSubGenreId.mapLatest { selectedSubGenreId ->
             if (selectedSubGenreId != null) {
                 genreRepository.getGenreName(selectedSubGenreId)
             } else {
-                flowOf(null)
+                null
             }
         }
 

@@ -6,6 +6,7 @@ import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -43,6 +44,10 @@ class LibraryScanViewModel @Inject constructor(
         musicScanner.scan()
         initializeClassicalGenreId()
         _isScanInProgress.value = false
+
+        viewModelScope.launch(Dispatchers.IO) {
+            musicScanner.fetchArtistArtwork()
+        }
     }
 
     private suspend fun initializeClassicalGenreId() {

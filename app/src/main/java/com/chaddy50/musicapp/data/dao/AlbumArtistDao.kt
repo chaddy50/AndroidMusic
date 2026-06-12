@@ -51,4 +51,7 @@ interface AlbumArtistDao {
 
     @Query("UPDATE albumArtists SET portraitPath = :portraitPath WHERE id = :id")
     suspend fun updatePortraitPath(id: Long, portraitPath: String?)
+
+    @Query("SELECT * FROM albumArtists WHERE portraitPath IS NULL")
+    suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist>
 }

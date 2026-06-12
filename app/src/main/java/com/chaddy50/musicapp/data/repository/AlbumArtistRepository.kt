@@ -69,6 +69,9 @@ class AlbumArtistRepository(
         }.flowOn(ioDispatcher)
     }
 
+    suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist> =
+        albumArtistDao.getAlbumArtistsWithoutPortrait()
+
     suspend fun fetchAndUpdatePortrait(
         albumArtist: AlbumArtist,
     ) {

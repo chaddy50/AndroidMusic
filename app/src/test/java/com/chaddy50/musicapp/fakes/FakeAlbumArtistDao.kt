@@ -57,4 +57,7 @@ class FakeAlbumArtistDao(
     override fun getAlbumsForArtist(artistId: Long): Flow<List<AlbumArtist>> =
         albumArtists.map { list -> list.filter { it.id == artistId } }
     override fun getAllAlbumArtists(): Flow<List<AlbumArtist>> = albumArtists
+
+    override suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist> =
+        albumArtists.value.filter { it.portraitPath == null }
 }

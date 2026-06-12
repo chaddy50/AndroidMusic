@@ -7,21 +7,16 @@ import androidx.navigation.toRoute
 import com.chaddy50.musicapp.data.ClassicalGenreConfig
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
-import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
-import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.navigation.ArtistsRoute
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class ArtistsScreenUiState(
@@ -37,7 +32,6 @@ class ArtistsScreenViewModel @Inject constructor(
     albumArtistRepository: AlbumArtistRepository,
     genreRepository: GenreRepository,
     playlistRepository: PlaylistRepository,
-    composerRepository: ComposerRepository,
 ) : ViewModel() {
     val uiState: StateFlow<ArtistsScreenUiState>
     val entityHeaderState: StateFlow<EntityHeaderState>
@@ -47,22 +41,20 @@ class ArtistsScreenViewModel @Inject constructor(
         val genreId = route.genreId
         val classicalGenreId = classicalGenreConfig.classicalGenreId
 
-        val artistsToShow: Flow<List<AlbumArtist>> =
-            albumArtistRepository.getAlbumArtistsForGenre(genreId)
+        val screenTitle = route.title
 
-        val genreName: Flow<String?> = genreRepository.getGenreName(genreId)
-
-        uiState = combine(artistsToShow, genreName) { artists, name ->
-            ArtistsScreenUiState(
-                screenTitle = name ?: "Artists",
-                artists = artists,
-                isLoading = false,
+        uiState = albumArtistRepository.getAlbumArtistsForGenre(genreId)
+            .map { artists ->
+                ArtistsScreenUiState(
+                    screenTitle = screenTitle,
+                    artists = artists,
+                    isLoading = false,
+                )
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = ArtistsScreenUiState(isLoading = true),
             )
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = ArtistsScreenUiState(isLoading = true),
-        )
 
         entityHeaderState = combine(
             genreRepository.getGenreById(genreId),
@@ -84,26 +76,5 @@ class ArtistsScreenViewModel @Inject constructor(
             EntityHeaderState(),
         )
 
-        viewModelScope.launch(Dispatchers.IO) {
-            val artists = artistsToShow.first()
-            val genre = genreRepository.getGenreById(genreId).first()
-            val isClassical = genreId == classicalGenreId
-
-            for (artist in artists) {
-                if (artist.portraitPath != null) continue
-                try {
-                    if (isClassical) {
-                        val composer = composerRepository.getComposerForAlbumArtist(artist.id).first()
-                        if (composer == null) {
-                            composerRepository.fetchAndInsertComposer(artist.id, artist.name)
-                        }
-                    } else if (shouldFetchArtistArtworkForGenre(genre?.name)) {
-                        albumArtistRepository.fetchAndUpdatePortrait(artist)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
     }
 }

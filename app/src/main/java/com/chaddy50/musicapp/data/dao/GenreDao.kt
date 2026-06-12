@@ -33,7 +33,7 @@ interface GenreDao {
     fun getAllGenres(): Flow<List<Genre>>
 
     @Query("SELECT name FROM genres WHERE id = :genreId")
-    fun getGenreName(genreId: Long): Flow<String?>
+    suspend fun getGenreName(genreId: Long): String?
 
     @Query("""
         SELECT * FROM genres
@@ -87,5 +87,5 @@ interface GenreDao {
     fun getNumberOfSubGenresForAlbumArtist(parentGenreId: Long, albumArtistId: Long): Flow<Int>
 
     @Query("SELECT parentGenreId FROM genres WHERE id = :genreId")
-    fun getParentGenreId(genreId: Long): Flow<Long?>
+    suspend fun getParentGenreId(genreId: Long): Long?
 }

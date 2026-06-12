@@ -6,6 +6,7 @@ import com.chaddy50.musicapp.data.entity.Track
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
+import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -15,6 +16,7 @@ import com.chaddy50.musicapp.data.scanner.processor.ArtistProcessor
 import com.chaddy50.musicapp.data.scanner.processor.GenreProcessor
 import com.chaddy50.musicapp.data.scanner.processor.PerformanceProcessor
 import com.chaddy50.musicapp.data.scanner.processor.TrackProcessor
+import com.chaddy50.musicapp.data.scanner.processor.shouldFetchArtistArtworkForGenre
 import com.chaddy50.musicapp.data.scanner.util.ArtworkSaver
 import com.chaddy50.musicapp.data.scanner.util.ColumnIndices
 import com.chaddy50.musicapp.data.scanner.util.CursorData
@@ -37,6 +39,7 @@ class MusicScanner(
     val albumRepository: AlbumRepository,
     val trackRepository: TrackRepository,
     val performanceRepository: PerformanceRepository,
+    val composerRepository: ComposerRepository,
 ) {
     private val _scanProgress = MutableSharedFlow<Float>()
     val scanProgress = _scanProgress.asSharedFlow()
@@ -179,6 +182,32 @@ class MusicScanner(
             }
 
             prefs.edit { putLong("last_scan_time", scanStartTime) }
+        }
+    }
+
+    internal suspend fun fetchArtistArtwork() {
+        val classicalGenreId = genreRepository.getGenreByName("Classical")?.id
+
+        val artistsWithoutPortrait = albumArtistRepository.getAlbumArtistsWithoutPortrait()
+
+        for (artist in artistsWithoutPortrait) {
+            try {
+                val isClassical = if (classicalGenreId != null) {
+                    artist.genreId == classicalGenreId ||
+                        genreRepository.getParentGenreId(artist.genreId) == classicalGenreId
+                } else false
+
+                if (isClassical) {
+                    composerRepository.fetchAndInsertComposer(artist.id, artist.name)
+                } else {
+                    val genreName = genreRepository.getGenreName(artist.genreId)
+                    if (shouldFetchArtistArtworkForGenre(genreName)) {
+                        albumArtistRepository.fetchAndUpdatePortrait(artist)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
