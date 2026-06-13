@@ -46,10 +46,11 @@ fun PerformancesScreen(
 
                 items(uiState.performances) { performance ->
                     EntityCard(
-                        "${performance.year} - ${performance.artistName}",
-                        {
+                        title = performance.artistName,
+                        onClick = {
                             navController.navigate(TracksRoute(genreId = genreId, albumId = albumId, performanceId = performance.id, title = uiState.screenTitle))
-                        }
+                        },
+                        subtitle = performance.year,
                     )
                 }
             }
