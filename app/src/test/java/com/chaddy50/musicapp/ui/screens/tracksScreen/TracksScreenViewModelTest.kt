@@ -262,4 +262,63 @@ class TracksScreenViewModelTest {
         val header = vm.entityHeaderState.value
         assertEquals("1 tracks - 3:20", header.details)
     }
+
+    // --- isClassical ---
+
+    @Test
+    fun uiStateIsClassicalWhenGenreMatchesClassicalGenreId() = runTest {
+        val vm = createViewModel(genreId = 10L, albumId = 1L, classicalGenreId = 10L)
+        backgroundScope.launch { vm.uiState.collect() }
+
+        albumsFlow.value = listOf(
+            Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
+        )
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+        )
+        tracksFlow.value = listOf(
+            testTrack(id = 1, albumId = 1, title = "I. Aria"),
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.uiState.value.isClassical)
+    }
+
+    @Test
+    fun uiStateIsNotClassicalForNonClassicalGenre() = runTest {
+        val vm = createViewModel(genreId = 1L, albumId = 1L, classicalGenreId = 10L)
+        backgroundScope.launch { vm.uiState.collect() }
+
+        albumsFlow.value = listOf(
+            Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
+        )
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1),
+        )
+        tracksFlow.value = listOf(
+            testTrack(id = 1, albumId = 1, title = "Comfortably Numb"),
+        )
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isClassical)
+    }
+
+    @Test
+    fun uiStateIsNotClassicalWhenClassicalGenreIdIsNull() = runTest {
+        val vm = createViewModel(genreId = 1L, albumId = 1L, classicalGenreId = null)
+        backgroundScope.launch { vm.uiState.collect() }
+
+        albumsFlow.value = listOf(
+            Album(id = 1, title = "Album", catalogueSortIndex = null, artistId = 1, year = "2020"),
+        )
+        albumArtistsFlow.value = listOf(
+            AlbumArtist(id = 1, name = "Artist", sortName = "Artist", genreId = 1),
+        )
+        tracksFlow.value = listOf(
+            testTrack(id = 1, albumId = 1, title = "Track A"),
+        )
+        advanceUntilIdle()
+
+        assertFalse(vm.uiState.value.isClassical)
+    }
 }

@@ -30,6 +30,7 @@ fun TrackCard(
     isCurrentlyPlaying: Boolean,
     onTrackClicked: (Track) -> Unit,
     onTrackLongPressed: ((Track) -> Unit)? = null,
+    showTrackNumber: Boolean = true,
 ) {
     Box(
         modifier = Modifier
@@ -44,23 +45,38 @@ fun TrackCard(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+            if (showTrackNumber) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(10.dp, 0.dp)
+                        .width(30.dp)
+                ) {
+                    if (isCurrentlyPlaying) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = "Now playing",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(track.number.toString())
+                    }
+                }
+            }
+            Row(
                 modifier = Modifier
-                    .padding(10.dp, 0.dp)
-                    .width(30.dp)
+                    .weight(1f)
+                    .padding(start = if (!showTrackNumber) 16.dp else 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                if (isCurrentlyPlaying) {
+                if (!showTrackNumber && isCurrentlyPlaying) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.VolumeUp,
                         contentDescription = "Now playing",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp)
                     )
-                } else {
-                    Text(track.number.toString())
                 }
-            }
-            Column (modifier = Modifier.weight(1f)){
                 Text(track.title)
             }
             Column(

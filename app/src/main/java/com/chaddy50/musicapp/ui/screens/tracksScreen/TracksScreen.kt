@@ -94,6 +94,7 @@ fun TracksScreen(
                             currentTrack?.mediaId == track.id.toString(),
                             { playbackViewModel.playTrack(track, uiState.tracks) },
                             onTrackLongPressed = { addToPlaylistState.show(it) },
+                            showTrackNumber = !uiState.isClassical,
                         )
                     }
                  }

@@ -33,6 +33,7 @@ data class TracksScreenUiState(
     val album: Album? = null,
     val albumArtist: AlbumArtist? = null,
     val isLoading: Boolean = true,
+    val isClassical: Boolean = false,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -80,6 +81,7 @@ class TracksScreenViewModel @Inject constructor(
                 album,
                 albumArtist,
                 false,
+                isClassical,
             )
         }.stateIn(
             viewModelScope,
