@@ -14,13 +14,13 @@ class FakeAlbumDao(
 
     override fun getAllAlbums(): Flow<List<Album>> = albums
 
-    override fun getAlbumsForArtist(artistId: Long, shouldSortByCatalogueNumber: Boolean): Flow<List<Album>> =
+    override fun getAlbumsForArtist(artistId: Long, shouldSortByCatalogueSortIndex: Boolean): Flow<List<Album>> =
         albums.map { list -> list.filter { it.artistId == artistId } }
 
     override fun getAlbumsForArtistInGenre(
         albumArtistId: Long,
         genreId: Long,
-        shouldSortByCatalogueNumber: Boolean,
+        shouldSortByCatalogueSortIndex: Boolean,
     ): Flow<List<Album>> =
         albums.map { list -> list.filter { it.artistId == albumArtistId } }
 

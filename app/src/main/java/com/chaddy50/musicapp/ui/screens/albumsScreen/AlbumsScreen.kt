@@ -70,7 +70,7 @@ fun AlbumsScreen(
                         },
                         onLongClick = { addToPlaylistState.show(album) },
                         artworkPath = if (!isClassical) album.artworkPath else null,
-                        subtitle = if (!isClassical) album.year else null,
+                        subtitle = if (isClassical) album.catalogueString else album.year,
                     )
                 }
             }

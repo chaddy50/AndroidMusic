@@ -94,8 +94,8 @@ class AlbumsScreenViewModelTest {
             AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1, portraitPath = "exists"),
         )
         albumsFlow.value = listOf(
-            Album(id = 1, title = "The Wall", catalogueNumber = null, artistId = 1, year = "1979"),
-            Album(id = 2, title = "Animals", catalogueNumber = null, artistId = 1, year = "1977"),
+            Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
+            Album(id = 2, title = "Animals", catalogueSortIndex = null, artistId = 1, year = "1977"),
         )
         advanceUntilIdle()
 
@@ -174,8 +174,8 @@ class AlbumsScreenViewModelTest {
             AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1, portraitPath = "/portraits/pf.jpg"),
         )
         albumsFlow.value = listOf(
-            Album(id = 1, title = "The Wall", catalogueNumber = null, artistId = 1, year = "1979"),
-            Album(id = 2, title = "Animals", catalogueNumber = null, artistId = 1, year = "1977"),
+            Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
+            Album(id = 2, title = "Animals", catalogueSortIndex = null, artistId = 1, year = "1977"),
         )
         advanceUntilIdle()
 
@@ -203,7 +203,7 @@ class AlbumsScreenViewModelTest {
             )
         )
         albumsFlow.value = listOf(
-            Album(id = 1, title = "Goldberg Variations", catalogueNumber = 988, artistId = 1, year = "1741"),
+            Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
         )
         advanceUntilIdle()
 
@@ -224,7 +224,7 @@ class AlbumsScreenViewModelTest {
             AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
         )
         albumsFlow.value = listOf(
-            Album(id = 1, title = "Goldberg Variations", catalogueNumber = 988, artistId = 1, year = "1741"),
+            Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
         )
         advanceUntilIdle()
 
@@ -312,8 +312,8 @@ class AlbumsScreenViewModelTest {
             Composer(id = 1, albumArtistId = 1, openOpusId = 1, completeName = "Bach", birthYear = null, deathYear = null, epoch = null, portraitPath = null)
         )
         albumsFlow.value = listOf(
-            Album(id = 1, title = "Orchestral Suite", catalogueNumber = 1066, artistId = 1, year = "1730"),
-            Album(id = 2, title = "Cello Suite", catalogueNumber = 1007, artistId = 1, year = "1720"),
+            Album(id = 1, title = "Orchestral Suite", catalogueSortIndex = 1066, artistId = 1, year = "1730"),
+            Album(id = 2, title = "Cello Suite", catalogueSortIndex = 1007, artistId = 1, year = "1720"),
         )
         advanceUntilIdle()
 

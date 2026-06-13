@@ -7,6 +7,7 @@ import com.chaddy50.musicapp.data.scanner.util.IArtworkSaver
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AlbumProcessorTest {
@@ -39,7 +40,7 @@ class AlbumProcessorTest {
         val result = processor.process(cursorData(), trackId = 1L, albumArtistId = 5L) { "1808" }
 
         assertEquals(100L, result.albumId)
-        assertEquals("Symphony No. 5 Op. 67", result.albumName)
+        assertEquals("Symphony No. 5", result.albumName)
         assertEquals("/art/100.jpg", result.artworkPath)
         assertEquals("1808", result.year)
     }
@@ -53,8 +54,9 @@ class AlbumProcessorTest {
 
         val album = repo.lastInsertedAlbum!!
         assertEquals(100L, album.id)
-        assertEquals("Symphony No. 5 Op. 67", album.title)
-        assertEquals(67, album.catalogueNumber)
+        assertEquals("Symphony No. 5", album.title)
+        assertEquals(670_000, album.catalogueSortIndex)
+        assertEquals("Op. 67", album.catalogueString)
         assertEquals(5L, album.artistId)
         assertEquals("1808", album.year)
     }
@@ -115,7 +117,8 @@ class AlbumProcessorTest {
             cursorData(albumName = "Abbey Road"), trackId = 1L, albumArtistId = 5L
         ) { "1969" }
 
-        assertEquals(99999, repo.lastInsertedAlbum?.catalogueNumber)
+        assertEquals(99_999_999, repo.lastInsertedAlbum?.catalogueSortIndex)
+        assertNull(repo.lastInsertedAlbum?.catalogueString)
     }
 
     @Test
@@ -129,136 +132,347 @@ class AlbumProcessorTest {
     }
 }
 
-class ExtractCatalogNumberTest {
+class ExtractCatalogueSortIndexTest {
+    // Catalogue number is a compound sort key:
+    // prefixPriority * 10_000_000 + mainNumber * 10_000 + letterSuffix * 100 + subNumber
+    // WoO has prefixPriority=1, all others have 0
+
     // --- Opus ---
     @Test
     fun opWithDotAndSpace() {
-        assertEquals(118, extractCatalogNumber("Piano Pieces Op. 118"))
+        assertEquals(1_180_000, extractCatalogueSortIndex("Piano Pieces Op. 118"))
     }
 
     @Test
     fun opWithDotNoSpace() {
-        assertEquals(27, extractCatalogNumber("Piano Concerto Op.27"))
+        assertEquals(270_000, extractCatalogueSortIndex("Piano Concerto Op.27"))
     }
 
     @Test
     fun opNoDot() {
-        assertEquals(67, extractCatalogNumber("Symphony Op 67"))
+        assertEquals(670_000, extractCatalogueSortIndex("Symphony Op 67"))
     }
 
     @Test
     fun opCaseInsensitive() {
-        assertEquals(10, extractCatalogNumber("Sonata op. 10"))
+        assertEquals(100_000, extractCatalogueSortIndex("Sonata op. 10"))
     }
 
     // --- Köchel (Mozart) ---
 
     @Test
     fun kWithDot() {
-        assertEquals(545, extractCatalogNumber("Piano Sonata K. 545"))
+        assertEquals(5_450_000, extractCatalogueSortIndex("Piano Sonata K. 545"))
     }
 
     @Test
     fun kNoDot() {
-        assertEquals(466, extractCatalogNumber("Piano Concerto K 466"))
+        assertEquals(4_660_000, extractCatalogueSortIndex("Piano Concerto K 466"))
     }
 
     // --- Bach ---
 
     @Test
     fun bwv() {
-        assertEquals(1041, extractCatalogNumber("Violin Concerto BWV 1041"))
+        assertEquals(10_410_000, extractCatalogueSortIndex("Violin Concerto BWV 1041"))
     }
 
     @Test
     fun bwvCaseInsensitive() {
-        assertEquals(565, extractCatalogNumber("Toccata and Fugue bwv 565"))
+        assertEquals(5_650_000, extractCatalogueSortIndex("Toccata and Fugue bwv 565"))
     }
 
     // --- Hoboken (Haydn) ---
 
     @Test
     fun hobWithDot() {
-        assertEquals(94, extractCatalogNumber("Symphony Hob. 94"))
+        assertEquals(940_000, extractCatalogueSortIndex("Symphony Hob. 94"))
     }
 
     @Test
     fun hobNoDot() {
-        assertEquals(104, extractCatalogNumber("Symphony Hob 104"))
+        assertEquals(1_040_000, extractCatalogueSortIndex("Symphony Hob 104"))
     }
 
     // --- Ryom (Vivaldi) ---
 
     @Test
     fun rv() {
-        assertEquals(269, extractCatalogNumber("The Four Seasons RV 269"))
+        assertEquals(2_690_000, extractCatalogueSortIndex("The Four Seasons RV 269"))
     }
 
     // --- Deutsch (Schubert) ---
 
     @Test
     fun dWithDot() {
-        assertEquals(944, extractCatalogNumber("Symphony D. 944"))
+        assertEquals(9_440_000, extractCatalogueSortIndex("Symphony D. 944"))
     }
 
     @Test
     fun dNoDot() {
-        assertEquals(810, extractCatalogNumber("String Quartet D 810"))
+        assertEquals(8_100_000, extractCatalogueSortIndex("String Quartet D 810"))
     }
 
     // --- S (Liszt) ---
 
     @Test
     fun sWithDot() {
-        assertEquals(139, extractCatalogNumber("Hungarian Rhapsody S. 139"))
+        assertEquals(1_390_000, extractCatalogueSortIndex("Hungarian Rhapsody S. 139"))
     }
 
     // --- M (Ravel) ---
 
     @Test
     fun mWithDot() {
-        assertEquals(77, extractCatalogNumber("Daphnis et Chloé M. 77"))
+        assertEquals(770_000, extractCatalogueSortIndex("Daphnis et Chloé M. 77"))
     }
 
     // --- L (Debussy) ---
 
     @Test
     fun lWithDot() {
-        assertEquals(75, extractCatalogNumber("Prélude à l'après-midi d'un faune L. 75"))
+        assertEquals(750_000, extractCatalogueSortIndex("Prélude à l'après-midi d'un faune L. 75"))
     }
 
     // --- No match ---
 
     @Test
     fun noMatchReturnsDefault() {
-        assertEquals(99999, extractCatalogNumber("Symphony No. 5"))
+        assertEquals(99_999_999, extractCatalogueSortIndex("Symphony No. 5"))
     }
 
     @Test
     fun emptyStringReturnsDefault() {
-        assertEquals(99999, extractCatalogNumber(""))
+        assertEquals(99_999_999, extractCatalogueSortIndex(""))
     }
 
     @Test
     fun plainAlbumNameReturnsDefault() {
-        assertEquals(99999, extractCatalogNumber("Abbey Road"))
+        assertEquals(99_999_999, extractCatalogueSortIndex("Abbey Road"))
     }
 
     // --- Edge cases ---
 
     @Test
     fun firstMatchWins() {
-        assertEquals(10, extractCatalogNumber("Sonata Op. 10 BWV 999"))
+        assertEquals(100_000, extractCatalogueSortIndex("Sonata Op. 10 BWV 999"))
     }
 
     @Test
     fun catalogNumberAtEndOfString() {
-        assertEquals(331, extractCatalogNumber("K. 331"))
+        assertEquals(3_310_000, extractCatalogueSortIndex("K. 331"))
     }
 
     @Test
     fun noSpaceBetweenPrefixAndNumber() {
-        assertEquals(27, extractCatalogNumber("Op.27"))
+        assertEquals(270_000, extractCatalogueSortIndex("Op.27"))
+    }
+
+    // --- Sub-pieces ---
+
+    @Test
+    fun opWithSubPieceNumber() {
+        // Op. 1, No. 1 = 0 + 1*10000 + 0 + 1 = 10001
+        assertEquals(10_001, extractCatalogueSortIndex("Op. 1, No. 1"))
+    }
+
+    @Test
+    fun opWithLetterSuffix() {
+        // Op. 3a = 0 + 3*10000 + 1*100 + 0 = 30100
+        assertEquals(30_100, extractCatalogueSortIndex("Op. 3a"))
+    }
+
+    @Test
+    fun subPieceSortsCorrectly() {
+        // Op. 21, No. 1 should sort before Op. 21, No. 2
+        val no1 = extractCatalogueSortIndex("Op. 21, No. 1")
+        val no2 = extractCatalogueSortIndex("Op. 21, No. 2")
+        assertEquals(210_001, no1)
+        assertEquals(210_002, no2)
+        assertTrue(no1 < no2)
+    }
+
+    // --- WoO (Brahms) ---
+
+    @Test
+    fun woo() {
+        // WoO 1 = 1*10_000_000 + 1*10000 + 0 + 0 = 10_010_000
+        assertEquals(10_010_000, extractCatalogueSortIndex("Hungarian Dance WoO 1"))
+    }
+
+    @Test
+    fun wooSortsAfterOp() {
+        val op = extractCatalogueSortIndex("Op. 1")
+        val woo = extractCatalogueSortIndex("WoO 1")
+        assertTrue(woo > op)
+    }
+}
+
+class ExtractCatalogueStringTest {
+    @Test
+    fun opWithDotAndSpace() {
+        assertEquals("Op. 67", extractCatalogueString("Symphony No. 5 Op. 67"))
+    }
+
+    @Test
+    fun opWithDotNoSpace() {
+        assertEquals("Op.27", extractCatalogueString("Piano Concerto Op.27"))
+    }
+
+    @Test
+    fun opNoDot() {
+        assertEquals("Op 67", extractCatalogueString("Symphony Op 67"))
+    }
+
+    @Test
+    fun opCaseInsensitive() {
+        assertEquals("op. 10", extractCatalogueString("Sonata op. 10"))
+    }
+
+    @Test
+    fun kWithDot() {
+        assertEquals("K. 545", extractCatalogueString("Piano Sonata K. 545"))
+    }
+
+    @Test
+    fun kNoDot() {
+        assertEquals("K 466", extractCatalogueString("Piano Concerto K 466"))
+    }
+
+    @Test
+    fun bwv() {
+        assertEquals("BWV 1041", extractCatalogueString("Violin Concerto BWV 1041"))
+    }
+
+    @Test
+    fun hob() {
+        assertEquals("Hob. 94", extractCatalogueString("Symphony Hob. 94"))
+    }
+
+    @Test
+    fun rv() {
+        assertEquals("RV 269", extractCatalogueString("The Four Seasons RV 269"))
+    }
+
+    @Test
+    fun dWithDot() {
+        assertEquals("D. 944", extractCatalogueString("Symphony D. 944"))
+    }
+
+    @Test
+    fun sWithDot() {
+        assertEquals("S. 139", extractCatalogueString("Hungarian Rhapsody S. 139"))
+    }
+
+    @Test
+    fun mWithDot() {
+        assertEquals("M. 77", extractCatalogueString("Daphnis et Chloé M. 77"))
+    }
+
+    @Test
+    fun lWithDot() {
+        assertEquals("L. 75", extractCatalogueString("Prélude à l'après-midi d'un faune L. 75"))
+    }
+
+    @Test
+    fun noMatchReturnsNull() {
+        assertNull(extractCatalogueString("Symphony No. 5"))
+    }
+
+    @Test
+    fun emptyStringReturnsNull() {
+        assertNull(extractCatalogueString(""))
+    }
+
+    @Test
+    fun plainAlbumNameReturnsNull() {
+        assertNull(extractCatalogueString("Abbey Road"))
+    }
+
+    @Test
+    fun firstMatchWins() {
+        assertEquals("Op. 10", extractCatalogueString("Sonata Op. 10 BWV 999"))
+    }
+
+    // --- Sub-pieces ---
+
+    @Test
+    fun opWithCommaNoSubPiece() {
+        assertEquals("Op. 1, No. 1", extractCatalogueString("Op. 1, No. 1 - Sonata in F"))
+    }
+
+    @Test
+    fun opWithNoSubPieceNoComma() {
+        assertEquals("Op. 1 No. 1", extractCatalogueString("Op. 1 No. 1 - Sonata in F"))
+    }
+
+    @Test
+    fun opWithLetterSuffix() {
+        assertEquals("Op. 3a", extractCatalogueString("Op. 3a - Concerto Grosso"))
+    }
+
+    // --- WoO (Brahms) ---
+
+    @Test
+    fun woo() {
+        assertEquals("WoO 1", extractCatalogueString("Hungarian Dance WoO 1"))
+    }
+}
+
+class StripCatalogueFromTitleTest {
+    @Test
+    fun stripsFromEndWithComma() {
+        assertEquals("Goldberg Variations", stripCatalogueFromTitle("Goldberg Variations, BWV 988"))
+    }
+
+    @Test
+    fun stripsFromStartWithDash() {
+        assertEquals("Symphony No. 5", stripCatalogueFromTitle("Op. 67 - Symphony No. 5"))
+    }
+
+    @Test
+    fun stripsFromStartWithDashReversed() {
+        assertEquals("Goldberg Variations", stripCatalogueFromTitle("BWV 988 - Goldberg Variations"))
+    }
+
+    @Test
+    fun stripsFromEndWithSpaceOnly() {
+        assertEquals("Piano Sonata", stripCatalogueFromTitle("Piano Sonata K. 545"))
+    }
+
+    @Test
+    fun stripsFromMiddlePreservingBothSides() {
+        assertEquals("Symphony No. 5 in C minor", stripCatalogueFromTitle("Symphony No. 5 Op. 67 in C minor"))
+    }
+
+    @Test
+    fun noMatchReturnsOriginal() {
+        assertEquals("Abbey Road", stripCatalogueFromTitle("Abbey Road"))
+    }
+
+    @Test
+    fun catalogueOnlyReturnsEmpty() {
+        assertEquals("", stripCatalogueFromTitle("BWV 988"))
+    }
+
+    @Test
+    fun trimsWhitespace() {
+        assertEquals("Symphony", stripCatalogueFromTitle("  Symphony  Op. 67  "))
+    }
+
+    @Test
+    fun stripsSubPieceWithComma() {
+        assertEquals("Sonata in F", stripCatalogueFromTitle("Op. 1, No. 1 - Sonata in F"))
+    }
+
+    @Test
+    fun stripsLetterSuffix() {
+        assertEquals("Concerto Grosso", stripCatalogueFromTitle("Op. 3a - Concerto Grosso"))
+    }
+
+    @Test
+    fun stripsWoo() {
+        assertEquals("Hungarian Dance", stripCatalogueFromTitle("Hungarian Dance WoO 1"))
     }
 }
 

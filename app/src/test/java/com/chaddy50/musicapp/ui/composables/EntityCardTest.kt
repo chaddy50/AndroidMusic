@@ -56,4 +56,30 @@ class EntityCardTest {
         composeTestRule.onNodeWithText("Goldberg Variations").assertIsDisplayed()
         composeTestRule.onNodeWithText("988").assertIsDisplayed()
     }
+
+    @Test
+    fun classicalAlbumShowsCatalogueStringAsSubtitle() {
+        composeTestRule.setContent {
+            EntityCard(title = "Goldberg Variations", subtitle = "BWV 988")
+        }
+        composeTestRule.onNodeWithText("Goldberg Variations").assertIsDisplayed()
+        composeTestRule.onNodeWithText("BWV 988").assertIsDisplayed()
+    }
+
+    @Test
+    fun classicalAlbumShowsNoSubtitleWhenCatalogueStringNull() {
+        composeTestRule.setContent {
+            EntityCard(title = "Goldberg Variations", subtitle = null)
+        }
+        composeTestRule.onNodeWithText("Goldberg Variations").assertIsDisplayed()
+    }
+
+    @Test
+    fun nonClassicalAlbumShowsYearAsSubtitle() {
+        composeTestRule.setContent {
+            EntityCard(title = "The Wall", subtitle = "1979")
+        }
+        composeTestRule.onNodeWithText("The Wall").assertIsDisplayed()
+        composeTestRule.onNodeWithText("1979").assertIsDisplayed()
+    }
 }

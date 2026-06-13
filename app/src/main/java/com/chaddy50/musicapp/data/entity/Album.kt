@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 data class Album(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val title: String,
-    val catalogueNumber: Int?,
+    val catalogueSortIndex: Int?,
+    val catalogueString: String? = null,
     val artistId: Long,
     val year: String,
     val artworkPath: String? = null,

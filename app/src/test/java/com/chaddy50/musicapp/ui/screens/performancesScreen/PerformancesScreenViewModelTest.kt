@@ -89,7 +89,7 @@ class PerformancesScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumsFlow.value = listOf(
-            Album(id = 1, title = "Goldberg Variations", catalogueNumber = 988, artistId = 1, year = "1741"),
+            Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
         )
         performancesFlow.value = listOf(
             Performance(id = 1, albumId = 1, albumName = "Goldberg Variations", artistId = 2, artistName = "Glenn Gould", year = "1981", genreId = 10),
@@ -119,7 +119,7 @@ class PerformancesScreenViewModelTest {
         backgroundScope.launch { vm.entityHeaderState.collect() }
 
         albumsFlow.value = listOf(
-            Album(id = 1, title = "Goldberg Variations", catalogueNumber = 988, artistId = 1, year = "1741", artworkPath = "/art/goldberg.jpg"),
+            Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741", artworkPath = "/art/goldberg.jpg"),
         )
         albumArtistsFlow.value = listOf(
             AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
@@ -146,7 +146,7 @@ class PerformancesScreenViewModelTest {
         backgroundScope.launch { vm.entityHeaderState.collect() }
 
         albumsFlow.value = listOf(
-            Album(id = 1, title = "The Wall", catalogueNumber = null, artistId = 1, year = "1979", artworkPath = "/art/wall.jpg"),
+            Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979", artworkPath = "/art/wall.jpg"),
         )
         albumArtistsFlow.value = listOf(
             AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1),

@@ -73,7 +73,7 @@ class AutoLibraryCallbackTest {
         val callback = createCallback(this)
         // No sub-genres → non-classical → getAlbumsForArtistInGenre
         albumsFlow.value = listOf(
-            Album(id = 5, title = "Album A", catalogueNumber = null, artistId = 2, year = "2020"),
+            Album(id = 5, title = "Album A", catalogueSortIndex = null, artistId = 2, year = "2020"),
         )
 
         val items = callback.getChildrenFor("genre/1/artist/2")

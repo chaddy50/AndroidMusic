@@ -26,14 +26,14 @@ class AlbumRepository(private val albumDao: AlbumDao) : IAlbumRepository {
 
     fun getAlbumsForArtist(
         albumArtistId: Long,
-        shouldSortByCatalogueNumber: Boolean,
-    ) = albumDao.getAlbumsForArtist(albumArtistId, shouldSortByCatalogueNumber)
+        shouldSortByCatalogueSortIndex: Boolean,
+    ) = albumDao.getAlbumsForArtist(albumArtistId, shouldSortByCatalogueSortIndex)
 
     fun getAlbumsForArtistInGenre(
         albumArtistId: Long,
         genreId: Long,
-        shouldSortByCatalogueNumber: Boolean,
-    ) = albumDao.getAlbumsForArtistInGenre(albumArtistId, genreId, shouldSortByCatalogueNumber)
+        shouldSortByCatalogueSortIndex: Boolean,
+    ) = albumDao.getAlbumsForArtistInGenre(albumArtistId, genreId, shouldSortByCatalogueSortIndex)
 
     fun getAlbumById(id: Long) = albumDao.getAlbumById(id)
 

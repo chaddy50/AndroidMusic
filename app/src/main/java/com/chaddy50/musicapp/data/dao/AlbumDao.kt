@@ -34,23 +34,23 @@ interface AlbumDao {
         SELECT * FROM albums 
         WHERE artistId = :artistId 
         ORDER BY
-            CASE WHEN :shouldSortByCatalogueNumber = 1 THEN albums.catalogueNumber END ASC,
-            CASE WHEN :shouldSortByCatalogueNumber = 0 THEN albums.year END DESC
+            CASE WHEN :shouldSortByCatalogueSortIndex = 1 THEN albums.catalogueSortIndex END ASC,
+            CASE WHEN :shouldSortByCatalogueSortIndex = 0 THEN albums.year END DESC
     """)
-    fun getAlbumsForArtist(artistId: Long, shouldSortByCatalogueNumber: Boolean): Flow<List<Album>>
+    fun getAlbumsForArtist(artistId: Long, shouldSortByCatalogueSortIndex: Boolean): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT albums.* FROM albums 
         INNER JOIN tracks ON tracks.albumId = albums.id
         WHERE albums.artistId = :albumArtistId AND tracks.genreId = :genreId
         ORDER BY 
-            CASE WHEN :shouldSortByCatalogueNumber = 1 THEN albums.catalogueNumber END ASC,
-            CASE WHEN :shouldSortByCatalogueNumber = 0 THEN albums.year END DESC
+            CASE WHEN :shouldSortByCatalogueSortIndex = 1 THEN albums.catalogueSortIndex END ASC,
+            CASE WHEN :shouldSortByCatalogueSortIndex = 0 THEN albums.year END DESC
     """)
     fun getAlbumsForArtistInGenre(
         albumArtistId: Long,
         genreId: Long,
-        shouldSortByCatalogueNumber: Boolean,
+        shouldSortByCatalogueSortIndex: Boolean,
     ): Flow<List<Album>>
 
     @Query("SELECT title FROM albums WHERE id = :albumId")
