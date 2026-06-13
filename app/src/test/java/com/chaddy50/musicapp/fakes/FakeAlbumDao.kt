@@ -2,12 +2,15 @@ package com.chaddy50.musicapp.fakes
 
 import com.chaddy50.musicapp.data.dao.AlbumDao
 import com.chaddy50.musicapp.data.entity.Album
+import com.chaddy50.musicapp.data.entity.Track
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 
 class FakeAlbumDao(
     private val albums: MutableStateFlow<List<Album>> = MutableStateFlow(emptyList()),
+    private val tracks: MutableStateFlow<List<Track>> = MutableStateFlow(emptyList()),
 ) : AlbumDao {
     override fun getAlbumById(id: Long): Flow<Album?> =
         albums.map { list -> list.find { it.id == id } }
@@ -31,7 +34,13 @@ class FakeAlbumDao(
         albums.map { list -> list.count { it.artistId == albumArtistId } }
 
     override fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Long, genreId: Long): Flow<Int> =
-        albums.map { list -> list.count { it.artistId == albumArtistId } }
+        combine(albums, tracks) { albumList, trackList ->
+            val albumIdsInGenre = trackList
+                .filter { it.genreId == genreId || it.parentGenreId == genreId }
+                .map { it.albumId }
+                .toSet()
+            albumList.count { it.artistId == albumArtistId && it.id in albumIdsInGenre }
+        }
 
     override suspend fun insert(album: Album) = Unit
     override suspend fun update(album: Album) = Unit

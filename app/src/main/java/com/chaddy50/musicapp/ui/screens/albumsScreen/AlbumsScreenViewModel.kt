@@ -13,6 +13,7 @@ import com.chaddy50.musicapp.data.repository.ComposerRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
 import com.chaddy50.musicapp.navigation.AlbumsRoute
+import com.chaddy50.musicapp.utilities.chooseAlbumLabel
 import com.chaddy50.musicapp.ui.composables.entityHeader.EntityHeaderState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -102,11 +103,11 @@ class AlbumsScreenViewModel @Inject constructor(
         entityHeaderState = combine(
             albumArtistRepository.getAlbumArtistById(albumArtistId),
             genreRepository.getGenreById(genreId),
-            albumRepository.getNumberOfAlbumsForAlbumArtist(albumArtistId),
+            albumRepository.getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId, genreId),
             composerRepository.getComposerForAlbumArtist(albumArtistId),
             playlistRepository.getPlaylistIdsContainingAlbumArtist(albumArtistId),
         ) { albumArtist, genre, numberOfAlbums, composer, playlistsThatAlbumArtistIsAlreadyIn ->
-            val albumsLabel = if (isClassical) "works" else "albums"
+            val albumsLabel = chooseAlbumLabel(isClassical)
 
             if (composer != null) {
                 val lifespan = listOfNotNull(composer.birthYear, composer.deathYear)

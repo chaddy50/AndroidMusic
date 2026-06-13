@@ -6,6 +6,8 @@ import com.chaddy50.musicapp.data.entity.Album
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.data.entity.Composer
 import com.chaddy50.musicapp.data.entity.Genre
+import com.chaddy50.musicapp.data.entity.Track
+import kotlin.time.Duration.Companion.minutes
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
@@ -48,6 +50,33 @@ class AlbumsScreenViewModelTest {
     private val albumArtistsFlow = MutableStateFlow<List<AlbumArtist>>(emptyList())
     private val genresFlow = MutableStateFlow<List<Genre>>(emptyList())
     private val composersFlow = MutableStateFlow<List<Composer>>(emptyList())
+    private val tracksFlow = MutableStateFlow<List<Track>>(emptyList())
+
+    private fun makeTrack(
+        id: Long,
+        albumId: Long,
+        albumArtistId: Long,
+        genreId: Long,
+        parentGenreId: Long? = null,
+    ) = Track(
+        id = id,
+        uri = "uri/$id",
+        title = "Track $id",
+        number = 1,
+        albumId = albumId,
+        albumName = "Album $albumId",
+        artistId = albumArtistId,
+        artistName = "Artist $albumArtistId",
+        albumArtistId = albumArtistId,
+        albumArtistName = "Artist $albumArtistId",
+        genreId = genreId,
+        genreName = "Genre $genreId",
+        parentGenreId = parentGenreId,
+        parentGenreName = if (parentGenreId != null) "Genre $parentGenreId" else null,
+        duration = 3.minutes,
+        discNumber = 1,
+        year = "2000",
+    )
 
     private fun createViewModel(
         genreId: Long = 1L,
@@ -56,7 +85,7 @@ class AlbumsScreenViewModelTest {
     ): AlbumsScreenViewModel {
         val genreDao = FakeGenreDao(allGenres = genresFlow)
         val albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow)
-        val albumDao = FakeAlbumDao(albumsFlow)
+        val albumDao = FakeAlbumDao(albumsFlow, tracksFlow)
         val composerDao = FakeComposerDao(composersFlow)
         val artworkDownloader = FakeArtworkDownloader()
         val audioDbRepository = FakeAudioDbRepository()
@@ -177,6 +206,10 @@ class AlbumsScreenViewModelTest {
             Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
             Album(id = 2, title = "Animals", catalogueSortIndex = null, artistId = 1, year = "1977"),
         )
+        tracksFlow.value = listOf(
+            makeTrack(id = 1, albumId = 1, albumArtistId = 1, genreId = 1),
+            makeTrack(id = 2, albumId = 2, albumArtistId = 1, genreId = 1),
+        )
         advanceUntilIdle()
 
         val header = vm.entityHeaderState.value
@@ -205,6 +238,9 @@ class AlbumsScreenViewModelTest {
         albumsFlow.value = listOf(
             Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
         )
+        tracksFlow.value = listOf(
+            makeTrack(id = 1, albumId = 1, albumArtistId = 1, genreId = 20, parentGenreId = 10),
+        )
         advanceUntilIdle()
 
         val header = vm.entityHeaderState.value
@@ -225,6 +261,9 @@ class AlbumsScreenViewModelTest {
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
+        )
+        tracksFlow.value = listOf(
+            makeTrack(id = 1, albumId = 1, albumArtistId = 1, genreId = 20, parentGenreId = 10),
         )
         advanceUntilIdle()
 

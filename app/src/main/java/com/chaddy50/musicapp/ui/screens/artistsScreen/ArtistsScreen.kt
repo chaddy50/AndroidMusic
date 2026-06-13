@@ -52,14 +52,15 @@ fun ArtistsScreen(
                     )
                 }
 
-                items(uiState.artists) { artist ->
+                items(uiState.artists) { artistWithSubtitle ->
                     EntityCard(
-                        artist.name,
+                        artistWithSubtitle.artist.name,
                         onClick = {
-                            navController.navigate(AlbumsRoute(genreId = genreId, albumArtistId = artist.id, title = artist.name))
+                            navController.navigate(AlbumsRoute(genreId = genreId, albumArtistId = artistWithSubtitle.artist.id, title = artistWithSubtitle.artist.name))
                         },
-                        onLongClick = { addToPlaylistState.show(artist) },
-                        artworkPath = artist.portraitPath,
+                        onLongClick = { addToPlaylistState.show(artistWithSubtitle.artist) },
+                        artworkPath = artistWithSubtitle.artist.portraitPath,
+                        subtitle = artistWithSubtitle.subtitle,
                     )
                 }
             }

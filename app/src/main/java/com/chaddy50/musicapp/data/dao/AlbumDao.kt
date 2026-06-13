@@ -63,7 +63,7 @@ interface AlbumDao {
         SELECT COUNT(DISTINCT(albums.id)) FROM albums
         INNER JOIN tracks ON tracks.albumId = albums.id
         WHERE albums.artistId = :albumArtistId
-        AND tracks.genreId = :genreId
+        AND (tracks.genreId = :genreId OR tracks.parentGenreId = :genreId)
     """)
     fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Long, genreId: Long): Flow<Int>
 }

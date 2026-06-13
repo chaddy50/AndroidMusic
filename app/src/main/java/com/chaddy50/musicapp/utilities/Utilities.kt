@@ -35,6 +35,12 @@ fun parseTrackNumber(trackNumberAsString: String?): Int {
     }
 }
 
+fun chooseAlbumLabel(isClassical: Boolean): String =
+    if (isClassical) "works" else "albums"
+
+fun chooseArtistLabel(isClassical: Boolean): String =
+    if (isClassical) "composers" else "artists"
+
 fun formatMillisecondsIntoMinutesAndSeconds(milliseconds: Long): String {
     val totalSeconds = milliseconds / 1000
     val minutes = totalSeconds / 60

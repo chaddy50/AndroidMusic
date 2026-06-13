@@ -59,6 +59,32 @@ class StripArticlesTest {
     }
 }
 
+class ChooseAlbumLabelTest {
+
+    @Test
+    fun returnsAlbumsWhenNotClassical() {
+        assertEquals("albums", chooseAlbumLabel(false))
+    }
+
+    @Test
+    fun returnsWorksWhenClassical() {
+        assertEquals("works", chooseAlbumLabel(true))
+    }
+}
+
+class ChooseArtistLabelTest {
+
+    @Test
+    fun returnsArtistsWhenNotClassical() {
+        assertEquals("artists", chooseArtistLabel(false))
+    }
+
+    @Test
+    fun returnsComposersWhenClassical() {
+        assertEquals("composers", chooseArtistLabel(true))
+    }
+}
+
 class FormatMillisecondsTest {
 
     @Test
