@@ -87,7 +87,9 @@ fun NowPlayingSheet(
                             coroutineScope.launch {
                                 pagerState.animateScrollToPage(if (isShowingQueue) 0 else 1)
                             }
-                        }
+                        },
+                        isShuffleModeEnabled = isShuffleModeEnabled,
+                        onShuffleToggled = onShuffleToggled
                     )
 
                     HorizontalPager(
@@ -113,8 +115,6 @@ fun NowPlayingSheet(
 
                                 PlaybackControls(
                                     isPlaying,
-                                    isShuffleModeEnabled,
-                                    onShuffleToggled,
                                     onPlayPause,
                                     onSkipToPreviousTrack,
                                     onSkipToNextTrack
