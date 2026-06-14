@@ -38,17 +38,23 @@ fun GenresScreen(
         uiState.isLoading,
         {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(uiState.genres) { genre ->
+                items(uiState.genres) { genreWithStats ->
                     EntityCard(
-                        genre.name,
+                        genreWithStats.genre.name,
                         onClick = {
-                            navController.navigate(ArtistsRoute(genreId = genre.id, title = genre.name))
+                            navController.navigate(
+                                ArtistsRoute(
+                                    genreId = genreWithStats.genre.id,
+                                    title = genreWithStats.genre.name,
+                                )
+                            )
                         },
-                        onLongClick = { addToPlaylistState.show(genre) },
+                        onLongClick = { addToPlaylistState.show(genreWithStats.genre) },
+                        icon = genreIcon(genreWithStats.genre.name),
+                        subtitle = genreWithStats.subtitle,
                     )
                 }
             }
-
         },
         onPlay = { playbackViewModel.playAllTracks(false) },
         onShuffle = { playbackViewModel.playAllTracks(true) },

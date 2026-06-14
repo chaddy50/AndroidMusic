@@ -1,8 +1,12 @@
 package com.chaddy50.musicapp.ui.composables
 
 import androidx.activity.ComponentActivity
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Rule
 import org.junit.Test
@@ -81,5 +85,34 @@ class EntityCardTest {
         }
         composeTestRule.onNodeWithText("The Wall").assertIsDisplayed()
         composeTestRule.onNodeWithText("1979").assertIsDisplayed()
+    }
+
+    @Test
+    fun displaysArtworkWhenProvided() {
+        composeTestRule.setContent {
+            EntityCard(title = "Glenn Gould", artworkPath = "/fake/path.jpg")
+        }
+        composeTestRule.onNodeWithContentDescription("Glenn Gould Artwork").assertIsDisplayed()
+    }
+
+    @Test
+    fun displaysIconWhenProvided() {
+        composeTestRule.setContent {
+            EntityCard(title = "Classical", icon = Icons.Filled.MusicNote)
+        }
+        composeTestRule.onNodeWithContentDescription("Classical Icon").assertIsDisplayed()
+    }
+
+    @Test
+    fun prefersArtworkOverIcon() {
+        composeTestRule.setContent {
+            EntityCard(
+                title = "Glenn Gould",
+                artworkPath = "/fake/path.jpg",
+                icon = Icons.Filled.MusicNote,
+            )
+        }
+        composeTestRule.onNodeWithContentDescription("Glenn Gould Artwork").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Glenn Gould Icon").assertIsNotDisplayed()
     }
 }

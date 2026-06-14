@@ -42,4 +42,6 @@ class AlbumRepository(private val albumDao: AlbumDao) : IAlbumRepository {
     fun getNumberOfAlbumsForAlbumArtist(albumArtistId: Long) = albumDao.getNumberOfAlbumsForAlbumArtist(albumArtistId)
 
     fun getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId: Long, genreId: Long) = albumDao.getNumberOfAlbumsForAlbumArtistInGenre(albumArtistId, genreId)
+
+    fun getNumberOfAlbumsForGenre(genreId: Long) = albumDao.getNumberOfAlbumsForGenre(genreId)
 }

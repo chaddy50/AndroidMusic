@@ -42,6 +42,15 @@ class FakeAlbumDao(
             albumList.count { it.artistId == albumArtistId && it.id in albumIdsInGenre }
         }
 
+    override fun getNumberOfAlbumsForGenre(genreId: Long): Flow<Int> =
+        combine(albums, tracks) { albumList, trackList ->
+            val albumIdsInGenre = trackList
+                .filter { it.genreId == genreId || it.parentGenreId == genreId }
+                .map { it.albumId }
+                .toSet()
+            albumList.count { it.id in albumIdsInGenre }
+        }
+
     override suspend fun insert(album: Album) = Unit
     override suspend fun update(album: Album) = Unit
     override suspend fun delete(album: Album) = Unit
