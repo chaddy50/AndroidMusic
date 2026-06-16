@@ -23,6 +23,7 @@ fun EmptyStateContent(
     title: String,
     subtitle: String,
     modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
 ) {
     Box(
         modifier = modifier.fillMaxSize(),
@@ -51,6 +52,10 @@ fun EmptyStateContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
             )
+            if (action != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                action()
+            }
         }
     }
 }

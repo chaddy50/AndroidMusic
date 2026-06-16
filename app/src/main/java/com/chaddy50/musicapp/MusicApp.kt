@@ -4,7 +4,6 @@ import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
@@ -43,6 +41,17 @@ class MusicApp : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (ContextCompat.checkSelfPermission(
+                this.applicationContext,
+                Manifest.permission.READ_MEDIA_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            triggerLibraryScanIfNeeded()
+        } else {
+            permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
+        }
+
         enableEdgeToEdge()
         setContent {
             MusicAppTheme {
@@ -66,8 +75,6 @@ class MusicApp : ComponentActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             triggerLibraryScanIfNeeded()
-        } else {
-            permissionRequestLauncher.launch(Manifest.permission.READ_MEDIA_AUDIO)
         }
     }
 
@@ -75,24 +82,6 @@ class MusicApp : ComponentActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { hasPermission ->
             if (hasPermission) {
                 triggerLibraryScanIfNeeded()
-            } else {
-                if (ActivityCompat.shouldShowRequestPermissionRationale(
-                        this,
-                        Manifest.permission.READ_MEDIA_AUDIO
-                    )
-                ) {
-                    Toast.makeText(
-                        this.applicationContext,
-                        "This app needs access to read your audio files",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        this.applicationContext,
-                        "Go to settings to give this app read access to your audio files",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
             }
         }
 
