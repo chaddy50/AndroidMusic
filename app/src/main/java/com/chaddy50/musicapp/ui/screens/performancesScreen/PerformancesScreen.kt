@@ -55,7 +55,7 @@ fun PerformancesScreen(
                 }
             }
         },
-        onPlay = { playbackViewModel.playTracksForAlbum(albumId, null, false) },
-        onShuffle = { playbackViewModel.playTracksForAlbum(albumId, null, true) },
+        onPlay = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, null, false) }} else null,
+        onShuffle = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, null, true) }} else null,
     )
 }

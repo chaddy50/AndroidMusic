@@ -70,7 +70,7 @@ fun PlaylistTracksScreen(
                 }
             }
         },
-        onPlay = { playbackViewModel.playTracksForPlaylist(playlistId, false) },
-        onShuffle = { playbackViewModel.playTracksForPlaylist(playlistId, true) },
+        onPlay = if (uiState.tracks.isNotEmpty()) {{ playbackViewModel.playTracksForPlaylist(playlistId, false) }} else null,
+        onShuffle = if (uiState.tracks.isNotEmpty()) {{ playbackViewModel.playTracksForPlaylist(playlistId, true) }} else null,
     )
 }

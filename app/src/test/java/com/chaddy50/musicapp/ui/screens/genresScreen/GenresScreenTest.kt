@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import com.chaddy50.musicapp.ui.composables.EmptyStateContent
 import com.chaddy50.musicapp.ui.composables.EntityCard
@@ -114,5 +115,49 @@ class GenresScreenTest {
         }
         composeTestRule.onNodeWithText("No music yet").assertIsDisplayed()
         composeTestRule.onNodeWithText("Classical").assertDoesNotExist()
+    }
+
+    @Test
+    fun hidesFabsWhenGenresEmpty() {
+        val genreNames = emptyList<String>()
+        composeTestRule.setContent {
+            EntityScreen(
+                isLoading = false,
+                content = {
+                    if (genreNames.isEmpty()) {
+                        EmptyStateContent(
+                            icon = Icons.Filled.LibraryMusic,
+                            title = "No music yet",
+                            subtitle = "Add music to your device to get started",
+                        )
+                    }
+                },
+                onPlay = if (genreNames.isNotEmpty()) {{ }} else null,
+                onShuffle = if (genreNames.isNotEmpty()) {{ }} else null,
+            )
+        }
+        composeTestRule.onNodeWithContentDescription("Play").assertDoesNotExist()
+        composeTestRule.onNodeWithContentDescription("Shuffle").assertDoesNotExist()
+    }
+
+    @Test
+    fun showsFabsWhenGenresNonEmpty() {
+        val genreNames = listOf("Classical", "Jazz")
+        composeTestRule.setContent {
+            EntityScreen(
+                isLoading = false,
+                content = {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(genreNames) { name ->
+                            EntityCard(title = name)
+                        }
+                    }
+                },
+                onPlay = if (genreNames.isNotEmpty()) {{ }} else null,
+                onShuffle = if (genreNames.isNotEmpty()) {{ }} else null,
+            )
+        }
+        composeTestRule.onNodeWithContentDescription("Play").assertIsDisplayed()
+        composeTestRule.onNodeWithContentDescription("Shuffle").assertIsDisplayed()
     }
 }

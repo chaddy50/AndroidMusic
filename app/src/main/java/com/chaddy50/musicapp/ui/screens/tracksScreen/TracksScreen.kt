@@ -100,8 +100,8 @@ fun TracksScreen(
                  }
             }
         },
-        onPlay = { playbackViewModel.playTracksForAlbum(albumId, performanceId, false) },
-        onShuffle = { playbackViewModel.playTracksForAlbum(albumId, performanceId, true) },
+        onPlay = if (uiState.tracks.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, performanceId, false) }} else null,
+        onShuffle = if (uiState.tracks.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, performanceId, true) }} else null,
     )
 
     AddToPlaylistHandler(state = addToPlaylistState, allPlaylists = allPlaylists)

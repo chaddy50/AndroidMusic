@@ -2,7 +2,9 @@ package com.chaddy50.musicapp.ui.screens.playlistsScreen
 
 import com.chaddy50.musicapp.data.entity.Playlist
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
+import com.chaddy50.musicapp.data.repository.TrackRepository
 import com.chaddy50.musicapp.fakes.FakePlaylistDao
+import com.chaddy50.musicapp.fakes.FakeTrackDao
 import com.chaddy50.musicapp.fakes.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,7 +28,7 @@ class PlaylistsScreenViewModelTest {
 
     private fun createViewModel(): PlaylistsScreenViewModel {
         val dao = FakePlaylistDao(playlistsFlow)
-        return PlaylistsScreenViewModel(PlaylistRepository(dao))
+        return PlaylistsScreenViewModel(PlaylistRepository(dao), TrackRepository(FakeTrackDao()))
     }
 
     @Test

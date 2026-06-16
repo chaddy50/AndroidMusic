@@ -76,8 +76,8 @@ fun AlbumsScreen(
             }
 
         },
-        onPlay = { playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, false) },
-        onShuffle = { playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, true) },
+        onPlay = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, false) }} else null,
+        onShuffle = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, true) }} else null,
     )
 
     AddToPlaylistHandler(state = addToPlaylistState, allPlaylists = allPlaylists)

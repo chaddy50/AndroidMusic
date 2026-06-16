@@ -38,6 +38,7 @@ fun PlaylistsScreen(
     screenViewModel: PlaylistsScreenViewModel = hiltViewModel(),
 ) {
     val uiState by screenViewModel.uiState.collectAsStateWithLifecycle()
+    val hasMusic by screenViewModel.hasMusic.collectAsStateWithLifecycle()
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var playlistToDelete by remember { mutableStateOf<Playlist?>(null) }
@@ -67,13 +68,15 @@ fun PlaylistsScreen(
                         }
                     }
                 }
-                FloatingActionButton(
-                    onClick = { showCreateDialog = true },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(16.dp),
-                ) {
-                    Icon(Icons.Filled.Add, contentDescription = "Create playlist")
+                if (hasMusic) {
+                    FloatingActionButton(
+                        onClick = { showCreateDialog = true },
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(16.dp),
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = "Create playlist")
+                    }
                 }
             }
         },

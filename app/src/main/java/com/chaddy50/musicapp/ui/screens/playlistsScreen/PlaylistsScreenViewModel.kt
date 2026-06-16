@@ -3,6 +3,7 @@ package com.chaddy50.musicapp.ui.screens.playlistsScreen
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
+import com.chaddy50.musicapp.data.repository.TrackRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +20,7 @@ data class PlaylistsScreenUiState(
 @HiltViewModel
 class PlaylistsScreenViewModel @Inject constructor(
     playlistRepository: PlaylistRepository,
+    trackRepository: TrackRepository,
 ) : ViewModel() {
     val uiState: StateFlow<PlaylistsScreenUiState> = playlistRepository.getAllPlaylists()
         .map { playlists -> PlaylistsScreenUiState(playlists, false) }
@@ -26,5 +28,13 @@ class PlaylistsScreenViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = PlaylistsScreenUiState(isLoading = true),
+        )
+
+    val hasMusic: StateFlow<Boolean> = trackRepository.getNumberOfTracks()
+        .map { count -> count > 0 }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false,
         )
 }
