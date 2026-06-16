@@ -43,6 +43,7 @@ fun NowPlayingSheet(
     onSkipToPreviousTrack: () -> Unit,
     onSkipToNextTrack: () -> Unit,
     onSkipToTrack: (Int) -> Unit,
+    onSeek: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -110,7 +111,8 @@ fun NowPlayingSheet(
 
                                 ProgressBar(
                                     playbackPosition,
-                                    durationMs
+                                    durationMs,
+                                    onSeek
                                 )
 
                                 PlaybackControls(

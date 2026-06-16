@@ -105,6 +105,11 @@ class NowPlayingState(
         }
     }
 
+    fun seekTo(positionMs: Long) {
+        _playbackPosition.value = positionMs
+        controller?.seekTo(positionMs)
+    }
+
     fun skipToTrack(index: Int) {
         controller?.seekToDefaultPosition(index)
         controller?.play()
