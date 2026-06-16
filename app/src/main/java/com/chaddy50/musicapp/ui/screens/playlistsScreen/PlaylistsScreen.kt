@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
@@ -26,6 +27,7 @@ import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Playlist
 import com.chaddy50.musicapp.navigation.PlaylistTracksRoute
 import com.chaddy50.musicapp.ui.composables.CreateNewPlaylistDialog
+import com.chaddy50.musicapp.ui.composables.EmptyStateContent
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 
@@ -44,17 +46,25 @@ fun PlaylistsScreen(
         isLoading = uiState.isLoading,
         content = {
             Box(modifier = Modifier.fillMaxSize()) {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(uiState.playlists) { playlist ->
-                        EntityCard(
-                            title = playlist.name,
-                            onClick = {
-                                navController.navigate(PlaylistTracksRoute(playlistId = playlist.id, title = playlist.name))
-                            },
-                            onLongClick = {
-                                playlistToDelete = playlist
-                            },
-                        )
+                if (uiState.playlists.isEmpty()) {
+                    EmptyStateContent(
+                        icon = Icons.AutoMirrored.Filled.PlaylistAdd,
+                        title = "No playlists yet",
+                        subtitle = "Tap + to create your first playlist",
+                    )
+                } else {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        items(uiState.playlists) { playlist ->
+                            EntityCard(
+                                title = playlist.name,
+                                onClick = {
+                                    navController.navigate(PlaylistTracksRoute(playlistId = playlist.id, title = playlist.name))
+                                },
+                                onLongClick = {
+                                    playlistToDelete = playlist
+                                },
+                            )
+                        }
                     }
                 }
                 FloatingActionButton(

@@ -1,6 +1,8 @@
 package com.chaddy50.musicapp.ui.screens.genresScreen
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -12,6 +14,7 @@ import androidx.navigation.NavController
 import com.chaddy50.musicapp.data.entity.Genre
 import com.chaddy50.musicapp.navigation.ArtistsRoute
 import com.chaddy50.musicapp.ui.composables.AddToPlaylistHandler
+import com.chaddy50.musicapp.ui.composables.EmptyStateContent
 import com.chaddy50.musicapp.ui.composables.EntityCard
 import com.chaddy50.musicapp.ui.composables.EntityScreen
 import com.chaddy50.musicapp.ui.composables.nowPlayingBar.PlaybackViewModel
@@ -37,22 +40,30 @@ fun GenresScreen(
     EntityScreen(
         uiState.isLoading,
         {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                items(uiState.genres) { genreWithStats ->
-                    EntityCard(
-                        genreWithStats.genre.name,
-                        onClick = {
-                            navController.navigate(
-                                ArtistsRoute(
-                                    genreId = genreWithStats.genre.id,
-                                    title = genreWithStats.genre.name,
+            if (uiState.genres.isEmpty()) {
+                EmptyStateContent(
+                    icon = Icons.Filled.LibraryMusic,
+                    title = "No music yet",
+                    subtitle = "Add music to your device to get started",
+                )
+            } else {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items(uiState.genres) { genreWithStats ->
+                        EntityCard(
+                            genreWithStats.genre.name,
+                            onClick = {
+                                navController.navigate(
+                                    ArtistsRoute(
+                                        genreId = genreWithStats.genre.id,
+                                        title = genreWithStats.genre.name,
+                                    )
                                 )
-                            )
-                        },
-                        onLongClick = { addToPlaylistState.show(genreWithStats.genre) },
-                        icon = genreIcon(genreWithStats.genre.name),
-                        subtitle = genreWithStats.subtitle,
-                    )
+                            },
+                            onLongClick = { addToPlaylistState.show(genreWithStats.genre) },
+                            icon = genreIcon(genreWithStats.genre.name),
+                            subtitle = genreWithStats.subtitle,
+                        )
+                    }
                 }
             }
         },
