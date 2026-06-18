@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Shuffle
-import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,8 +21,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TopBar(
     onDismiss: () -> Unit,
-    isShowingQueue: Boolean,
-    onQueueToggled: () -> Unit,
     isShuffleModeEnabled: Boolean,
     onShuffleToggled: () -> Unit
 ) {
@@ -70,17 +66,6 @@ fun TopBar(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-            }
-            IconButton(
-                onClick = onQueueToggled
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.QueueMusic,
-                    contentDescription = "Queue",
-                    modifier = Modifier.size(28.dp),
-                    tint = if (isShowingQueue) MaterialTheme.colorScheme.primary
-                           else LocalContentColor.current
-                )
             }
         }
     }

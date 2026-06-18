@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.media3.common.MediaItem
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.AlbumArtwork
+import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.PagerIndicator
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.PlaybackControls
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.ProgressBar
 import com.chaddy50.musicapp.ui.modalSheets.nowPlayingSheet.composables.QueueView
@@ -49,7 +50,6 @@ fun NowPlayingSheet(
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val pagerState = rememberPagerState(pageCount = { 2 })
-    val isShowingQueue = pagerState.currentPage == 1
     val colorScheme = getColorSchemeForAlbumArtwork(
         currentTrack?.mediaMetadata?.artworkUri?.let { "file://$it".toUri() },
         MaterialTheme.colorScheme
@@ -83,19 +83,13 @@ fun NowPlayingSheet(
                                 onDismiss()
                             }
                         },
-                        isShowingQueue = isShowingQueue,
-                        onQueueToggled = {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(if (isShowingQueue) 0 else 1)
-                            }
-                        },
                         isShuffleModeEnabled = isShuffleModeEnabled,
                         onShuffleToggled = onShuffleToggled
                     )
 
                     HorizontalPager(
                         state = pagerState,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.weight(1f)
                     ) { page ->
                         if (page == 1) {
                             QueueView(queue, currentTrackIndex, onSkipToTrack)
@@ -124,6 +118,11 @@ fun NowPlayingSheet(
                             }
                         }
                     }
+
+                    PagerIndicator(
+                        pageCount = 2,
+                        currentPage = pagerState.currentPage
+                    )
                 }
             }
         }
