@@ -61,7 +61,7 @@ class ArtistsScreenViewModelTest {
         return ArtistsScreenViewModel(
             savedStateHandle,
             config,
-            AlbumArtistRepository(albumArtistDao, genreDao, FakeAudioDbRepository(), Dispatchers.Unconfined),
+            AlbumArtistRepository(albumArtistDao, FakeAudioDbRepository()),
             AlbumRepository(albumDao),
             GenreRepository(genreDao),
             PlaylistRepository(playlistDao),
@@ -81,8 +81,8 @@ class ArtistsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
-            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
+            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd"),
         )
         advanceUntilIdle()
 
@@ -111,8 +111,8 @@ class ArtistsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
-            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
+            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd"),
         )
         advanceUntilIdle()
 
@@ -128,7 +128,7 @@ class ArtistsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         advanceUntilIdle()
 
@@ -155,7 +155,7 @@ class ArtistsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
         )
         advanceUntilIdle()
 
@@ -194,8 +194,8 @@ class ArtistsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
-            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
+            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Album 1", catalogueSortIndex = null, artistId = 1, year = "1970"),
@@ -221,7 +221,7 @@ class ArtistsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Work 1", catalogueSortIndex = null, artistId = 1, year = "1720"),
@@ -242,7 +242,7 @@ class ArtistsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "New Artist", sortName = "New Artist", genreId = 5),
+            AlbumArtist(id = 1, name = "New Artist", sortName = "New Artist"),
         )
         albumsFlow.value = emptyList()
         tracksFlow.value = emptyList()
@@ -258,7 +258,7 @@ class ArtistsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Orchestral Suite", catalogueSortIndex = null, artistId = 1, year = "1720"),
@@ -282,7 +282,7 @@ class ArtistsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Artist", sortName = "Artist", genreId = 5),
+            AlbumArtist(id = 1, name = "Artist", sortName = "Artist"),
         )
         // Artist has 3 albums but only 2 have tracks in genre 5
         albumsFlow.value = listOf(

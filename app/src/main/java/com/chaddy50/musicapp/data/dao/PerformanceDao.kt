@@ -26,11 +26,24 @@ interface PerformanceDao {
     @Query("SELECT * FROM performances WHERE albumId = :albumId")
     fun getPerformancesForAlbum(albumId: Long): Flow<List<Performance>>
 
-    @Query("SELECT * FROM performances WHERE albumId = :albumId AND genreId = :genreId")
+    @Query("""
+        SELECT performances.* FROM performances
+        INNER JOIN genres ON genres.id = performances.genreId
+        WHERE performances.albumId = :albumId
+        AND (performances.genreId = :genreId OR genres.parentGenreId = :genreId)
+    """)
     fun getPerformancesForAlbumForGenre(albumId: Long, genreId: Long): Flow<List<Performance>>
 
     @Query("SELECT COUNT(*) FROM performances WHERE albumId = :albumId")
     fun getNumberOfPerformancesForAlbum(albumId: Long): Flow<Int>
+
+    @Query("""
+        SELECT COUNT(*) FROM performances
+        INNER JOIN genres ON genres.id = performances.genreId
+        WHERE performances.albumId = :albumId
+        AND (performances.genreId = :genreId OR genres.parentGenreId = :genreId)
+    """)
+    fun getNumberOfPerformancesForAlbumForGenre(albumId: Long, genreId: Long): Flow<Int>
 
     @Query("SELECT id FROM performances WHERE albumId = :albumId AND artistId = :artistId LIMIT 1")
     suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long?

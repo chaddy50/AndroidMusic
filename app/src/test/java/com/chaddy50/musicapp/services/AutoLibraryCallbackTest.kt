@@ -38,7 +38,10 @@ class AutoLibraryCallbackTest {
         testTrack(id = 10, albumId = 3, performanceId = 4)
     ))
 
-    private fun createCallback(testScope: TestScope): AutoLibraryCallback {
+    private fun createCallback(
+        testScope: TestScope,
+        initialGenreMap: Map<Long, Set<Long>> = emptyMap(),
+    ): AutoLibraryCallback {
         val provider = FakeMusicRepositoryProvider(
             genreDao = FakeGenreDao(
                 topLevelGenresFlow = genresFlow,
@@ -46,7 +49,7 @@ class AutoLibraryCallbackTest {
             ),
             trackDao = FakeTrackDao(tracksFlow),
             albumDao = FakeAlbumDao(albumsFlow),
-            albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow),
+            albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow, initialGenreMap),
             performanceDao = FakePerformanceDao(performancesFlow),
         )
         return AutoLibraryCallback(provider, testScope)
@@ -56,10 +59,13 @@ class AutoLibraryCallbackTest {
 
     @Test
     fun genrePathReturnsAlbumArtistsForGenre() = runTest {
-        val callback = createCallback(this)
+        val callback = createCallback(
+            this,
+            initialGenreMap = mapOf(1L to setOf(1L), 2L to setOf(2L)),
+        )
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 1),
-            AlbumArtist(id = 2, name = "Mozart", sortName = "Mozart", genreId = 2),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
+            AlbumArtist(id = 2, name = "Mozart", sortName = "Mozart"),
         )
 
         val items = callback.getChildrenFor("genre/1")

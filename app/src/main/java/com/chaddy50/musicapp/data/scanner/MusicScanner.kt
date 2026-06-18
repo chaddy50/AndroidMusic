@@ -128,7 +128,7 @@ class MusicScanner(
 
                                 val (genreId, genreName, parentGenreId, isClassical) = genreProcessor.process(cursorData)
                                 val (artistId, artistName) = artistProcessor.process(cursorData)
-                                val (albumArtistId, albumArtistName) = albumArtistProcessor.process(cursorData, genreId)
+                                val (albumArtistId, albumArtistName) = albumArtistProcessor.process(cursorData)
                                 val (albumId, albumName, albumArtworkPath, albumYear) = albumProcessor.process(cursorData, cursorData.trackId, albumArtistId, yearResolver)
                                 val performance = performanceProcessor.process(cursorData, isClassical, cursorData.trackId, genreId, albumId, artistId, yearResolver)
 
@@ -192,16 +192,22 @@ class MusicScanner(
 
         for (artist in artistsWithoutPortrait) {
             try {
+                val artistGenreIds = albumArtistRepository.getGenreIdsForAlbumArtist(artist.id)
                 val isClassical = if (classicalGenreId != null) {
-                    artist.genreId == classicalGenreId ||
-                        genreRepository.getParentGenreId(artist.genreId) == classicalGenreId
+                    artistGenreIds.any { genreId ->
+                        genreId == classicalGenreId ||
+                            genreRepository.getParentGenreId(genreId) == classicalGenreId
+                    }
                 } else false
 
                 if (isClassical) {
                     composerRepository.fetchAndInsertComposer(artist.id, artist.name)
                 } else {
-                    val genreName = genreRepository.getGenreName(artist.genreId)
-                    if (shouldFetchArtistArtworkForGenre(genreName)) {
+                    val shouldFetch = artistGenreIds.all { genreId ->
+                        val genreName = genreRepository.getGenreName(genreId)
+                        shouldFetchArtistArtworkForGenre(genreName)
+                    }
+                    if (shouldFetch) {
                         albumArtistRepository.fetchAndUpdatePortrait(artist)
                     }
                 }

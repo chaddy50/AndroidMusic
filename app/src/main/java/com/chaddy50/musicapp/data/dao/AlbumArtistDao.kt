@@ -27,7 +27,12 @@ interface AlbumArtistDao {
     @Query("SELECT * FROM albumArtists WHERE id = :artistId")
     fun getAlbumsForArtist(artistId: Long): Flow<List<AlbumArtist>>
 
-    @Query("SELECT * FROM albumArtists WHERE genreID IN (:genreIds) ORDER BY sortName")
+    @Query("""
+        SELECT DISTINCT albumArtists.* FROM albumArtists
+        INNER JOIN tracks ON tracks.albumArtistId = albumArtists.id
+        WHERE tracks.genreId IN (:genreIds) OR tracks.parentGenreId IN (:genreIds)
+        ORDER BY albumArtists.sortName
+    """)
     fun getAlbumArtistsForGenreIds(genreIds: List<Long>): Flow<List<AlbumArtist>>
 
     @Query("SELECT * FROM albumArtists ORDER BY sortName ASC")
@@ -43,9 +48,10 @@ interface AlbumArtistDao {
     fun getAlbumArtistName(albumArtistId: Long): Flow<String?>
 
     @Query("""
-        SELECT COUNT(*) FROM albumartists
-        WHERE genreId = :genreId
-        OR genreId IN (SELECT id FROM genres WHERE parentGenreId = :genreId)
+        SELECT COUNT(DISTINCT albumArtists.id) FROM albumArtists
+        INNER JOIN tracks ON tracks.albumArtistId = albumArtists.id
+        WHERE tracks.genreId = :genreId
+        OR tracks.genreId IN (SELECT id FROM genres WHERE parentGenreId = :genreId)
     """)
     fun getNumberOfAlbumArtistsForGenre(genreId: Long): Flow<Int>
 
@@ -54,4 +60,10 @@ interface AlbumArtistDao {
 
     @Query("SELECT * FROM albumArtists WHERE portraitPath IS NULL")
     suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist>
+
+    @Query("""
+        SELECT DISTINCT tracks.genreId FROM tracks
+        WHERE tracks.albumArtistId = :albumArtistId
+    """)
+    suspend fun getGenreIdsForAlbumArtist(albumArtistId: Long): List<Long>
 }

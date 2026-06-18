@@ -22,7 +22,6 @@ import com.chaddy50.musicapp.fakes.FakeOpenOpusRepository
 import com.chaddy50.musicapp.fakes.FakePerformanceDao
 import com.chaddy50.musicapp.fakes.FakeTrackDao
 import com.chaddy50.musicapp.data.api.openOpus.OpenOpusComposer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -40,6 +39,7 @@ class MusicScannerTest {
     private val albumArtistsFlow = MutableStateFlow<List<AlbumArtist>>(emptyList())
     private val genresFlow = MutableStateFlow<List<Genre>>(emptyList())
     private val composersFlow = MutableStateFlow<List<Composer>>(emptyList())
+    private lateinit var albumArtistDao: FakeAlbumArtistDao
 
     private fun createScanner(
         audioDbRepository: FakeAudioDbRepository = FakeAudioDbRepository(),
@@ -47,7 +47,7 @@ class MusicScannerTest {
         artworkDownloader: FakeArtworkDownloader = FakeArtworkDownloader(),
     ): MusicScanner {
         val genreDao = FakeGenreDao(allGenres = genresFlow)
-        val albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow)
+        albumArtistDao = FakeAlbumArtistDao(albumArtistsFlow)
         val composerDao = FakeComposerDao(composersFlow)
 
         // Seed genres into the DAO's internal map so getGenreByName works
@@ -68,7 +68,7 @@ class MusicScannerTest {
             context = context,
             genreRepository = GenreRepository(genreDao),
             artistRepository = ArtistRepository(stubArtistDao),
-            albumArtistRepository = AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository, Dispatchers.Unconfined),
+            albumArtistRepository = AlbumArtistRepository(albumArtistDao, audioDbRepository),
             albumRepository = AlbumRepository(FakeAlbumDao()),
             trackRepository = TrackRepository(FakeTrackDao()),
             performanceRepository = PerformanceRepository(FakePerformanceDao()),
@@ -81,10 +81,11 @@ class MusicScannerTest {
         val audioDbRepo = FakeAudioDbRepository(portraitUrl = "/downloaded/portrait.jpg")
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
         )
 
         val scanner = createScanner(audioDbRepository = audioDbRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(5L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -96,10 +97,11 @@ class MusicScannerTest {
         val audioDbRepo = FakeAudioDbRepository(portraitUrl = "/new/portrait.jpg")
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5, portraitPath = "/existing/portrait.jpg"),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", portraitPath = "/existing/portrait.jpg"),
         )
 
         val scanner = createScanner(audioDbRepository = audioDbRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(5L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -122,10 +124,11 @@ class MusicScannerTest {
             Genre(id = 11L, name = "Symphony", parentGenreId = 10L),
         )
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 11),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
 
         val scanner = createScanner(openOpusRepository = openOpusRepo, artworkDownloader = artworkDownloader)
+        albumArtistDao.setGenresForArtist(1, setOf(11L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -145,10 +148,11 @@ class MusicScannerTest {
 
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
 
         val scanner = createScanner(openOpusRepository = openOpusRepo, artworkDownloader = artworkDownloader)
+        albumArtistDao.setGenresForArtist(1, setOf(10L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -166,7 +170,7 @@ class MusicScannerTest {
         )
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10, portraitPath = "/existing/bach.jpg"),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", portraitPath = "/existing/bach.jpg"),
         )
         composersFlow.value = listOf(
             Composer(id = 1, albumArtistId = 1, openOpusId = 196, completeName = "Bach",
@@ -174,6 +178,7 @@ class MusicScannerTest {
         )
 
         val scanner = createScanner(openOpusRepository = openOpusRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(10L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -185,10 +190,11 @@ class MusicScannerTest {
         val audioDbRepo = FakeAudioDbRepository(portraitUrl = "/downloaded/portrait.jpg")
         genresFlow.value = listOf(Genre(id = 5L, name = "Anime"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Some Artist", sortName = "Some Artist", genreId = 5),
+            AlbumArtist(id = 1, name = "Some Artist", sortName = "Some Artist"),
         )
 
         val scanner = createScanner(audioDbRepository = audioDbRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(5L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }
@@ -201,11 +207,13 @@ class MusicScannerTest {
         val audioDbRepo = FakeAudioDbRepository(portraitUrl = "/downloaded/portrait.jpg")
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Artist One", sortName = "Artist One", genreId = 5),
-            AlbumArtist(id = 2, name = "Artist Two", sortName = "Artist Two", genreId = 5),
+            AlbumArtist(id = 1, name = "Artist One", sortName = "Artist One"),
+            AlbumArtist(id = 2, name = "Artist Two", sortName = "Artist Two"),
         )
 
         val scanner = createScanner(audioDbRepository = audioDbRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(5L))
+        albumArtistDao.setGenresForArtist(2, setOf(5L))
         scanner.fetchArtistArtwork()
 
         val artist1 = albumArtistsFlow.value.find { it.id == 1L }
@@ -219,10 +227,11 @@ class MusicScannerTest {
         val audioDbRepo = FakeAudioDbRepository(portraitUrl = "/downloaded/portrait.jpg")
         genresFlow.value = listOf(Genre(id = 5L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
         )
 
         val scanner = createScanner(audioDbRepository = audioDbRepo)
+        albumArtistDao.setGenresForArtist(1, setOf(5L))
         scanner.fetchArtistArtwork()
 
         val artist = albumArtistsFlow.value.find { it.id == 1L }

@@ -55,7 +55,7 @@ fun PerformancesScreen(
                 }
             }
         },
-        onPlay = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, null, false) }} else null,
-        onShuffle = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbum(albumId, null, true) }} else null,
+        onPlay = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumInGenre(albumId, screenViewModel.genreId, null, false) }} else null,
+        onShuffle = if (uiState.performances.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumInGenre(albumId, screenViewModel.genreId, null, true) }} else null,
     )
 }

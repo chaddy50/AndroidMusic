@@ -2,25 +2,17 @@ package com.chaddy50.musicapp.data.repository
 
 import com.chaddy50.musicapp.data.api.audioDb.IAudioDbRepository
 import com.chaddy50.musicapp.data.dao.AlbumArtistDao
-import com.chaddy50.musicapp.data.dao.GenreDao
 import com.chaddy50.musicapp.data.entity.AlbumArtist
 import com.chaddy50.musicapp.utilities.stripArticles
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 
 interface IAlbumArtistRepository {
-    suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Long): Long
+    suspend fun findOrInsertAlbumArtist(albumArtistName: String): Long
 }
 
 class AlbumArtistRepository(
     private val albumArtistDao: AlbumArtistDao,
-    private val genreDao: GenreDao,
     private val audioDbRepository: IAudioDbRepository,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : IAlbumArtistRepository {
     suspend fun insert(albumArtist: AlbumArtist) {
         albumArtistDao.insert(albumArtist)
@@ -46,7 +38,6 @@ class AlbumArtistRepository(
 
     override suspend fun findOrInsertAlbumArtist(
         albumArtistName: String,
-        genreId: Long,
     ): Long {
         val existingAlbumArtist = albumArtistDao.getAlbumArtistByName(albumArtistName)
         if (existingAlbumArtist != null) return existingAlbumArtist.id
@@ -54,20 +45,17 @@ class AlbumArtistRepository(
         val newAlbumArtist = AlbumArtist(
             name = albumArtistName,
             sortName = stripArticles(albumArtistName),
-            genreId = genreId,
         )
         albumArtistDao.insert(newAlbumArtist)
         return albumArtistDao.getAlbumArtistByName(albumArtistName)?.id ?: -1
     }
 
     fun getAlbumArtistsForGenre(genreId: Long): Flow<List<AlbumArtist>> {
-        return flow {
-            val subGenreIds = genreDao.getSubGenreIds(genreId)
-            val genreIds = subGenreIds.ifEmpty { listOf(genreId) }
-
-            emitAll(albumArtistDao.getAlbumArtistsForGenreIds(genreIds))
-        }.flowOn(ioDispatcher)
+        return albumArtistDao.getAlbumArtistsForGenreIds(listOf(genreId))
     }
+
+    suspend fun getGenreIdsForAlbumArtist(albumArtistId: Long): List<Long> =
+        albumArtistDao.getGenreIdsForAlbumArtist(albumArtistId)
 
     suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist> =
         albumArtistDao.getAlbumArtistsWithoutPortrait()

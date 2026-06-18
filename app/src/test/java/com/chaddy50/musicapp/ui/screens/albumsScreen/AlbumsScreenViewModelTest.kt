@@ -99,7 +99,7 @@ class AlbumsScreenViewModelTest {
             savedStateHandle,
             config,
             AlbumRepository(albumDao),
-            AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository, Dispatchers.Unconfined),
+            AlbumArtistRepository(albumArtistDao, audioDbRepository),
             GenreRepository(genreDao),
             PlaylistRepository(FakePlaylistDao()),
             ComposerRepository(composerDao, openOpusRepository, artworkDownloader, albumArtistDao),
@@ -120,7 +120,7 @@ class AlbumsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1, portraitPath = "exists"),
+            AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", portraitPath = "exists"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
@@ -149,7 +149,7 @@ class AlbumsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         genresFlow.value = listOf(
             Genre(id = 10L, name = "Classical"),
@@ -172,7 +172,7 @@ class AlbumsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         genresFlow.value = listOf(
             Genre(id = 10L, name = "Classical"),
@@ -200,7 +200,7 @@ class AlbumsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 1L, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 1, portraitPath = "/portraits/pf.jpg"),
+            AlbumArtist(id = 1, name = "Pink Floyd", sortName = "Pink Floyd", portraitPath = "/portraits/pf.jpg"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "The Wall", catalogueSortIndex = null, artistId = 1, year = "1979"),
@@ -225,7 +225,7 @@ class AlbumsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         composersFlow.value = listOf(
             Composer(
@@ -257,7 +257,7 @@ class AlbumsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Goldberg Variations", catalogueSortIndex = 988, artistId = 1, year = "1741"),
@@ -289,7 +289,7 @@ class AlbumsScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 10L, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         composersFlow.value = listOf(
             Composer(
@@ -341,7 +341,7 @@ class AlbumsScreenViewModelTest {
         backgroundScope.launch { vm.uiState.collect() }
 
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         genresFlow.value = listOf(
             Genre(id = 10L, name = "Classical"),

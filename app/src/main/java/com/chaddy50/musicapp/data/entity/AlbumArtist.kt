@@ -12,6 +12,5 @@ data class AlbumArtist(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val name: String,
     val sortName: String,
-    val genreId: Long,
     val portraitPath: String? = null,
 )

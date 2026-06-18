@@ -45,7 +45,7 @@ class GenresScreenViewModelTest {
         val config = ClassicalGenreConfig().apply { this.classicalGenreId = classicalGenreId }
         return GenresScreenViewModel(
             GenreRepository(genreDao),
-            AlbumArtistRepository(albumArtistDao, genreDao, FakeAudioDbRepository(), Dispatchers.Unconfined),
+            AlbumArtistRepository(albumArtistDao, FakeAudioDbRepository()),
             AlbumRepository(albumDao),
             config,
         )
@@ -134,8 +134,8 @@ class GenresScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 5, name = "Rock"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin", genreId = 5),
-            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd", genreId = 5),
+            AlbumArtist(id = 1, name = "Led Zeppelin", sortName = "Led Zeppelin"),
+            AlbumArtist(id = 2, name = "Pink Floyd", sortName = "Pink Floyd"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Album 1", catalogueSortIndex = null, artistId = 1, year = "1970"),
@@ -174,7 +174,7 @@ class GenresScreenViewModelTest {
         // Genre 10 is "Classical" (parent), sub-genre artists have genreId = 10
         genresFlow.value = listOf(Genre(id = 10, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Work 1", catalogueSortIndex = null, artistId = 1, year = "1720"),
@@ -197,7 +197,7 @@ class GenresScreenViewModelTest {
 
         genresFlow.value = listOf(Genre(id = 10, name = "Classical"))
         albumArtistsFlow.value = listOf(
-            AlbumArtist(id = 1, name = "Bach", sortName = "Bach", genreId = 10),
+            AlbumArtist(id = 1, name = "Bach", sortName = "Bach"),
         )
         albumsFlow.value = listOf(
             Album(id = 1, title = "Work 1", catalogueSortIndex = null, artistId = 1, year = "1720"),

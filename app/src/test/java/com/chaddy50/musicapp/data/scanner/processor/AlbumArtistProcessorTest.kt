@@ -31,7 +31,7 @@ class AlbumArtistProcessorTest {
         val repo = FakeAlbumArtistRepository(nextId = 42L)
         val processor = AlbumArtistProcessor(repo)
 
-        val result = processor.process(cursorData(), genreId = 5L)
+        val result = processor.process(cursorData())
 
         assertEquals(42L, result.first)
         assertEquals("Beethoven", result.second)
@@ -43,8 +43,8 @@ class AlbumArtistProcessorTest {
         val repo = FakeAlbumArtistRepository(nextId = 42L)
         val processor = AlbumArtistProcessor(repo)
 
-        processor.process(cursorData(), genreId = 5L)
-        val result = processor.process(cursorData(), genreId = 5L)
+        processor.process(cursorData())
+        val result = processor.process(cursorData())
 
         assertEquals(42L, result.first)
         assertEquals(1, repo.insertCount)
@@ -55,8 +55,8 @@ class AlbumArtistProcessorTest {
         val repo = FakeAlbumArtistRepository(nextId = 42L)
         val processor = AlbumArtistProcessor(repo)
 
-        processor.process(cursorData(albumArtistName = "Beethoven"), genreId = 5L)
-        processor.process(cursorData(albumArtistName = "Mozart"), genreId = 5L)
+        processor.process(cursorData(albumArtistName = "Beethoven"))
+        processor.process(cursorData(albumArtistName = "Mozart"))
 
         assertEquals(2, repo.insertCount)
     }
@@ -66,7 +66,7 @@ class AlbumArtistProcessorTest {
         val repo = FakeAlbumArtistRepository(nextId = 1L)
         val processor = AlbumArtistProcessor(repo)
 
-        val result = processor.process(cursorData(albumArtistName = null), genreId = 5L)
+        val result = processor.process(cursorData(albumArtistName = null))
 
         assertEquals("Unknown Artist", result.second)
     }
@@ -77,7 +77,7 @@ private class FakeAlbumArtistRepository(
 ) : IAlbumArtistRepository {
     var insertCount = 0
 
-    override suspend fun findOrInsertAlbumArtist(albumArtistName: String, genreId: Long): Long {
+    override suspend fun findOrInsertAlbumArtist(albumArtistName: String): Long {
         insertCount++
         return nextId
     }

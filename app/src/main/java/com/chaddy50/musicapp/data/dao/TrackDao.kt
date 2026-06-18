@@ -67,10 +67,19 @@ interface TrackDao {
     @Query("""
         SELECT tracks.* FROM tracks
         INNER JOIN albums on tracks.albumId = albums.id
-        WHERE albums.artistId = :albumArtistId AND tracks.genreId = :genreId
+        WHERE albums.artistId = :albumArtistId
+        AND (tracks.genreId = :genreId OR tracks.parentGenreId = :genreId)
         ORDER BY albums.year, tracks.discNumber, tracks.number ASC
     """)
     fun getTracksForAlbumArtistInGenre(albumArtistId: Long, genreId: Long): Flow<List<Track>>
+
+    @Query("""
+        SELECT * FROM tracks
+        WHERE albumId = :albumId
+        AND (genreId = :genreId OR parentGenreId = :genreId)
+        ORDER BY discNumber, number ASC
+    """)
+    fun getTracksForAlbumInGenre(albumId: Long, genreId: Long): Flow<List<Track>>
 
     @Query("SELECT * FROM tracks WHERE genreId = :genreId OR parentGenreId = :genreId")
     fun getTracksForGenre(genreId: Long): Flow<List<Track>>

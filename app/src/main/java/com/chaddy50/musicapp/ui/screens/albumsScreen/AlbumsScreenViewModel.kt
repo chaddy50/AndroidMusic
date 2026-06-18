@@ -49,13 +49,14 @@ class AlbumsScreenViewModel @Inject constructor(
     val selectedSubGenreId = _selectedSubGenreId.asStateFlow()
 
     val isClassical: Boolean
+    val genreId: Long
     val subGenres: StateFlow<List<Genre>>
     val uiState: StateFlow<AlbumsScreenUiState>
     val entityHeaderState: StateFlow<EntityHeaderState>
 
     init {
         val route = savedStateHandle.toRoute<AlbumsRoute>()
-        val genreId = route.genreId
+        genreId = route.genreId
         val albumArtistId = route.albumArtistId
         val classicalGenreId = classicalGenreConfig.classicalGenreId
         isClassical = genreId == classicalGenreId
@@ -68,11 +69,8 @@ class AlbumsScreenViewModel @Inject constructor(
 
         val albums: StateFlow<List<Album>> = _selectedSubGenreId
             .flatMapLatest { selectedSubGenreId ->
-                if (selectedSubGenreId != null) {
-                    albumRepository.getAlbumsForArtistInGenre(albumArtistId, selectedSubGenreId, isClassical)
-                } else {
-                    albumRepository.getAlbumsForArtist(albumArtistId, isClassical)
-                }
+                val effectiveGenreId = selectedSubGenreId ?: genreId
+                albumRepository.getAlbumsForArtistInGenre(albumArtistId, effectiveGenreId, isClassical)
             }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
         val artistName = albumArtistRepository.getAlbumArtistName(albumArtistId)

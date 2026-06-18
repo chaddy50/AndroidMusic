@@ -42,7 +42,8 @@ interface AlbumDao {
     @Query("""
         SELECT DISTINCT albums.* FROM albums 
         INNER JOIN tracks ON tracks.albumId = albums.id
-        WHERE albums.artistId = :albumArtistId AND tracks.genreId = :genreId
+        WHERE albums.artistId = :albumArtistId
+        AND (tracks.genreId = :genreId OR tracks.parentGenreId = :genreId)
         ORDER BY 
             CASE WHEN :shouldSortByCatalogueSortIndex = 1 THEN albums.catalogueSortIndex END ASC,
             CASE WHEN :shouldSortByCatalogueSortIndex = 0 THEN albums.year END DESC

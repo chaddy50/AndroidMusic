@@ -20,6 +20,8 @@ class TrackRepository(private val trackDao: TrackDao) {
 
     fun getTracksForAlbumArtistInGenre(albumArtistId: Long, genreId: Long) = trackDao.getTracksForAlbumArtistInGenre(albumArtistId, genreId)
 
+    fun getTracksForAlbumInGenre(albumId: Long, genreId: Long) = trackDao.getTracksForAlbumInGenre(albumId, genreId)
+
     fun getNumberOfTracksInAlbum(albumId: Long) = trackDao.getNumberOfTracksInAlbum(albumId)
 
     fun getNumberOfTracks() = trackDao.getNumberOfTracks()

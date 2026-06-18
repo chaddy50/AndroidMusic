@@ -113,10 +113,9 @@ object AppModule {
     @Singleton
     fun provideAlbumArtistRepository(
         albumArtistDao: AlbumArtistDao,
-        genreDao: GenreDao,
         audioDbRepository: IAudioDbRepository,
     ): AlbumArtistRepository =
-        AlbumArtistRepository(albumArtistDao, genreDao, audioDbRepository)
+        AlbumArtistRepository(albumArtistDao, audioDbRepository)
 
     @Provides
     @Singleton

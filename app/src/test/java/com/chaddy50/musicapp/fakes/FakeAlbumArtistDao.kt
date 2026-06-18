@@ -8,11 +8,19 @@ import kotlinx.coroutines.flow.map
 
 class FakeAlbumArtistDao(
     private val albumArtists: MutableStateFlow<List<AlbumArtist>> = MutableStateFlow(emptyList()),
+    initialGenreMap: Map<Long, Set<Long>> = emptyMap(),
 ) : AlbumArtistDao {
     val insertedArtists = mutableListOf<AlbumArtist>()
     val updatedArtists = mutableListOf<AlbumArtist>()
     var nextInsertId = 1L
     var lookupAfterInsertReturnsNull = false
+
+    // Maps albumArtistId -> set of genreIds (simulates the track-based genre join)
+    private val artistGenreMap = initialGenreMap.mapValues { it.value.toMutableSet() }.toMutableMap()
+
+    fun setGenresForArtist(albumArtistId: Long, genreIds: Set<Long>) {
+        artistGenreMap[albumArtistId] = genreIds.toMutableSet()
+    }
 
     override suspend fun insert(albumArtist: AlbumArtist): Long {
         insertedArtists.add(albumArtist)
@@ -34,7 +42,15 @@ class FakeAlbumArtistDao(
         albumArtists.value.find { it.name == albumArtistName }
 
     override fun getAlbumArtistsForGenreIds(genreIds: List<Long>): Flow<List<AlbumArtist>> =
-        albumArtists.map { list -> list.filter { it.genreId in genreIds } }
+        albumArtists.map { list ->
+            list.filter { artist ->
+                if (artist.id !in artistGenreMap) {
+                    true // No explicit mapping — treat as belonging to all genres
+                } else {
+                    artistGenreMap[artist.id]!!.any { it in genreIds }
+                }
+            }
+        }
 
     override fun getAlbumArtistById(albumArtistId: Long): Flow<AlbumArtist?> =
         albumArtists.map { list -> list.find { it.id == albumArtistId } }
@@ -43,7 +59,15 @@ class FakeAlbumArtistDao(
         albumArtists.map { list -> list.find { it.id == albumArtistId }?.name }
 
     override fun getNumberOfAlbumArtistsForGenre(genreId: Long): Flow<Int> =
-        albumArtists.map { list -> list.count { it.genreId == genreId } }
+        albumArtists.map { list ->
+            list.count { artist ->
+                if (artist.id !in artistGenreMap) {
+                    true // No explicit mapping — treat as belonging to all genres
+                } else {
+                    genreId in artistGenreMap[artist.id]!!
+                }
+            }
+        }
 
     override suspend fun updatePortraitPath(id: Long, portraitPath: String?) {
         albumArtists.value = albumArtists.value.map {
@@ -60,4 +84,7 @@ class FakeAlbumArtistDao(
 
     override suspend fun getAlbumArtistsWithoutPortrait(): List<AlbumArtist> =
         albumArtists.value.filter { it.portraitPath == null }
+
+    override suspend fun getGenreIdsForAlbumArtist(albumArtistId: Long): List<Long> =
+        artistGenreMap[albumArtistId]?.toList() ?: emptyList()
 }

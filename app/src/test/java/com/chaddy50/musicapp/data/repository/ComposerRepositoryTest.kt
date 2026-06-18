@@ -130,7 +130,7 @@ class ComposerRepositoryTest {
 
     @Test
     fun fetchAndInsertComposerUpdatesAlbumArtistPortraitPath() = runTest {
-        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart", genreId = 1)
+        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart")
         val albumArtistDao = createAlbumArtistDao(listOf(albumArtist))
         val repo = ComposerRepository(
             FakeComposerDao(),
@@ -147,7 +147,7 @@ class ComposerRepositoryTest {
 
     @Test
     fun fetchAndInsertComposerSetsAlbumArtistPortraitToNullWhenDownloadReturnsNull() = runTest {
-        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart", genreId = 1)
+        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart")
         val albumArtistDao = createAlbumArtistDao(listOf(albumArtist))
         val repo = ComposerRepository(
             FakeComposerDao(),
@@ -164,7 +164,7 @@ class ComposerRepositoryTest {
 
     @Test
     fun fetchAndInsertComposerDoesNotUpdateAlbumArtistWhenNameEmpty() = runTest {
-        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart", genreId = 1)
+        val albumArtist = AlbumArtist(id = 42, name = "Mozart", sortName = "Mozart")
         val albumArtistDao = createAlbumArtistDao(listOf(albumArtist))
         val repo = ComposerRepository(
             FakeComposerDao(),
@@ -181,7 +181,7 @@ class ComposerRepositoryTest {
 
     @Test
     fun fetchAndInsertComposerDoesNotUpdateAlbumArtistWhenNoResults() = runTest {
-        val albumArtist = AlbumArtist(id = 42, name = "Unknown", sortName = "Unknown", genreId = 1)
+        val albumArtist = AlbumArtist(id = 42, name = "Unknown", sortName = "Unknown")
         val albumArtistDao = createAlbumArtistDao(listOf(albumArtist))
         val repo = ComposerRepository(
             FakeComposerDao(),

@@ -42,13 +42,9 @@ class PlaybackViewModel @Inject constructor(
         }
     }
 
-    fun playTracksForAlbumArtist(albumArtistId: Long, subGenreId: Long?, shuffled: Boolean) {
+    fun playTracksForAlbumArtist(albumArtistId: Long, genreId: Long, shuffled: Boolean) {
         viewModelScope.launch {
-            val tracks = if (subGenreId != null) {
-                trackRepository.getTracksForAlbumArtistInGenre(albumArtistId, subGenreId).first()
-            } else {
-                trackRepository.getTracksForAlbumArtist(albumArtistId).first()
-            }
+            val tracks = trackRepository.getTracksForAlbumArtistInGenre(albumArtistId, genreId).first()
             playTracks(tracks, shuffled)
         }
     }
@@ -59,6 +55,17 @@ class PlaybackViewModel @Inject constructor(
                 trackRepository.getTracksForPerformance(performanceId).first()
             } else {
                 trackRepository.getTracksForAlbum(albumId).first()
+            }
+            playTracks(tracks, shuffled)
+        }
+    }
+
+    fun playTracksForAlbumInGenre(albumId: Long, genreId: Long, performanceId: Long?, shuffled: Boolean) {
+        viewModelScope.launch {
+            val tracks = if (performanceId != null) {
+                trackRepository.getTracksForPerformance(performanceId).first()
+            } else {
+                trackRepository.getTracksForAlbumInGenre(albumId, genreId).first()
             }
             playTracks(tracks, shuffled)
         }

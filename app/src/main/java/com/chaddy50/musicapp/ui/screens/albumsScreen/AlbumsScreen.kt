@@ -35,6 +35,7 @@ fun AlbumsScreen(
     val allPlaylists by playlistViewModel.allPlaylists.collectAsStateWithLifecycle()
     val isClassical = screenViewModel.isClassical
     val selectedSubGenreId by screenViewModel.selectedSubGenreId.collectAsStateWithLifecycle()
+    val effectiveGenreId = selectedSubGenreId ?: screenViewModel.genreId
 
     val addToPlaylistState = rememberAddToPlaylistState<Album>(
         getPlaylistMembership = { album -> playlistViewModel.getPlaylistsThatAlbumIsAlreadyIn(album.id) },
@@ -76,8 +77,8 @@ fun AlbumsScreen(
             }
 
         },
-        onPlay = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, false) }} else null,
-        onShuffle = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, selectedSubGenreId, true) }} else null,
+        onPlay = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, effectiveGenreId, false) }} else null,
+        onShuffle = if (uiState.albums.isNotEmpty()) {{ playbackViewModel.playTracksForAlbumArtist(albumArtistId, effectiveGenreId, true) }} else null,
     )
 
     AddToPlaylistHandler(state = addToPlaylistState, allPlaylists = allPlaylists)

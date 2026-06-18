@@ -10,14 +10,12 @@ class AlbumArtistProcessor(
 
     suspend fun process(
         cursorData: CursorData,
-        genreId: Long,
     ): Pair<Long, String> {
         val albumArtistName = cursorData.albumArtistName ?: "Unknown Artist"
         processedAlbumArtists[albumArtistName]?.let { return it }
 
         val albumArtistId = albumArtistRepository.findOrInsertAlbumArtist(
             albumArtistName,
-            genreId,
         )
         val newAlbumArtist = Pair(albumArtistId, albumArtistName)
         processedAlbumArtists[albumArtistName] = newAlbumArtist

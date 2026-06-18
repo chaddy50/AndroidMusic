@@ -21,6 +21,9 @@ class FakePerformanceDao(
     override fun getNumberOfPerformancesForAlbum(albumId: Long): Flow<Int> =
         performances.map { list -> list.count { it.albumId == albumId } }
 
+    override fun getNumberOfPerformancesForAlbumForGenre(albumId: Long, genreId: Long): Flow<Int> =
+        performances.map { list -> list.count { it.albumId == albumId && it.genreId == genreId } }
+
     override suspend fun findByAlbumAndArtist(albumId: Long, artistId: Long): Long? =
         performances.value.find { it.albumId == albumId && it.artistId == artistId }?.id
 

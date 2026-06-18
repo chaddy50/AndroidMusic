@@ -44,13 +44,14 @@ class PerformancesScreenViewModel @Inject constructor(
     trackRepository: TrackRepository,
     playlistRepository: PlaylistRepository,
 ) : ViewModel() {
+    val genreId: Long
     val uiState: StateFlow<PerformanceScreenUiState>
     val entityHeaderState: StateFlow<EntityHeaderState>
 
     init {
         val route = savedStateHandle.toRoute<PerformancesRoute>()
         val albumId = route.albumId
-        val genreId = route.genreId
+        genreId = route.genreId
         val classicalGenreId = classicalGenreConfig.classicalGenreId
         val isClassical = genreId == classicalGenreId
 
@@ -59,7 +60,7 @@ class PerformancesScreenViewModel @Inject constructor(
             .map { it.title }
 
         val performances: Flow<List<Performance>> =
-            performanceRepository.getPerformancesForAlbum(albumId)
+            performanceRepository.getPerformancesForAlbumForGenre(albumId, genreId)
 
         uiState = combine(performances, albumTitle) { performances, albumTitle ->
             PerformanceScreenUiState(albumTitle, performances, false)
@@ -77,7 +78,7 @@ class PerformancesScreenViewModel @Inject constructor(
             combine(
                 albumArtistRepository.getAlbumArtistById(album.artistId),
                 trackRepository.getTracksForAlbum(albumId),
-                performanceRepository.getNumberOfPerformancesForAlbum(albumId),
+                performanceRepository.getNumberOfPerformancesForAlbumForGenre(albumId, genreId),
                 playlistRepository.getPlaylistIdsContainingAlbum(album.id),
             ) { albumArtist, tracks, numberOfPerformances, playlistsThatAlbumIsAlreadyIn ->
                 val albumDurationMs = tracks.sumOf { it.duration.inWholeMilliseconds }
