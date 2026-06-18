@@ -41,6 +41,9 @@ class GenreRepository(private val genreDao: GenreDao) {
     suspend fun findOrInsertGenreByName(name: String, parentGenreId: Long? = null): Long {
         val existingGenre = genreDao.getGenreByName(name)
         if (existingGenre != null) {
+            if (existingGenre.parentGenreId != parentGenreId) {
+                genreDao.update(existingGenre.copy(parentGenreId = parentGenreId))
+            }
             return existingGenre.id
         }
 

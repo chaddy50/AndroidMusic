@@ -22,6 +22,7 @@ import com.chaddy50.musicapp.data.dao.AlbumDao
 import com.chaddy50.musicapp.data.dao.ArtistDao
 import com.chaddy50.musicapp.data.dao.ComposerDao
 import com.chaddy50.musicapp.data.dao.GenreDao
+import com.chaddy50.musicapp.data.dao.GenreMappingDao
 import com.chaddy50.musicapp.data.dao.PerformanceDao
 import com.chaddy50.musicapp.data.dao.PlaylistDao
 import com.chaddy50.musicapp.data.dao.TrackDao
@@ -29,6 +30,7 @@ import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
+import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.PlaylistRepository
@@ -62,6 +64,7 @@ object AppModule {
     @Provides fun provideArtistDao(db: MusicDatabase): ArtistDao = db.artistDao()
     @Provides fun provideAlbumArtistDao(db: MusicDatabase): AlbumArtistDao = db.albumArtistDao()
     @Provides fun provideGenreDao(db: MusicDatabase): GenreDao = db.genreDao()
+    @Provides fun provideGenreMappingDao(db: MusicDatabase): GenreMappingDao = db.genreMappingDao()
     @Provides fun providePerformanceDao(db: MusicDatabase): PerformanceDao = db.performanceDao()
     @Provides fun provideComposerDao(db: MusicDatabase): ComposerDao = db.composerDao()
     @Provides fun providePlaylistDao(db: MusicDatabase): PlaylistDao = db.playlistDao()
@@ -108,6 +111,11 @@ object AppModule {
     @Singleton
     fun provideGenreRepository(genreDao: GenreDao): GenreRepository =
         GenreRepository(genreDao)
+
+    @Provides
+    @Singleton
+    fun provideGenreMappingRepository(genreMappingDao: GenreMappingDao): GenreMappingRepository =
+        GenreMappingRepository(genreMappingDao)
 
     @Provides
     @Singleton
@@ -186,6 +194,7 @@ object AppModule {
     fun provideMusicScanner(
         @ApplicationContext context: Context,
         genreRepository: GenreRepository,
+        genreMappingRepository: GenreMappingRepository,
         artistRepository: ArtistRepository,
         albumArtistRepository: AlbumArtistRepository,
         albumRepository: AlbumRepository,
@@ -193,5 +202,5 @@ object AppModule {
         performanceRepository: PerformanceRepository,
         composerRepository: ComposerRepository,
     ): MusicScanner =
-        MusicScanner(context, genreRepository, artistRepository, albumArtistRepository, albumRepository, trackRepository, performanceRepository, composerRepository)
+        MusicScanner(context, genreRepository, genreMappingRepository, artistRepository, albumArtistRepository, albumRepository, trackRepository, performanceRepository, composerRepository)
 }

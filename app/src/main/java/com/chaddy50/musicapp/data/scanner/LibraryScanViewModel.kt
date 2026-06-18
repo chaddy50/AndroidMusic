@@ -39,6 +39,13 @@ class LibraryScanViewModel @Inject constructor(
         return trackRepository.getNumberOfTracksSuspend()
     }
 
+    fun rebuildLibrary() {
+        viewModelScope.launch(Dispatchers.IO) {
+            musicScanner.resetScanTimestamp()
+            refreshLibrary()
+        }
+    }
+
     suspend fun refreshLibrary() {
         _isScanInProgress.value = true
         musicScanner.scan()

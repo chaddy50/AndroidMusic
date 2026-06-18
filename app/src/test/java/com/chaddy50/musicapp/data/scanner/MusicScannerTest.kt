@@ -9,6 +9,7 @@ import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
+import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -18,6 +19,7 @@ import com.chaddy50.musicapp.fakes.FakeArtworkDownloader
 import com.chaddy50.musicapp.fakes.FakeAudioDbRepository
 import com.chaddy50.musicapp.fakes.FakeComposerDao
 import com.chaddy50.musicapp.fakes.FakeGenreDao
+import com.chaddy50.musicapp.fakes.FakeGenreMappingDao
 import com.chaddy50.musicapp.fakes.FakeOpenOpusRepository
 import com.chaddy50.musicapp.fakes.FakePerformanceDao
 import com.chaddy50.musicapp.fakes.FakeTrackDao
@@ -67,6 +69,7 @@ class MusicScannerTest {
         return MusicScanner(
             context = context,
             genreRepository = GenreRepository(genreDao),
+            genreMappingRepository = GenreMappingRepository(FakeGenreMappingDao()),
             artistRepository = ArtistRepository(stubArtistDao),
             albumArtistRepository = AlbumArtistRepository(albumArtistDao, audioDbRepository),
             albumRepository = AlbumRepository(FakeAlbumDao()),

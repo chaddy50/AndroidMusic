@@ -51,6 +51,7 @@ import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenUiState
 import com.chaddy50.musicapp.ui.screens.albumsScreen.AlbumsScreenViewModel
 import com.chaddy50.musicapp.ui.screens.playlistsScreen.PlaylistViewModel
 import com.chaddy50.musicapp.ui.screens.settingsScreen.SettingsScreen
+import com.chaddy50.musicapp.ui.screens.settingsScreen.genreMappings.ClassicalGenreSettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,6 +109,7 @@ fun NavigationHost(
         destination.hasRoute<PlaylistTracksRoute>() -> currentBackStackEntry?.toRoute<PlaylistTracksRoute>()?.title ?: ""
         destination.hasRoute<TracksRoute>() -> currentBackStackEntry?.toRoute<TracksRoute>()?.title ?: ""
         destination.hasRoute<SettingsRoute>() -> "Settings"
+        destination.hasRoute<ClassicalGenreSettingsRoute>() -> "Classical Genres"
         else -> ""
     }
 
@@ -226,7 +228,13 @@ fun NavigationHost(
                     )
                 }
                 composable<SettingsRoute> {
-                    SettingsScreen()
+                    SettingsScreen(navController = navController)
+                }
+                composable<ClassicalGenreSettingsRoute> {
+                    ClassicalGenreSettingsScreen(
+                        onNavigateBack = { navController.popBackStack() },
+                        onRebuildLibrary = { libraryScanViewModel.rebuildLibrary() },
+                    )
                 }
             }
         }

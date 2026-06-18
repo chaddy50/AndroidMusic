@@ -9,10 +9,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.chaddy50.musicapp.navigation.ClassicalGenreSettingsRoute
+import com.chaddy50.musicapp.ui.screens.settingsScreen.genreMappings.ClassicalGenreSettingsRow
 import com.chaddy50.musicapp.ui.screens.settingsScreen.listenBrainzLogin.ListenBrainzLogin
 
 @Composable
-fun SettingsScreen() {
+fun SettingsScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -21,5 +24,6 @@ fun SettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ListenBrainzLogin()
+        ClassicalGenreSettingsRow(onClick = { navController.navigate(ClassicalGenreSettingsRoute) })
     }
 }

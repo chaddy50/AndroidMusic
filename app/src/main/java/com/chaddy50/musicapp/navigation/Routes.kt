@@ -22,3 +22,6 @@ data class PlaylistTracksRoute(val playlistId: Long, val title: String)
 
 @Serializable
 data object SettingsRoute
+
+@Serializable
+data object ClassicalGenreSettingsRoute

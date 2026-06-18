@@ -13,4 +13,10 @@ interface GenreMappingDao {
 
     @Query("SELECT * FROM genre_mappings")
     suspend fun getAllGenreMappings(): List<GenreMapping>
+
+    @Query("SELECT subGenreName FROM genre_mappings WHERE parentGenreName = 'Classical'")
+    suspend fun getClassicalGenreNames(): List<String>
+
+    @Query("DELETE FROM genre_mappings WHERE parentGenreName = 'Classical'")
+    suspend fun deleteAllClassicalMappings()
 }

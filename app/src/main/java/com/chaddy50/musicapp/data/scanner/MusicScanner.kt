@@ -7,6 +7,7 @@ import com.chaddy50.musicapp.data.repository.AlbumArtistRepository
 import com.chaddy50.musicapp.data.repository.AlbumRepository
 import com.chaddy50.musicapp.data.repository.ArtistRepository
 import com.chaddy50.musicapp.data.repository.ComposerRepository
+import com.chaddy50.musicapp.data.repository.GenreMappingRepository
 import com.chaddy50.musicapp.data.repository.GenreRepository
 import com.chaddy50.musicapp.data.repository.PerformanceRepository
 import com.chaddy50.musicapp.data.repository.TrackRepository
@@ -29,11 +30,13 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicInteger
+import android.content.Context.MODE_PRIVATE
 import androidx.core.content.edit
 
 class MusicScanner(
     val context: Context,
     val genreRepository: GenreRepository,
+    val genreMappingRepository: GenreMappingRepository,
     val artistRepository: ArtistRepository,
     val albumArtistRepository: AlbumArtistRepository,
     val albumRepository: AlbumRepository,
@@ -52,6 +55,8 @@ class MusicScanner(
             val prefs = context.getSharedPreferences("music_scanner_prefs", Context.MODE_PRIVATE)
             val lastScanTime = prefs.getLong("last_scan_time", 0L)
             val scanStartTime = System.currentTimeMillis() / 1000
+
+            genreMappingRepository.seedDefaultClassicalMappingsIfEmpty()
 
             deleteTracksThatAreNoLongerInFileSystem()
 
@@ -110,7 +115,7 @@ class MusicScanner(
                         launch {
                             val metadataResolver = MetadataResolver(context)
                             val trackProcessor = TrackProcessor()
-                            val genreProcessor = GenreProcessor(genreRepository)
+                            val genreProcessor = GenreProcessor(genreRepository, genreMappingRepository)
                             val artistProcessor = ArtistProcessor(artistRepository)
                             val albumArtistProcessor = AlbumArtistProcessor(albumArtistRepository)
                             val albumProcessor = AlbumProcessor(albumRepository, artworkSaver)
@@ -238,5 +243,10 @@ class MusicScanner(
         if (deletedIds.isNotEmpty()) {
             trackRepository.deleteByIds(deletedIds)
         }
+    }
+
+    fun resetScanTimestamp() {
+        val prefs = context.getSharedPreferences("music_scanner_prefs", MODE_PRIVATE)
+        prefs.edit { putLong("last_scan_time", 0L) }
     }
 }
