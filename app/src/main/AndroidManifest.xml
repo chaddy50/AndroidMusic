@@ -48,7 +48,7 @@
 
         <provider
             android:name=".services.ArtworkProvider"
-            android:authorities="com.chaddy50.musicapp.artwork"
+            android:authorities="com.chaddy50.froh.artwork"
             android:exported="true" />
     </application>
 

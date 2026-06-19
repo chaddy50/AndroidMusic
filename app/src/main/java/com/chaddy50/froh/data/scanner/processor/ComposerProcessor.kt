@@ -1,0 +1,21 @@
+package com.chaddy50.froh.data.scanner.processor
+
+import com.chaddy50.froh.data.repository.IComposerRepository
+
+class ComposerProcessor(
+    private val composerRepository: IComposerRepository
+) {
+    private val processedComposers = mutableSetOf<Long>()
+
+    suspend fun process(
+        isClassical: Boolean,
+        albumArtistId: Long,
+        albumArtistName: String
+    ) {
+        if (!isClassical) return
+        if (processedComposers.contains(albumArtistId)) return
+
+        processedComposers.add(albumArtistId)
+        composerRepository.fetchAndInsertComposer(albumArtistId, albumArtistName)
+    }
+}

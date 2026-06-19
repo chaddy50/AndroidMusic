@@ -1,0 +1,92 @@
+package com.chaddy50.froh.ui.screens.tracksScreen
+
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.chaddy50.froh.data.entity.Track
+import com.chaddy50.froh.utilities.formatMillisecondsIntoMinutesAndSeconds
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun TrackCard(
+    track: Track,
+    isCurrentlyPlaying: Boolean,
+    onTrackClicked: (Track) -> Unit,
+    onTrackLongPressed: ((Track) -> Unit)? = null,
+    showTrackNumber: Boolean = true,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(75.dp)
+            .combinedClickable(
+                onClick = { onTrackClicked(track) },
+                onLongClick = { onTrackLongPressed?.invoke(track) },
+            )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (showTrackNumber) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(10.dp, 0.dp)
+                        .width(30.dp)
+                ) {
+                    if (isCurrentlyPlaying) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                            contentDescription = "Now playing",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    } else {
+                        Text(track.number.toString())
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = if (!showTrackNumber) 16.dp else 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (!showTrackNumber && isCurrentlyPlaying) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                        contentDescription = "Now playing",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+                Text(track.title)
+            }
+            Column(
+                modifier = Modifier
+                    .widthIn(min = 40.dp)
+                    .padding(10.dp, 0.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                Text(formatMillisecondsIntoMinutesAndSeconds(track.duration.inWholeMilliseconds))
+            }
+        }
+    }
+}
