@@ -1,6 +1,9 @@
-# What does this app do?
-This is a local music player app designed to deal with large, varied music libraries.
+# What is Froh?
+*Frei aber froh.*
+
+Froh is a local music player app designed to deal with large, varied music libraries.
 It has a specific focus on making classical music easier to organize and access on the go.
+
 # Features
 ## Classical Focus
 - **Catalog Numbers** - Opus numbers, Köchel numbers (K.), Bach-Werke-Verzeichnis (BWV), and others are parsed from track metadata and used for sorting, so works appear in their correct compositional order.
